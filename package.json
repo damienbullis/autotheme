@@ -1,7 +1,6 @@
 {
-  "name": "autotheme",
+  "name": "@damienbullis/autotheme",
   "version": "0.0.0",
-  "description": "",
   "private": false,
   "keywords": [
     "cli",
