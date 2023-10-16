@@ -1,0 +1,16 @@
+{
+  "name": "autotheme",
+  "version": "0.0.0",
+  "description": "",
+  "bin": {
+    "autotheme": "echo \"Hello World\""
+  },
+  "private": false,
+  "keywords": ["cli", "auto", "theme", "autotheme", "css"],
+  "author": "Damien Bullis",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:damienbullis/autotheme.git"
+},
+  "license": "MIT"
+}
