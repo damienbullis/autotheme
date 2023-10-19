@@ -10,6 +10,3 @@ coverage/
 
 # ENV
 .env
-
-# Dev Files
-**/*.go
