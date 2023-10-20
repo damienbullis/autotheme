@@ -2,8 +2,7 @@ package cmd
 
 import (
 	"fmt"
-
-	"autotheme/pkg/config"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -11,16 +10,20 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "autotheme",
 	Short: "A zero-config theme generator using color theory",
-	// Add global flags and configurations here
+	Long: `AutoTheme is a zero-config theme generator using color theory.
+It uses the color wheel to generate a color palette based on a single color.`,
+
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("AutoTheme Starting...")
+		// Run root command
+		fmt.Println("AutoTheme Finished!")
+	},
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		// Handle errors here
 		fmt.Println(err)
+		os.Exit(1)
 	}
-
-	// Load the config
-	cfg := config.LoadConfig()
-	fmt.Println("autotheme root", cfg)
 }

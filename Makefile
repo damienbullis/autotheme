@@ -24,15 +24,13 @@ install:
 test:
 	go test -v ./...
 
-# Not really sure what the difference is between vet and fmt
-
 # Vet the project
 vet:
 	go vet ./...
 
 # Format the project
 fmt:
-	gofmt -w .
+	go fmt ./...
 
 # Run the project
 all: clean build ./$(BINARY)
