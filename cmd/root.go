@@ -56,26 +56,22 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	fmt.Println("Initializing Root Command...")
+	fmt.Println("Root Command:")
 	cobra.OnInitialize(config.LoadConfig)
 
-	// Root command flags
-	rootCmd.Flags().StringP("color", "C", "", "Color for AutoTheme to use.\n    (default is randomly set at build time)")
-	rootCmd.Flags().StringP("harmony", "H", "complementary", "Harmony for AutoTheme to use.")
-	rootCmd.Flags().Float64P("scalar", "S", 1.618, "Scalar value for spacing, font sizes, etc...")
-	rootCmd.Flags().StringP("outdir", "O", "dist", "Output directory relative to current working directory for the generated CSS file")
-	rootCmd.Flags().BoolP("darkmode", "D", true, "Enable dark mode for the generated CSS file")
+	// NEXT: Do we want to support flags for each value in the config file?
 
-	fmt.Println("Root Flags Set!")
+	// Root command flags
+	rootCmd.Flags().StringP("color", "c", "", "Color for AutoTheme to use.\n    (default is randomly set at build time)")
+	rootCmd.Flags().StringP("harmony", "a", "complementary", "Harmony for AutoTheme to use.")
+	rootCmd.Flags().StringP("outdir", "o", "dist", "Output directory relative to current working directory for the generated CSS file")
 
 	// Bind flags to viper
 	viper.BindPFlag("color", rootCmd.Flags().Lookup("color"))
 	viper.BindPFlag("harmony", rootCmd.Flags().Lookup("harmony"))
-	viper.BindPFlag("scalar", rootCmd.Flags().Lookup("scalar"))
 	viper.BindPFlag("outdir", rootCmd.Flags().Lookup("outdir"))
-	viper.BindPFlag("darkmode", rootCmd.Flags().Lookup("darkmode"))
 
-	fmt.Println("Root Flags Bound to Viper!")
+	fmt.Println("Root Flags Set & Bound to Viper!")
 
 	fmt.Println("Root Command Initialized!")
 }

@@ -8,6 +8,7 @@ import (
 )
 
 func init() {
+	fmt.Println("Init Command:")
 	rootCmd.AddCommand(initCmd)
 
 	// Init command flags
