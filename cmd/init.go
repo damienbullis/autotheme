@@ -1,14 +1,18 @@
 package cmd
 
 import (
+	c "autotheme/pkg/utils"
 	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
+func initLn(str string) {
+	fmt.Println(c.Str(" INIT ", nil, &c.Color{R: 230, G: 200, B: 20}) + " " + str)
+}
 func init() {
-	fmt.Println("Init Command:")
+	initLn("Init Command")
 	rootCmd.AddCommand(initCmd)
 
 	// Init command flags

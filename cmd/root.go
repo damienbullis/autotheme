@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"autotheme/pkg/config"
+	c "autotheme/pkg/utils"
 	"errors"
 	"fmt"
 	"os"
@@ -56,7 +57,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	fmt.Println("Root Command:")
+	fmt.Println(c.Str(" INIT ", nil, &c.Color{R: 230, G: 200, B: 20}) + " Root Command")
 	cobra.OnInitialize(config.LoadConfig)
 
 	// NEXT: Do we want to support flags for each value in the config file?
