@@ -63,7 +63,7 @@ func init() {
 	rootCmd.Flags().StringP("color", "C", "", "Color for AutoTheme to use.\n    (default is randomly set at build time)")
 	rootCmd.Flags().StringP("harmony", "H", "complementary", "Harmony for AutoTheme to use.")
 	rootCmd.Flags().Float64P("scalar", "S", 1.618, "Scalar value for spacing, font sizes, etc...")
-	rootCmd.Flags().StringP("outdir", "O", "dist", "Output directory to put the generated CSS file")
+	rootCmd.Flags().StringP("outdir", "O", "dist", "Output directory relative to current working directory for the generated CSS file")
 	rootCmd.Flags().BoolP("darkmode", "D", true, "Enable dark mode for the generated CSS file")
 
 	fmt.Println("Root Flags Set!")

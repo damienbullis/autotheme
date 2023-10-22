@@ -8,7 +8,6 @@ import (
 )
 
 func init() {
-	fmt.Println("Initializing Init Command...")
 	rootCmd.AddCommand(initCmd)
 
 	// Init command flags
@@ -16,7 +15,7 @@ func init() {
 
 	// Bind flags to viper
 	viper.BindPFlag("interactive", initCmd.Flags().Lookup("interactive"))
-	fmt.Println("Init Flags Bound to Viper!")
+	fmt.Println("Init Flags Set & Bound to Viper!")
 
 	fmt.Println("Init Command Initialized!")
 }
@@ -24,7 +23,7 @@ func init() {
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize AutoTheme",
-	Long:  `Initialize AutoTheme by creating a config file and a theme file`,
+	Long:  `Generated a config file for AutoTheme.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Initializing AutoTheme...")
