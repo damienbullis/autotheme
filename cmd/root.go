@@ -35,7 +35,7 @@ func init() {
 	// bindFlags()
 
 	// Set Defaults
-	// setDefaults()
+	setDefaults()
 }
 
 func Execute() {
