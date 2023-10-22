@@ -8,9 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newLn() {
-	fmt.Printf("\n")
-}
+// func newLn() {
+// 	fmt.Printf("\n")
+// }
 
 var rootCmd = &cobra.Command{
 	Use:   "autotheme",
@@ -28,16 +28,14 @@ var rootCmd = &cobra.Command{
 func init() {
 	fmt.Println("Initializing AutoTheme...")
 	cobra.OnInitialize(config.LoadConfig)
+
+	// Set Flags
 	setFlags()
-}
+	// Bind Flags to Viper
+	// bindFlags()
 
-func setFlags() {
-	rootCmd.Flags().StringP("config", "c", "", "The relative path to use for the config file")
-	rootCmd.Flags().StringP("color", "l", "", "Color for AutoTheme to use")
-	rootCmd.Flags().Float64P("scalar", "s", 0.0, "Scalar value for spacing, font sizes, etc...")
-	rootCmd.Flags().StringP("outdir", "o", "", "Output directory to put the generated CSS file")
-	rootCmd.Flags().BoolP("darkmode", "d", false, "Enable dark mode for the generated CSS file")
-
+	// Set Defaults
+	// setDefaults()
 }
 
 func Execute() {
