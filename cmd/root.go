@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"autotheme/pkg/config"
+	"autotheme/pkg/core/harmony"
 	c "autotheme/pkg/utils"
 	"errors"
 	"fmt"
 	"os"
 	"unicode/utf8"
 
+	"github.com/lucasb-eyer/go-colorful"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -18,6 +20,7 @@ var rootCmd = &cobra.Command{
 	Long:  `AutoTheme is a zero-config theme generator using color theory, sensible options & defaults, and modern HTML and CSS features.`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
+		// REFACTOR: Move this to a separate function
 		// check color flag
 		if viper.GetString("color") != "" {
 			clr := viper.GetString("color")
@@ -61,6 +64,12 @@ var rootCmd = &cobra.Command{
 `
 		// NEXT: Build theme
 		// buildTheme(&theme)
+		hex, _ := colorful.Hex(_color)
+
+		colors := harmony.CalculateComplementaryHarmony(hex)
+		for _, color := range colors {
+			fmt.Println(color.Hex())
+		}
 
 		// NEXT: Write theme to file
 		// writeTheme(theme)
@@ -72,8 +81,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	cobra.OnInitialize(config.LoadConfig)
 
-	// NEXT: Do we want to support flags for each value in the config file?
-
+	// REFACTOR: Do we want to support flags for each value in the config file?
 	// Root command flags
 	rootCmd.Flags().StringP("color", "c", "", "Color for AutoTheme to use.\n    (default is randomly set at build time)")
 	rootCmd.Flags().StringP("harmony", "a", "complementary", "Harmony for AutoTheme to use.")
