@@ -56,7 +56,7 @@ var rootCmd = &cobra.Command{
 		theme := `
 
 :root {
-	--color: ` + _color + `;
+    --at-harmony-primary: ` + _color + `;
 }
 `
 		// NEXT: Build theme
@@ -70,7 +70,6 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	fmt.Println(c.Str(" INIT ", nil, &c.Color{R: 230, G: 200, B: 20}) + " Root Command")
 	cobra.OnInitialize(config.LoadConfig)
 
 	// NEXT: Do we want to support flags for each value in the config file?
@@ -84,10 +83,6 @@ func init() {
 	viper.BindPFlag("color", rootCmd.Flags().Lookup("color"))
 	viper.BindPFlag("harmony", rootCmd.Flags().Lookup("harmony"))
 	viper.BindPFlag("outdir", rootCmd.Flags().Lookup("outdir"))
-
-	fmt.Println("Root Flags Set & Bound to Viper!")
-
-	fmt.Println("Root Command Initialized!")
 }
 
 func Execute() {

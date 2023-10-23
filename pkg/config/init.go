@@ -37,10 +37,11 @@ func LoadConfig() {
 	}
 
 	// Print config values
-	fmt.Println("Config values:")
+	fmt.Println("\nConfig values:")
 	mapped := viper.AllSettings()
 
 	for key, value := range mapped {
 		fmt.Println(key, ":", value)
 	}
+	fmt.Println("")
 }

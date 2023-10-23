@@ -18,23 +18,20 @@ func bg(color Color) string {
 
 // Create a string with optional foreground and background colors
 func Str(text string, fgColor, bgColor *Color) string {
-	var fgstr string
-	if fgColor == nil {
-		fgstr = ""
-	} else {
+	fgstr := ""
+	if fgColor != nil {
 		fgstr = fg(*fgColor)
 	}
 
-	var bgstr string
-	if bgColor == nil {
-		bgstr = ""
-	} else {
+	bgstr := ""
+	if bgColor != nil {
 		bgstr = bg(*bgColor)
 	}
 
 	return fgstr + bgstr + text + reset
 }
 
+// TODO: Implement this
 func GetRandomColor() string {
 	return "#000000"
 }
