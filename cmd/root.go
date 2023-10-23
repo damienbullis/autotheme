@@ -64,6 +64,8 @@ var rootCmd = &cobra.Command{
 `
 		// NEXT: Build theme
 		// buildTheme(&theme)
+
+		// TODO: This is temp... remove this
 		hex, _ := colorful.Hex(_color)
 
 		colors := harmony.CalculateComplementaryHarmony(hex)
