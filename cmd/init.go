@@ -1,18 +1,14 @@
 package cmd
 
 import (
-	c "autotheme/pkg/utils"
+	"autotheme/pkg/interactive"
 	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-func initLn(str string) {
-	fmt.Println(c.Str(" INIT ", nil, &c.Color{R: 230, G: 200, B: 20}) + " " + str)
-}
 func init() {
-	initLn("Init Command")
 	rootCmd.AddCommand(initCmd)
 
 	// Init command flags
@@ -20,9 +16,7 @@ func init() {
 
 	// Bind flags to viper
 	viper.BindPFlag("interactive", initCmd.Flags().Lookup("interactive"))
-	fmt.Println("Init Flags Set & Bound to Viper!")
 
-	fmt.Println("Init Command Initialized!")
 }
 
 var initCmd = &cobra.Command{
@@ -33,6 +27,14 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Initializing AutoTheme...")
 		// Run init command here
+
+		// Check if interactive mode is enabled
+		if viper.GetBool("interactive") {
+			interactive.Prompt()
+		} else {
+			fmt.Println("Auto generating config file...")
+			// NEXT: Generate config file
+		}
 
 		fmt.Println("AutoTheme Initialized!")
 	},

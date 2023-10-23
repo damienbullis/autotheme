@@ -12,10 +12,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// func newLn() {
-// 	fmt.Printf("\n")
-// }
-
 var rootCmd = &cobra.Command{
 	Use:   "autotheme",
 	Short: "A zero-config CSS theme generator",
@@ -24,8 +20,6 @@ var rootCmd = &cobra.Command{
 	Args: func(cmd *cobra.Command, args []string) error {
 		// check color flag
 		if viper.GetString("color") != "" {
-			// check if color flag is valid
-			// check with regex for hex code
 			clr := viper.GetString("color")
 			len := utf8.RuneCountInString(clr)
 			if (len != 7 && len != 4) || clr[0] != '#' {
@@ -52,7 +46,26 @@ var rootCmd = &cobra.Command{
 		fmt.Println("AutoTheme Starting...")
 		// Run root command here
 
-		fmt.Println("AutoTheme Finished!")
+		_color := viper.GetString("color")
+		if _color == "" {
+			fmt.Println("No color provided... picking a random color!")
+			_color = c.GetRandomColor()
+		}
+
+		// Build in memory theme
+		theme := `
+
+:root {
+	--color: ` + _color + `;
+}
+`
+		// NEXT: Build theme
+		// buildTheme(&theme)
+
+		// NEXT: Write theme to file
+		// writeTheme(theme)
+
+		fmt.Println("AutoTheme Finished!", theme)
 	},
 }
 

@@ -16,7 +16,7 @@ func bg(color Color) string {
 	return "\x1b[48;2;" + strconv.Itoa(color.R) + ";" + strconv.Itoa(color.G) + ";" + strconv.Itoa(color.B) + "m"
 }
 
-// Given a string, return the string with the given foreground color and or background color
+// Create a string with optional foreground and background colors
 func Str(text string, fgColor, bgColor *Color) string {
 	var fgstr string
 	if fgColor == nil {
@@ -33,4 +33,8 @@ func Str(text string, fgColor, bgColor *Color) string {
 	}
 
 	return fgstr + bgstr + text + reset
+}
+
+func GetRandomColor() string {
+	return "#000000"
 }
