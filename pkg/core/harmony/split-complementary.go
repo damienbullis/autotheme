@@ -6,7 +6,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-// Calculates the split complementary harmony of a given base color
+// Calculates the split complementary harmony of a given base color (3 colors)
 func CalculateSplitComplementaryHarmony(baseColor colorful.Color) []colorful.Color {
 	// Convert base color to HSL color space
 	h, s, l := baseColor.Hsl()

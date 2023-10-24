@@ -6,7 +6,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-// Calculates the square harmony of a given base color
+// Calculates the square harmony of a given base color (4 colors)
 func CalculateSquareHarmony(baseColor colorful.Color) []colorful.Color {
 	// Convert base color to HSL color space
 	h, s, l := baseColor.Hsl()

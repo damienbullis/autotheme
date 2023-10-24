@@ -6,7 +6,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-// Calculates the tetradic (double-complementary) harmony of a given base color
+// Calculates the tetradic (double-complementary) harmony of a given base color (5 colors)
 func CalculateTetradicHarmony(baseColor colorful.Color) []colorful.Color {
 	// Convert base color to HSL color space
 	h, s, l := baseColor.Hsl()
