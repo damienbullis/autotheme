@@ -2,6 +2,8 @@ package utils
 
 import (
 	"strconv"
+
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 type Color struct{ R, G, B int }
@@ -31,7 +33,6 @@ func Str(text string, fgColor, bgColor *Color) string {
 	return fgstr + bgstr + text + reset
 }
 
-// TODO: Implement this
 func GetRandomColor() string {
-	return "#000000"
+	return colorful.FastHappyColor().Hex()
 }

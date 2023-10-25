@@ -14,6 +14,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var TAB = "    "
+
 var rootCmd = &cobra.Command{
 	Use:   "autotheme",
 	Short: "A zero-config CSS theme generator",
@@ -56,27 +58,33 @@ var rootCmd = &cobra.Command{
 		}
 
 		// Build in memory theme
-		theme := `
+		theme := "\n:root {" + "\n" + TAB + `--at-harmony-primary: ` + _color + ";\n" + "}\n"
 
-:root {
-    --at-harmony-primary: ` + _color + `;
-}
-`
 		// NEXT: Build theme
 		// buildTheme(&theme)
 
 		// TODO: This is temp... remove this
 		hex, _ := colorful.Hex(_color)
 
-		colors := harmony.CalculateComplementaryHarmony(hex)
+		colors := harmony.SplitComplementaryHarmony(hex)
 		for _, color := range colors {
-			fmt.Println(color.Hex())
+			fmt.Println(
+				c.Str(
+					" "+color.Hex()+" ",
+					nil,
+					&c.Color{
+						R: int(color.R * 255),
+						G: int(color.G * 255),
+						B: int(color.B * 255),
+					},
+				),
+			)
 		}
 
 		// NEXT: Write theme to file
 		// writeTheme(theme)
 
-		fmt.Println("AutoTheme Finished!", theme)
+		fmt.Println("AutoTheme Finished!\n", theme)
 	},
 }
 
