@@ -7,7 +7,7 @@ import (
 )
 
 // Calculates the split complementary harmony of a given base color (3 colors)
-func CalculateSplitComplementaryHarmony(baseColor colorful.Color) []colorful.Color {
+func SplitComplementaryHarmony(baseColor colorful.Color) []colorful.Color {
 	// Convert base color to HSL color space
 	h, s, l := baseColor.Hsl()
 

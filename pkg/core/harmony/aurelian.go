@@ -7,7 +7,7 @@ import (
 )
 
 // Calculates the aurelian harmony of a given base color (5 colors)
-func CalculateAurelianHarmony(baseColor colorful.Color) []colorful.Color {
+func AurelianHarmony(baseColor colorful.Color) []colorful.Color {
 	// Define the golden ratio
 	goldenRatio := (1 + math.Sqrt(5)) / 2
 	h, s, l := baseColor.Hsl()

@@ -7,7 +7,7 @@ import (
 )
 
 // Calculates the rectangle harmony of a given base color (5 colors)
-func CalculateRectangleHarmony(baseColor colorful.Color) []colorful.Color {
+func RectangleHarmony(baseColor colorful.Color) []colorful.Color {
 	// Convert base color to HSL color space
 	h, s, l := baseColor.Hsl()
 

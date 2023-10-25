@@ -7,7 +7,7 @@ import (
 )
 
 // Calculates the complementary harmony of a given base color (2 colors)
-func CalculateComplementaryHarmony(baseColor colorful.Color) []colorful.Color {
+func ComplementaryHarmony(baseColor colorful.Color) []colorful.Color {
 	// Convert base color to HSL color space
 	h, s, l := baseColor.Hsl()
 

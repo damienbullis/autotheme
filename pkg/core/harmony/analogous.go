@@ -7,7 +7,7 @@ import (
 )
 
 // Calculates the analogous harmony of a given base color (3 colors)
-func CalculateAnalogousHarmony(baseColor colorful.Color) []colorful.Color {
+func AnalogousHarmony(baseColor colorful.Color) []colorful.Color {
 	// Convert base color to HSL color space
 	h, s, l := baseColor.Hsl()
 

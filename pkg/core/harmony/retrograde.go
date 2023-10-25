@@ -7,7 +7,7 @@ import (
 )
 
 // Calculates the retrograde harmony of a given base color (5 colors)
-func CalculateRetrogradeHarmony(baseColor colorful.Color) []colorful.Color {
+func RetrogradeHarmony(baseColor colorful.Color) []colorful.Color {
 	analogousColors := make([]colorful.Color, 5)
 	length := len(analogousColors)
 	// Convert base color to HSL color space

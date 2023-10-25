@@ -7,7 +7,7 @@ import (
 )
 
 // Calculates the tetradic (double-complementary) harmony of a given base color (5 colors)
-func CalculateTetradicHarmony(baseColor colorful.Color) []colorful.Color {
+func TetradicHarmony(baseColor colorful.Color) []colorful.Color {
 	// Convert base color to HSL color space
 	h, s, l := baseColor.Hsl()
 

@@ -7,7 +7,7 @@ import (
 )
 
 // Calculates the square harmony of a given base color (4 colors)
-func CalculateSquareHarmony(baseColor colorful.Color) []colorful.Color {
+func SquareHarmony(baseColor colorful.Color) []colorful.Color {
 	// Convert base color to HSL color space
 	h, s, l := baseColor.Hsl()
 

@@ -7,7 +7,7 @@ import (
 )
 
 // Calculates the bi-polar harmony of a given base color. (5 colors)
-func CalculateBiPolarHarmony(baseColor colorful.Color) []colorful.Color {
+func BiPolarHarmony(baseColor colorful.Color) []colorful.Color {
 	// Convert base color to HSL color space
 	h, s, l := baseColor.Hsl()
 	const steps = 5

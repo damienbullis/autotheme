@@ -3,7 +3,7 @@ package harmony
 import "github.com/lucasb-eyer/go-colorful"
 
 // Calculates the lunar eclipse harmony of a given base color (6 colors)
-func CalculateLunarEclipseHarmony(baseColor colorful.Color) []colorful.Color {
+func LunarEclipseHarmony(baseColor colorful.Color) []colorful.Color {
 	// Generate deep, earthy tones
 	numColors := 3
 	deepTones := make([]colorful.Color, numColors)
