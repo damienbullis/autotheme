@@ -6,7 +6,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-// Calculates the rectangle harmony of a given base color (5 colors)
+// Calculates the rectangle harmony of a given base color (4 colors)
 func RectangleHarmony(baseColor colorful.Color) []colorful.Color {
 	// Convert base color to HSL color space
 	h, s, l := baseColor.Hsl()
@@ -24,5 +24,5 @@ func RectangleHarmony(baseColor colorful.Color) []colorful.Color {
 	rectColor3 := colorful.Hsl(hue1, s, l)
 	rectColor4 := colorful.Hsl(hue2, s, l)
 
-	return []colorful.Color{baseColor, rectColor1, rectColor2, rectColor3, rectColor4}
+	return []colorful.Color{rectColor1, rectColor2, rectColor3, rectColor4}
 }

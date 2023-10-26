@@ -10,7 +10,7 @@ func LunarEclipseHarmony(baseColor colorful.Color) []colorful.Color {
 	for i := 0; i < numColors; i++ {
 		t := float64(i) / float64(numColors-1)
 		l, u, v := baseColor.Luv()
-		deepTones[i] = baseColor.BlendLuv(colorful.Luv(l+.3, u, v), t)
+		deepTones[i] = baseColor.BlendLuv(colorful.Luv(l+.3, u, v).Clamped(), t)
 	}
 
 	// Generate subtle, muted grays
