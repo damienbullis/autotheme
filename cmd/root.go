@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"unicode/utf8"
 
 	"github.com/lucasb-eyer/go-colorful"
@@ -14,7 +15,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var TAB = "    "
+const TAB = "    "
 
 var rootCmd = &cobra.Command{
 	Use:   "autotheme",
@@ -66,26 +67,88 @@ var rootCmd = &cobra.Command{
 		// TODO: This is temp... remove this
 		hex, _ := colorful.Hex(_color)
 
-		colors := harmony.SplitComplementaryHarmony(hex)
-		for _, color := range colors {
-			fmt.Println(
-				c.Str(
-					" "+color.Hex()+" ",
-					nil,
-					&c.Color{
-						R: int(color.R * 255),
-						G: int(color.G * 255),
-						B: int(color.B * 255),
-					},
-				),
-			)
+		// Build harmony
+		colors := harmony.TriadicHarmony(hex)
+
+		// Build shades / tints / tones / offWB
+		for i, color := range colors {
+			h, s, _ := color.Hsl()
+			offW := colorful.Hsl(h, s, 0.9667)
+			offB := colorful.Hsl(h, s, 0.0333)
+			title := "\nColor " + strconv.Itoa(i+1) + " : " + color.Hex() + "     \n"
+			fmt.Println(title)
+			titleLen := utf8.RuneCountInString(title)
+			shadesStr := "Shades "
+			var _len = 0
+			shades := c.CalcShades(color, 5)
+			_len = utf8.RuneCountInString(shadesStr)
+			for i := 0; i < (titleLen - _len); i++ {
+				shadesStr += "-"
+			}
+			shadesStr += " "
+			for _, shade := range shades {
+				// cw := " W: " + strconv.FormatFloat(c.ContrastRatio(shade, offW), 'f', 2, 64) + " "
+				// cb := "B: " + strconv.FormatFloat(c.ContrastRatio(shade, offB), 'f', 2, 64) + " "
+				shadesStr += colorStr(shade)
+			}
+
+			fmt.Println(shadesStr)
+
+			tonesStr := "Tones "
+			tones := c.CalcTones(color, 5)
+			_len = utf8.RuneCountInString(tonesStr)
+			for i := 0; i < (titleLen - _len); i++ {
+				tonesStr += "-"
+			}
+			tonesStr += " "
+			for _, tone := range tones {
+				tonesStr += colorStr(tone)
+			}
+			fmt.Println(tonesStr)
+
+			tintsStr := "Tints "
+			_len = utf8.RuneCountInString(tintsStr)
+			tints := c.CalcTints(color, 5)
+			for i := 0; i < (titleLen - _len); i++ {
+				tintsStr += "-"
+			}
+			tintsStr += " "
+			for _, tint := range tints {
+				tintsStr += colorStr(tint)
+			}
+			fmt.Println(tintsStr)
+
+			offWBStr := "Off-White / Off-Black "
+			_len = utf8.RuneCountInString(offWBStr)
+			for i := 0; i < (titleLen - _len); i++ {
+				offWBStr += "-"
+			}
+			offWBStr += " "
+
+			offWBStr += colorStr(offW)
+			offWBStr += colorStr(offB)
+
+			fmt.Println(offWBStr)
+
 		}
 
 		// NEXT: Write theme to file
 		// writeTheme(theme)
 
-		fmt.Println("AutoTheme Finished!\n", theme)
+		fmt.Println("\nAutoTheme Finished!\n", theme)
 	},
+}
+
+func colorStr(color colorful.Color) string {
+	return c.Str(
+		" "+color.Hex()+" ",
+		nil,
+		&c.Color{
+			R: int(color.R * 255),
+			G: int(color.G * 255),
+			B: int(color.B * 255),
+		},
+	)
 }
 
 func init() {
