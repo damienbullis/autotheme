@@ -19,10 +19,16 @@ func TetradicHarmony(baseColor colorful.Color) []colorful.Color {
 	hue2 := math.Mod(complementaryHue+150, 360)
 
 	// Create tetradic colors
-	tetradicColor1 := colorful.Hsl(h, s, l)
+	tetradicColor1 := colorful.Hsl(h+30, s, l)
 	tetradicColor2 := colorful.Hsl(complementaryHue, s, l)
 	tetradicColor3 := colorful.Hsl(hue1, s, l)
 	tetradicColor4 := colorful.Hsl(hue2, s, l)
 
-	return []colorful.Color{baseColor, tetradicColor1, tetradicColor2, tetradicColor3, tetradicColor4}
+	return []colorful.Color{
+		baseColor,
+		tetradicColor1,
+		tetradicColor2,
+		tetradicColor3,
+		tetradicColor4,
+	}
 }
