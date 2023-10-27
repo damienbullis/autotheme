@@ -20,8 +20,8 @@ func Tone(color colorful.Color, factor float64) colorful.Color {
 	l, a, b := color.Lab()
 
 	// Adjust both "A" and "B" channels to maintain the color's hue
-	a = a * factor
-	b = b * factor
+	a = a * (1 - factor)
+	b = b * (1 - factor)
 
 	return colorful.Lab(l, a, b).Clamped()
 }
