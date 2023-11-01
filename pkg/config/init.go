@@ -2,16 +2,27 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Color    string
+	Harmony  string
 	Scalar   float64
 	Outdir   string
 	Darkmode bool
 	// TODO: Add more config options
+}
+
+func GetConfig() Config {
+	var config Config
+	if err := viper.Unmarshal(&config); err != nil {
+		fmt.Println("Error unmarshalling config:", err)
+	}
+
+	return config
 }
 
 func LoadConfig() {
@@ -19,19 +30,28 @@ func LoadConfig() {
 
 	viper.AutomaticEnv()
 
-	viper.SetConfigName(".autotheme")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("./config")
-	viper.AddConfigPath("./.config")
+	if cfgfile := viper.Get("config"); cfgfile != "" {
+		// Use config file from the flag.
+		fmt.Println("Using config file:", cfgfile)
+		viper.SetConfigFile(cfgfile.(string))
+	} else {
+		// Use default config file name and directory
+		viper.SetConfigName(".autotheme")
+		viper.AddConfigPath(".")
+		viper.AddConfigPath("./config")
+		viper.AddConfigPath("./.config")
+	}
 
+	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
 		// Handle errors reading the config file
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found
-			fmt.Println("Config file not found.")
+			fmt.Println("\nUsing zero-config...")
 
 		} else {
-			fmt.Println("Error found in config file at: ", viper.ConfigFileUsed(), "\n", err)
+			fmt.Println("\nError found in config file at: ", viper.ConfigFileUsed(), "\n", err)
+			os.Exit(0)
 		}
 
 	}
@@ -39,9 +59,12 @@ func LoadConfig() {
 	// Print config values
 	fmt.Println("\nConfig values:")
 	mapped := viper.AllSettings()
-
 	for key, value := range mapped {
-		fmt.Println(key, ":", value)
+		keyLen := len(key)
+		keyStr := key
+		for i := 0; i < 30-keyLen; i++ {
+			keyStr += " "
+		}
+		fmt.Println(keyStr, ":", value)
 	}
-	fmt.Println("")
 }
