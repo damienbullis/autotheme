@@ -24,7 +24,7 @@ func CheckHarmonyFlag() error {
 		if harmony != h.Complementary &&
 			harmony != h.Analogous &&
 			harmony != h.Triadic &&
-			harmony != h.Tetratic &&
+			harmony != h.Tetradic &&
 			harmony != h.SplitComplementary &&
 			harmony != h.Rectangle &&
 			harmony != h.Square &&
