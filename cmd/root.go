@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"autotheme/pkg/config"
+	"autotheme/pkg/core"
 	"autotheme/pkg/core/harmony"
 	c "autotheme/pkg/utils"
 	"fmt"
 	"os"
-	"strconv"
-	"unicode/utf8"
+	"time"
 
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/spf13/cobra"
@@ -41,106 +41,46 @@ var rootCmd = &cobra.Command{
 		}
 
 		// Build in memory theme
-		theme := "\n:root {" + "\n" + TAB + `--at-harmony-primary: ` + _color + ";\n" + "}\n"
+		// themeLine := TAB + `--at-harmony-primary: ` + _color + ";\n"
+		rootStart := "\n:root {\n"
+		rootTheme := ""
+		rootEnd := "}\n"
 
-		// NEXT: Build theme
-		// buildTheme(&theme)
+		config := config.GetConfig()
 
-		// TODO: This is temp... remove this
+		palette := core.GeneratePalette(&config)
+		fmt.Println(palette)
+
 		hex, _ := colorful.Hex(_color)
 
 		// Build harmony
 		colors := harmony.TriadicHarmony(hex)
 
-		// Build shades / tints / tones / offWB
-		for i, color := range colors {
-			h, s, _ := color.Hsl()
-			title := "\nColor " + strconv.Itoa(i+1) + " : " + color.Hex() + "     \n"
-			fmt.Println(title)
-			titleLen := utf8.RuneCountInString(title)
-
-			// Calculate shades / tints / tones / offWB
-			shades := c.CalcShades(color, 5)
-			tones := c.CalcTones(color, 5)
-			tints := c.CalcTints(color, 5)
-			offW := colorful.Hsl(h, s, 0.9667)
-			offB := colorful.Hsl(h, s, 0.0333)
-
-			// Printing
-			var _len = 0
-
-			shadesStr := "Shades "
-			_len = utf8.RuneCountInString(shadesStr)
-			for i := 0; i < (titleLen - _len); i++ {
-				shadesStr += "-"
-			}
-			shadesStr += " "
-			for _, shade := range shades {
-				shadesStr += colorStr(shade)
-			}
-			fmt.Println(shadesStr)
-
-			tonesStr := "Tones "
-			_len = utf8.RuneCountInString(tonesStr)
-			for i := 0; i < (titleLen - _len); i++ {
-				tonesStr += "-"
-			}
-			tonesStr += " "
-			for _, tone := range tones {
-				tonesStr += colorStr(tone)
-			}
-			fmt.Println(tonesStr)
-
-			tintsStr := "Tints "
-			_len = utf8.RuneCountInString(tintsStr)
-			for i := 0; i < (titleLen - _len); i++ {
-				tintsStr += "-"
-			}
-			tintsStr += " "
-			for _, tint := range tints {
-				tintsStr += colorStr(tint)
-			}
-			fmt.Println(tintsStr)
-
-			offWBStr := "Off-White / Off-Black "
-			_len = utf8.RuneCountInString(offWBStr)
-			for i := 0; i < (titleLen - _len); i++ {
-				offWBStr += "-"
-			}
-			offWBStr += " " + colorStr(offW) + colorStr(offB)
-			fmt.Println(offWBStr)
-		}
+		c.PreviewTheme(colors)
 
 		// NEXT: Write theme to file
 		// writeTheme(theme)
 
-		fmt.Println("\nAutoTheme Finished!\n", theme)
+		fmt.Println("\nAutoTheme Finished!\n", rootStart+rootTheme+rootEnd)
 	},
 }
 
-func colorStr(color colorful.Color) string {
-	return c.Str(
-		" "+color.Hex()+" ",
-		nil,
-		&c.Color{
-			R: int(color.R * 255),
-			G: int(color.G * 255),
-			B: int(color.B * 255),
-		},
-	)
-}
+var StartTime time.Time
 
 func init() {
+	StartTime = time.Now() // For timing the build
 	cobra.OnInitialize(config.LoadConfig)
 
 	// REFACTOR: Do we want to support flags for each value in the config file?
 	// Root command flags
-	rootCmd.Flags().StringP("color", "c", "", "Color for AutoTheme to use.\n    (default is randomly set at build time)")
-	rootCmd.Flags().StringP("harmony", "a", "complementary", "Harmony for AutoTheme to use.")
-	rootCmd.Flags().StringP("outdir", "o", "dist", "Output directory relative to current working directory for the generated CSS file")
+	rootCmd.Flags().StringP("config", "c", "", "Config file (default is ./.autotheme)")
+	rootCmd.Flags().StringP("primary", "p", "", "Primary hex color for AutoTheme to use.\n   (default is randomly set at build time)")
+	rootCmd.Flags().StringP("harmony", "a", "", "Harmony for AutoTheme to use.")
+	rootCmd.Flags().StringP("outdir", "o", "dist", "Output directory (default is dist)")
 
 	// Bind flags to viper
-	viper.BindPFlag("color", rootCmd.Flags().Lookup("color"))
+	viper.BindPFlag("config", rootCmd.Flags().Lookup("config"))
+	viper.BindPFlag("primary", rootCmd.Flags().Lookup("primary"))
 	viper.BindPFlag("harmony", rootCmd.Flags().Lookup("harmony"))
 	viper.BindPFlag("outdir", rootCmd.Flags().Lookup("outdir"))
 }
