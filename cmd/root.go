@@ -3,13 +3,10 @@ package cmd
 import (
 	"autotheme/pkg/config"
 	"autotheme/pkg/core"
-	"autotheme/pkg/core/harmony"
-	c "autotheme/pkg/utils"
 	"fmt"
 	"os"
 	"time"
 
-	"github.com/lucasb-eyer/go-colorful"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -34,12 +31,6 @@ var rootCmd = &cobra.Command{
 		fmt.Println("AutoTheme Starting...")
 		// Run root command here
 
-		_color := viper.GetString("color")
-		if _color == "" {
-			fmt.Println("No color provided... picking a random color!")
-			_color = c.GetRandomColor()
-		}
-
 		// Build in memory theme
 		// themeLine := TAB + `--at-harmony-primary: ` + _color + ";\n"
 		rootStart := "\n:root {\n"
@@ -49,14 +40,7 @@ var rootCmd = &cobra.Command{
 		config := config.GetConfig()
 
 		palette := core.GeneratePalette(&config)
-		fmt.Println(palette)
-
-		hex, _ := colorful.Hex(_color)
-
-		// Build harmony
-		colors := harmony.TriadicHarmony(hex)
-
-		c.PreviewTheme(colors)
+		fmt.Println("\nPalette: ", palette)
 
 		// NEXT: Write theme to file
 		// writeTheme(theme)
@@ -74,7 +58,7 @@ func init() {
 	// REFACTOR: Do we want to support flags for each value in the config file?
 	// Root command flags
 	rootCmd.Flags().StringP("config", "c", "", "Config file (default is ./.autotheme)")
-	rootCmd.Flags().StringP("primary", "p", "", "Primary hex color for AutoTheme to use.\n   (default is randomly set at build time)")
+	rootCmd.Flags().StringP("primary", "p", "", "Primary color (hex) for AutoTheme to use.\n   (default is randomly set at build time)")
 	rootCmd.Flags().StringP("harmony", "a", "", "Harmony for AutoTheme to use.")
 	rootCmd.Flags().StringP("outdir", "o", "dist", "Output directory (default is dist)")
 
