@@ -5,13 +5,12 @@ import (
 	"autotheme/pkg/core"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
-
-const TAB = "    "
 
 var rootCmd = &cobra.Command{
 	Use:     "autotheme",
@@ -28,34 +27,30 @@ var rootCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		startTime := time.Now()
 		fmt.Println("AutoTheme Starting...")
 		// Run root command here
-
-		// Build in memory theme
-		// themeLine := TAB + `--at-harmony-primary: ` + _color + ";\n"
-		rootStart := "\n:root {\n"
-		rootTheme := ""
-		rootEnd := "}\n"
-
 		config := config.GetConfig()
 
 		palette := core.GeneratePalette(&config)
-		fmt.Println("\nPalette: ", palette)
+		// spacing := core.GenerateSpacing(&config)
+		// text := core.GenerateText(&config)
+		// gradients := core.GenerateGradients(&config)
+		// shadows := core.GenerateShadows(&config)
+		// borders := core.GenerateBorders(&config)
+		// darkmode := core.GenerateDarkmode(&config)
 
-		// NEXT: Write theme to file
-		// writeTheme(theme)
+		// Write theme to file
+		// TODO: add rest of the options into the WriteTheme function
+		core.WriteTheme(palette, &config)
 
-		fmt.Println("\nAutoTheme Finished!\n", rootStart+rootTheme+rootEnd)
+		fmt.Println("\nAutoTheme Finished! (" + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms)")
 	},
 }
 
-var StartTime time.Time
-
 func init() {
-	StartTime = time.Now() // For timing the build
 	cobra.OnInitialize(config.LoadConfig)
 
-	// REFACTOR: Do we want to support flags for each value in the config file?
 	// Root command flags
 	rootCmd.Flags().StringP("config", "c", "", "Config file (default is ./.autotheme)")
 	rootCmd.Flags().StringP("primary", "p", "", "Primary color (hex) for AutoTheme to use.\n   (default is randomly set at build time)")
