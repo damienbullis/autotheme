@@ -74,10 +74,6 @@ func colorStr(color colorful.Color) string {
 	return Str(
 		" "+color.Hex()+" ",
 		nil,
-		&Color{
-			R: int(color.R * 255),
-			G: int(color.G * 255),
-			B: int(color.B * 255),
-		},
+		&color,
 	)
 }

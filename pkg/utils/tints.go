@@ -7,10 +7,9 @@ import (
 // Calculates X number of tints of a given color (X colors)
 func CalcTints(color colorful.Color, num int) []colorful.Color {
 	var tints []colorful.Color
-	tints = append(tints, color)
 
-	for i := 1; i < num; i++ {
-		tints = append(tints, Tint(color, float64(i)/float64(num-1)))
+	for i := 1; i < num+1; i++ {
+		tints = append(tints, Tint(color, float64(i)/float64(num+1)))
 	}
 
 	return tints

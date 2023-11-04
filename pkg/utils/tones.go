@@ -7,10 +7,9 @@ import (
 // Calculates X number of tones of a given color (X colors)
 func CalcTones(color colorful.Color, num int) []colorful.Color {
 	var tones []colorful.Color
-	tones = append(tones, color)
 
-	for i := 1; i < num; i++ {
-		tones = append(tones, Tone(color, float64(i)/float64(num)))
+	for i := 1; i < num+1; i++ {
+		tones = append(tones, Tone(color, float64(i)/float64(num+1)))
 	}
 
 	return tones
