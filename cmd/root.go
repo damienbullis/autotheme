@@ -41,7 +41,7 @@ var rootCmd = &cobra.Command{
 		// darkmode := core.GenerateDarkmode(&config)
 
 		// Write theme to file
-		// TODO: add rest of the options into the WriteTheme function
+		// NEXT: add rest of the options into the WriteTheme function
 		core.WriteTheme(palette, &config)
 
 		fmt.Println("\nAutoTheme Finished! (" + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms)")

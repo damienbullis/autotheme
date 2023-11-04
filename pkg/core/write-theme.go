@@ -8,7 +8,7 @@ import (
 
 const TAB = "    "
 
-func WriteTheme(palette PaletteVars, config *config.Config) {
+func WriteTheme(palette Palette, config *config.Config) {
 
 	// Build in memory theme
 	// themeLine := TAB + `--at-harmony-primary: ` + _color + ";\n"
