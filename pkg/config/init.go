@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	Color    string
+	Primary  string
 	Harmony  string
 	Scalar   float64
 	Outdir   string
@@ -17,12 +17,14 @@ type Config struct {
 }
 
 func GetConfig() Config {
-	var config Config
-	if err := viper.Unmarshal(&config); err != nil {
-		fmt.Println("Error unmarshalling config:", err)
+	return Config{
+		Primary:  viper.GetString("primary"),
+		Harmony:  viper.GetString("harmony"),
+		Scalar:   viper.GetFloat64("scalar"),
+		Outdir:   viper.GetString("outdir"),
+		Darkmode: viper.GetBool("darkmode"),
 	}
 
-	return config
 }
 
 func LoadConfig() {
