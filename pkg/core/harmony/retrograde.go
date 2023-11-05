@@ -16,7 +16,7 @@ func RetrogradeHarmony(baseColor colorful.Color) []colorful.Color {
 	// Calculate analogous colors
 	for i := 0; i < length; i++ {
 		t := float64(i) / float64(length-1)
-		angle := t * 30 // Adjust the angle as needed
+		angle := t * 115 // Adjust the angle as needed
 		analogousHue := math.Mod(h+angle, 360)
 		analogousColors[i] = colorful.Hsl(analogousHue, s, l)
 	}
