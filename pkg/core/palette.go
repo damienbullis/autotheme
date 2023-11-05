@@ -5,9 +5,6 @@ import (
 	h "autotheme/pkg/core/harmony"
 	"autotheme/pkg/utils"
 	"fmt"
-	"strconv"
-	"strings"
-	"unicode/utf8"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -23,8 +20,9 @@ type ColorType struct {
 
 type TextColorType struct {
 	Main     colorful.Color
-	Light    colorful.Color
 	Dark     colorful.Color
+	Light    colorful.Color
+	Neutral  colorful.Color
 	Contrast colorful.Color
 }
 
@@ -77,28 +75,25 @@ type Palette struct {
 
 func GeneratePalette(config *config.Config) Palette {
 	// Generate the theme
-	base, harmony := config.Primary, config.Harmony
 
 	// Build harmony
 	// check if color was supplied
-	if base == "" {
+	if config.Primary == "" {
 		fmt.Println("No color supplied, picking, random color...")
-		base = utils.GetRandomColor()
+		config.Primary = utils.GetRandomColor()
 	}
-	hex, _ := colorful.Hex(base)
+	hex, _ := colorful.Hex(config.Primary)
 
 	// check if harmony was supplied
-	if harmony == "" {
+	if config.Harmony == "" {
 		fmt.Println("No harmony supplied, picking random harmony...")
-		harmony = h.GetRandomHarmony()
+		config.Harmony = h.GetRandomHarmony()
 	}
-	fmt.Println("\nHarmony: ", harmony, " Color: ", hex.Hex())
-	// Get the harmony function
-	harmonyFn := h.GetHarmonyFn(harmony)
 
-	// Generate the palette based on the harmony
-	// starting with the primary color,
-	// followed by the harmony colors
+	// Get the harmony function
+	harmonyFn := h.GetHarmonyFn(config.Harmony)
+
+	// Generate the palette based on the harmony colors
 	var palette []ColorType
 	for _, color := range harmonyFn(hex) {
 		h, s, _ := color.Hsl()
@@ -112,47 +107,44 @@ func GeneratePalette(config *config.Config) Palette {
 		})
 	}
 
-	// We will use these to calculate the rest of the contrast ratios
 	bestOffW, bestOffB := getOffWB(palette, hex)
 
-	// NEXT: make sure to remove this later or handle better
-	printColorStats(palette, bestOffW, bestOffB)
-
 	results := Palette{
-		Light:   buildModeStruct(palette, bestOffW),
-		Dark:    buildModeStruct(palette, bestOffB),
+		Light:   buildModeStruct(palette, bestOffW, "light"),
+		Dark:    buildModeStruct(palette, bestOffB, "dark"),
 		Harmony: buildHarmonyStruct(palette),
 	}
 
 	return results
 }
 
-func buildModeStruct(palette []ColorType, offColor colorful.Color) ModeType {
-	var mode ModeType
-	var temp TextColorType
+func buildModeStruct(palette []ColorType, offColor colorful.Color, mode string) ModeType {
+	result := ModeType{
+		Background: offColor,
+	}
 	for i, color := range palette {
 		switch i {
 		case 0:
-			mode.Background = color.Color
-			mode.Harmony0 = buildTextColorStruct(color, offColor)
+			result.Harmony0 = buildTextColorStruct(color, offColor, mode)
 		case 1:
-			mode.Harmony1 = buildTextColorStruct(color, offColor)
+			result.Harmony1 = buildTextColorStruct(color, offColor, mode)
 		case 2:
-			temp = buildTextColorStruct(color, offColor)
-			mode.Harmony2 = &temp
+			temp := buildTextColorStruct(color, offColor, mode)
+			result.Harmony2 = &temp
 		case 3:
-			temp = buildTextColorStruct(color, offColor)
-			mode.Harmony3 = &temp
+			temp := buildTextColorStruct(color, offColor, mode)
+			result.Harmony3 = &temp
 		case 4:
-			temp = buildTextColorStruct(color, offColor)
-			mode.Harmony4 = &temp
+			temp := buildTextColorStruct(color, offColor, mode)
+			result.Harmony4 = &temp
 		case 5:
-			temp = buildTextColorStruct(color, offColor)
-			mode.Harmony5 = &temp
+			temp := buildTextColorStruct(color, offColor, mode)
+			result.Harmony5 = &temp
 		}
+
 	}
 
-	return mode
+	return result
 }
 
 /*
@@ -171,38 +163,45 @@ func makeAccessible(color, offColor colorful.Color) colorful.Color {
 
 		// if the off color is light, go darker
 		if l > ol {
-			return makeAccessible(colorful.Hsl(h, s, l+0.1).Clamped(), offColor)
+			return makeAccessible(colorful.Hsl(h, s, l+0.1), offColor)
 		}
 
 		// if the off color is dark, go lighter
-		return makeAccessible(colorful.Hsl(h, s, l-0.1).Clamped(), offColor)
+		return makeAccessible(colorful.Hsl(h, s, l-0.1), offColor)
 	}
 }
 
-func buildTextColorStruct(color ColorType, offColor colorful.Color) TextColorType {
-	results := TextColorType{
-		Main:     makeAccessible(color.Color, offColor),
-		Contrast: offColor,
+func buildTextColorStruct(color ColorType, offColor colorful.Color, mode string) TextColorType {
+	var contrast colorful.Color
+	if mode == "light" {
+		contrast = color.OffB
+	} else if mode == "dark" {
+		contrast = color.OffW
 	}
+	return TextColorType{
+		Main:     makeAccessible(color.Color, offColor),
+		Dark:     getTextColor(color.Shades, offColor),
+		Light:    getTextColor(color.Tints, offColor),
+		Neutral:  getTextColor(color.Tones, offColor),
+		Contrast: contrast,
+	}
+}
 
-	for _, shade := range color.Shades {
-		// check the contrast break on the first shade with 7:1
-		if utils.ContrastRatio(shade, offColor) >= 7 {
-			results.Dark = shade
-			break
+func getTextColor(colors []colorful.Color, offColor colorful.Color) colorful.Color {
+	for _, color := range colors {
+		// Return the first color that has a contrast ratio of 7:1
+
+		if cr := utils.ContrastRatio(color, offColor); cr >= 7 {
+			return color
 		}
 	}
-	// Make sure ww have a color
-	if results.Dark.Hex() == "" {
-		results.Dark = makeAccessible(color.Shades[0], offColor)
-	}
 
-	return results
+	// Make sure we have a color
+	return makeAccessible(colors[0], offColor)
 }
 
 func buildHarmonyStruct(palette []ColorType) HarmonyType {
 	var harmony HarmonyType
-	var temp HarmonyColorType
 	for i, color := range palette {
 		switch i {
 		case 0:
@@ -210,16 +209,16 @@ func buildHarmonyStruct(palette []ColorType) HarmonyType {
 		case 1:
 			harmony.Harmony1 = buildHarmonyColorStruct(color)
 		case 2:
-			temp = buildHarmonyColorStruct(color)
+			temp := buildHarmonyColorStruct(color)
 			harmony.Harmony2 = &temp
 		case 3:
-			temp = buildHarmonyColorStruct(color)
+			temp := buildHarmonyColorStruct(color)
 			harmony.Harmony3 = &temp
 		case 4:
-			temp = buildHarmonyColorStruct(color)
+			temp := buildHarmonyColorStruct(color)
 			harmony.Harmony4 = &temp
 		case 5:
-			temp = buildHarmonyColorStruct(color)
+			temp := buildHarmonyColorStruct(color)
 			harmony.Harmony5 = &temp
 		}
 	}
@@ -227,6 +226,14 @@ func buildHarmonyStruct(palette []ColorType) HarmonyType {
 	return harmony
 }
 
+/*
+Build the harmony color struct
+
+  - Main: the main color
+  - Dark1-5: the 5 shades of the main color
+  - Gray1-4: the 4 tones of the main color
+  - Light1-5: the 5 tints of the main color
+*/
 func buildHarmonyColorStruct(color ColorType) HarmonyColorType {
 	results := HarmonyColorType{
 		Main: color.Color,
@@ -278,8 +285,8 @@ func buildHarmonyColorStruct(color ColorType) HarmonyColorType {
 	return results
 }
 
+// Find the best off white and black based on the color provided
 func getOffWB(palette []ColorType, hex colorful.Color) (colorful.Color, colorful.Color) {
-	// Find the best off white and black colors based on the primary color
 	var bestOffW, bestOffB colorful.Color
 	var bestOffWContrast, bestOffBContrast float64
 	for i, color := range palette {
@@ -298,61 +305,4 @@ func getOffWB(palette []ColorType, hex colorful.Color) (colorful.Color, colorful
 		}
 	}
 	return bestOffW, bestOffB
-}
-
-func printColorStats(palette []ColorType, bestOffW, bestOffB colorful.Color) {
-	seperator := strings.Join(make([]string, 100), "-") + "\n"
-	for _, color := range palette {
-		fmt.Println(seperator)
-
-		fmt.Println(minLineLength("Color") + utils.Str(" "+color.Color.Hex()+" ", nil, &color.Color) + minLineLength(prettyContrast(color.Color, bestOffW, bestOffB)))
-		fmt.Println(minLineLength("Off W") + utils.Str(" "+color.OffW.Hex()+" ", nil, &color.OffW) + minLineLength(prettyContrast(color.OffW, bestOffW, bestOffB)))
-		fmt.Println(minLineLength("Off B") + utils.Str(" "+color.OffB.Hex()+" ", nil, &color.OffB) + minLineLength(prettyContrast(color.OffB, bestOffW, bestOffB)))
-		fmt.Println()
-
-		var line1, line2, line3 string
-		for _, shade := range color.Shades {
-			contrast := prettyContrast(shade, bestOffW, bestOffB)
-			line1 += minLineLength("Shades")
-			line1 += prettyOtherColors(shade, minLineLength(contrast))
-
-		}
-		for _, tone := range color.Tones {
-			contrast := prettyContrast(tone, bestOffW, bestOffB)
-			line2 += minLineLength("Tones")
-			line2 += prettyOtherColors(tone, minLineLength(contrast))
-
-		}
-		for _, tint := range color.Tints {
-			contrast := prettyContrast(tint, bestOffW, bestOffB)
-			line3 += minLineLength("Tints")
-			line3 += prettyOtherColors(tint, minLineLength(contrast))
-
-		}
-		fmt.Println(line1)
-		fmt.Println(line2)
-		fmt.Println(line3 + "\n")
-	}
-}
-
-func prettyContrast(color, offW, offB colorful.Color) string {
-	return " L: " + prettyFloat(utils.ContrastRatio(color, offW)) + " D: " + prettyFloat(utils.ContrastRatio(color, offB)) + " "
-}
-
-func minLineLength(line string) string {
-	if utf8.RuneCountInString(line) < 20 {
-		for i := 0; i < 20-utf8.RuneCountInString(line); i++ {
-			line += " "
-		}
-	}
-
-	return line
-}
-
-func prettyOtherColors(color colorful.Color, text string) string {
-	return utils.Str(" "+color.Hex()+" ", nil, &color) + text
-}
-
-func prettyFloat(f float64) string {
-	return strconv.FormatFloat(f, 'f', 2, 64)
 }
