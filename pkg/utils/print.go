@@ -31,3 +31,13 @@ func prettyPrintStruct(v reflect.Value) {
 		fmt.Printf("%s: %v\n", field.Name, value.Interface())
 	}
 }
+
+func PrintMap(m map[string]interface{}) {
+	for key, value := range m {
+		l := len(key)
+		for i := 0; i < 30-l; i++ {
+			key += " "
+		}
+		fmt.Println("    "+key, ":", value)
+	}
+}

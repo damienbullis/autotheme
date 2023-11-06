@@ -1,6 +1,7 @@
 package config
 
 import (
+	"autotheme/pkg/utils"
 	"fmt"
 	"os"
 
@@ -50,23 +51,16 @@ func LoadConfig() {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found
 			fmt.Println("\nUsing zero-config...")
-
 		} else {
 			fmt.Println("\nError found in config file at: ", viper.ConfigFileUsed(), "\n", err)
 			os.Exit(0)
 		}
-
 	}
 
-	// Print config values
+	// NEXT: Remove this later
 	fmt.Println("\nConfig values:")
+	fmt.Println()
 	mapped := viper.AllSettings()
-	for key, value := range mapped {
-		keyLen := len(key)
-		keyStr := key
-		for i := 0; i < 30-keyLen; i++ {
-			keyStr += " "
-		}
-		fmt.Println(keyStr, ":", value)
-	}
+	utils.PrintMap(mapped)
+	fmt.Println()
 }
