@@ -32,7 +32,7 @@ func PrintPalette(palette *Palette) {
 		if color == nil {
 			continue
 		}
-		str := TAB + strconv.Itoa(i) + ": "
+		str := TAB + strconv.Itoa(i+1) + ": "
 		str += utils.Str("         ", nil, &color.Light)
 		str += utils.Str(" "+color.Main.Hex()+" ", nil, &color.Main)
 		str += utils.Str("         ", nil, &color.Dark)
@@ -49,7 +49,7 @@ func PrintPalette(palette *Palette) {
 			continue
 		}
 
-		str := TAB + strconv.Itoa(i) + ": "
+		str := TAB + strconv.Itoa(i+1) + ": "
 		str += utils.Str("         ", nil, &color.Light)
 		str += utils.Str(" "+color.Main.Hex()+" ", nil, &color.Main)
 		str += utils.Str("         ", nil, &color.Dark)
@@ -76,7 +76,7 @@ func PrintPalette(palette *Palette) {
 			continue
 		}
 
-		str, str2 := TAB+strconv.Itoa(i)+": ", "\n"+TAB+"   "
+		str, str2 := TAB+strconv.Itoa(i+1)+": ", "\n"+TAB+"   "
 
 		str += utils.Str("         ", nil, &color.Dark5)
 		str += utils.Str("         ", nil, &color.Dark4)

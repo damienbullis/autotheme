@@ -73,15 +73,14 @@ type Palette struct {
 // [WCAG 2.2 AAA](https://www.w3.org/TR/WCAG22/#contrast-minimum)
 // Text = 7:1 / Large Text = 4.5:1
 
+// Builds the palette based on the color and harmony provided
 func GeneratePalette(config *config.Config) Palette {
-	// Generate the theme
-
-	// Build harmony
 	// check if color was supplied
 	if config.Primary == "" {
 		fmt.Println("No color supplied, picking, random color...")
 		config.Primary = utils.GetRandomColor()
 	}
+
 	hex, _ := colorful.Hex(config.Primary)
 
 	// check if harmony was supplied

@@ -58,7 +58,6 @@ func LoadConfig() {
 	}
 
 	// NEXT: Remove this later
-	fmt.Println("\nConfig values:")
 	fmt.Println()
 	mapped := viper.AllSettings()
 	utils.PrintMap(mapped)

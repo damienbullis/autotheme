@@ -33,12 +33,11 @@ var rootCmd = &cobra.Command{
 		config := config.GetConfig()
 
 		palette := core.GeneratePalette(&config)
-		// spacing := core.GenerateSpacing(&config)
-		// text := core.GenerateText(&config)
-		// gradients := core.GenerateGradients(&config)
-		// shadows := core.GenerateShadows(&config)
-		// borders := core.GenerateBorders(&config)
-		// darkmode := core.GenerateDarkmode(&config)
+		core.GenerateSpacing(&config)
+		core.GenerateText(&config)
+		core.GenerateNoise(&config)
+		core.GenerateFilters(&config, &palette)
+		core.GenerateGradients(&config, &palette)
 
 		// Write theme to file
 		// NEXT: add rest of the options into the WriteTheme function
@@ -53,15 +52,24 @@ func init() {
 
 	// Root command flags
 	rootCmd.Flags().StringP("config", "c", "", "Config file (default is ./.autotheme)")
-	rootCmd.Flags().StringP("primary", "p", "", "Primary color (hex) for AutoTheme to use.\n   (default is randomly set at build time)")
-	rootCmd.Flags().StringP("harmony", "a", "", "Harmony for AutoTheme to use.")
-	rootCmd.Flags().StringP("outdir", "o", "dist", "Output directory (default is dist)")
+	rootCmd.Flags().StringP("primary", "p", "", "Primary color (hex) for AutoTheme to use. If not supplied, AutoTheme will pick a random color.")
+	rootCmd.Flags().StringP("harmony", "a", "", "Harmony for AutoTheme to use. If not supplied, AutoTheme will pick a random harmony")
+	rootCmd.Flags().StringP("output", "o", "src/index.css", "Output file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file.")
+	rootCmd.Flags().BoolP("visualize", "v", false, "Generate a interactive preview of the theme.")
 
 	// Bind flags to viper
 	viper.BindPFlag("config", rootCmd.Flags().Lookup("config"))
 	viper.BindPFlag("primary", rootCmd.Flags().Lookup("primary"))
 	viper.BindPFlag("harmony", rootCmd.Flags().Lookup("harmony"))
-	viper.BindPFlag("outdir", rootCmd.Flags().Lookup("outdir"))
+	viper.BindPFlag("output", rootCmd.Flags().Lookup("output"))
+	viper.BindPFlag("visualize", rootCmd.Flags().Lookup("visualize"))
+
+	// Utility options
+	viper.SetDefault("noise", true)
+	viper.SetDefault("filters", true)
+	viper.SetDefault("gradients", true)
+	viper.SetDefault("prefix", "at")
+	// viper.SetDefault()
 }
 
 func Execute() {
