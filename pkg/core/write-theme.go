@@ -18,11 +18,11 @@ func printSpacing(spacing []*Spacing) {
 	fmt.Println()
 }
 
-func WriteTheme(palette *Palette, config *config.Config, spacing *[8]*Spacing) {
+func WriteTheme(palette *Palette, config *config.Config, spacing *[]*Spacing) {
 	fmt.Printf("\nGenerating your " + config.Harmony + " theme...\n")
 
 	PrintPalette(palette)
-	printSpacing(spacing[:])
+	printSpacing(*spacing)
 
 	// Build in memory theme
 	// themeLine := TAB + `--at-harmony-primary: ` + _color + ";\n"

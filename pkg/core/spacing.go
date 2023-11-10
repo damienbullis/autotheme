@@ -11,22 +11,20 @@ type Spacing struct {
 }
 
 // GenerateSpacing generates the spacing for the theme
-func GenerateSpacing(config *config.Config) [8]*Spacing {
+func GenerateSpacing(config *config.Config) []*Spacing {
 	scalar := config.Scalar
 	if scalar == 0.0 {
-		fmt.Println("No scalar provided, using default...")
 		scalar = (1 + math.Sqrt(5)) / 2
+		fmt.Println("No scalar provided, using default...(" + fmt.Sprintf("%f", scalar) + ")")
 	}
 
-	fmt.Println("\n» Scalar: " + fmt.Sprintf("%f", scalar) + "\n")
-	const root = 16.0
-
-	spacing := [8]*Spacing{
+	const root = 4.0
+	spacing := []*Spacing{
 		{Scale: root / scalar},
 		{Scale: root},
 	}
 
-	for i := 2; i < 8; i++ {
+	for i := 2; i < 10; i++ {
 		spacing[i] = &Spacing{Scale: root * calcScale(scalar, i-1)}
 	}
 
