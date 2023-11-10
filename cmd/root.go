@@ -33,7 +33,7 @@ var rootCmd = &cobra.Command{
 		config := config.GetConfig()
 
 		palette := core.GeneratePalette(&config)
-		core.GenerateSpacing(&config)
+		spacing := core.GenerateSpacing(&config)
 		core.GenerateText(&config)
 		core.GenerateNoise(&config)
 		core.GenerateFilters(&config, &palette)
@@ -41,7 +41,7 @@ var rootCmd = &cobra.Command{
 
 		// Write theme to file
 		// NEXT: add rest of the options into the WriteTheme function
-		core.WriteTheme(&palette, &config)
+		core.WriteTheme(&palette, &config, &spacing)
 
 		fmt.Println("\nAutoTheme Finished! (" + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms)")
 	},
@@ -69,7 +69,7 @@ func init() {
 	viper.SetDefault("filters", true)
 	viper.SetDefault("gradients", true)
 	viper.SetDefault("prefix", "at")
-	// viper.SetDefault()
+	viper.SetDefault("scalar", 0.0)
 }
 
 func Execute() {
