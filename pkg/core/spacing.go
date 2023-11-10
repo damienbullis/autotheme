@@ -2,31 +2,21 @@ package core
 
 import (
 	"autotheme/pkg/config"
-	"fmt"
-	"math"
 )
 
-// GenerateScale generates the spacing for the theme
-func GenerateScale(config *config.Config) []float64 {
-	scalar := config.Scalar
-	if scalar == 0.0 {
-		scalar = (1 + math.Sqrt(5)) / 2
-		fmt.Println("No scalar provided, using default...(" + fmt.Sprintf("%f", scalar) + ")")
-	}
+func GenerateSpacing(config *config.Config, scaling *[]float64) []float64 {
+	const root = 4.0
 
-	const root = 1.0
-	spacing := [10]float64{
-		(root / scalar),
-		root,
-	}
-
-	for i := 2; i < 10; i++ {
-		spacing[i] = root * calcScale(scalar, i-1)
+	spacing := [8]float64{
+		(*scaling)[0] * root,
+		(*scaling)[1] * root,
+		(*scaling)[2] * root,
+		(*scaling)[3] * root,
+		(*scaling)[4] * root,
+		(*scaling)[5] * root,
+		(*scaling)[6] * root,
+		(*scaling)[7] * root,
 	}
 
 	return spacing[:]
-}
-
-func calcScale(scalar float64, power int) float64 {
-	return math.Pow(scalar, float64(power))
 }

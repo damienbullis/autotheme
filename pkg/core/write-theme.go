@@ -9,20 +9,13 @@ import (
 
 const TAB = "    "
 
-func printScaling(spacing []float64) {
-	fmt.Println("» Scaling:")
-	fmt.Println()
-	for i, space := range spacing {
-		fmt.Println(TAB + fmt.Sprintf("%d", i+1) + ": " + fmt.Sprintf("%f", space))
-	}
-	fmt.Println()
-}
-
-func WriteTheme(palette *Palette, config *config.Config, scaling *[]float64) {
+func WriteTheme(
+	palette *Palette,
+	config *config.Config,
+	spacing *[]float64,
+	text *[]float64,
+) {
 	fmt.Printf("\nGenerating your " + config.Harmony + " theme...\n")
-
-	PrintPalette(palette)
-	printScaling(*scaling)
 
 	// Build in memory theme
 	// themeLine := TAB + `--at-harmony-primary: ` + _color + ";\n"
