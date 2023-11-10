@@ -9,20 +9,23 @@ import (
 )
 
 func PrintPalette(palette *Palette) {
-	light := []*TextColorType{}
-	dark := []*TextColorType{}
-	light = append(light, &palette.Light.Harmony0)
-	light = append(light, &palette.Light.Harmony1)
-	light = append(light, palette.Light.Harmony2)
-	light = append(light, palette.Light.Harmony3)
-	light = append(light, palette.Light.Harmony4)
-	light = append(light, palette.Light.Harmony5)
-	dark = append(dark, &palette.Dark.Harmony0)
-	dark = append(dark, &palette.Dark.Harmony1)
-	dark = append(dark, palette.Dark.Harmony2)
-	dark = append(dark, palette.Dark.Harmony3)
-	dark = append(dark, palette.Dark.Harmony4)
-	dark = append(dark, palette.Dark.Harmony5)
+	light := []*TextColorType{
+		&palette.Light.Harmony0,
+		&palette.Light.Harmony1,
+		palette.Light.Harmony2,
+		palette.Light.Harmony3,
+		palette.Light.Harmony4,
+		palette.Light.Harmony5,
+	}
+	dark := []*TextColorType{
+		&palette.Dark.Harmony0,
+		&palette.Dark.Harmony1,
+		palette.Dark.Harmony2,
+		palette.Dark.Harmony3,
+		palette.Dark.Harmony4,
+		palette.Dark.Harmony5,
+	}
+
 	fmt.Println("\n» Text Colors:")
 	fmt.Println(utils.Str(TAB+"These colors should be used for text elements (text, icons, etc.)", &colorful.Color{R: 0.5, G: 0.5, B: 0.5}, nil))
 

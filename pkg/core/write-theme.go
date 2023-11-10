@@ -9,10 +9,20 @@ import (
 
 const TAB = "    "
 
-func WriteTheme(palette *Palette, config *config.Config) {
+func printSpacing(spacing []*Spacing) {
+	fmt.Println("» Spacing:")
+	fmt.Println()
+	for i, space := range spacing {
+		fmt.Println(TAB + fmt.Sprintf("%d", i+1) + ": " + fmt.Sprintf("%f", space.Scale))
+	}
+	fmt.Println()
+}
+
+func WriteTheme(palette *Palette, config *config.Config, spacing *[8]*Spacing) {
 	fmt.Printf("\nGenerating your " + config.Harmony + " theme...\n")
 
 	PrintPalette(palette)
+	printSpacing(spacing[:])
 
 	// Build in memory theme
 	// themeLine := TAB + `--at-harmony-primary: ` + _color + ";\n"
