@@ -14,6 +14,7 @@ type Config struct {
 	Scalar   float64
 	Outdir   string
 	Darkmode bool
+	Noise    interface{}
 	// TODO: Add more config options
 }
 
@@ -24,6 +25,7 @@ func GetConfig() Config {
 		Scalar:   viper.GetFloat64("scalar"),
 		Outdir:   viper.GetString("outdir"),
 		Darkmode: viper.GetBool("darkmode"),
+		Noise:    viper.GetInt("noise"),
 	}
 
 }

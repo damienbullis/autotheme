@@ -43,7 +43,8 @@ var rootCmd = &cobra.Command{
 		core.PrintSpacing(&spacing)
 		core.PrintText(&text)
 
-		core.GenerateNoise(&config)
+		noise := core.GenerateNoise(&config)
+		core.PrintNoise(&noise)
 		core.GenerateFilters(&config, &palette)
 		core.GenerateGradients(&config, &palette)
 
