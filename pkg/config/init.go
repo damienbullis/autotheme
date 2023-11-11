@@ -12,7 +12,7 @@ type Config struct {
 	Primary  string
 	Harmony  string
 	Scalar   float64
-	Outdir   string
+	Output   string
 	Darkmode bool
 	Noise    interface{}
 	// TODO: Add more config options
@@ -23,9 +23,9 @@ func GetConfig() Config {
 		Primary:  viper.GetString("primary"),
 		Harmony:  viper.GetString("harmony"),
 		Scalar:   viper.GetFloat64("scalar"),
-		Outdir:   viper.GetString("outdir"),
+		Output:   viper.GetString("output"),
 		Darkmode: viper.GetBool("darkmode"),
-		Noise:    viper.GetInt("noise"),
+		Noise:    viper.GetBool("noise"),
 	}
 
 }

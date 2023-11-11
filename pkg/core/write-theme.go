@@ -15,7 +15,7 @@ func WriteTheme(
 	spacing *[]float64,
 	text *[]float64,
 ) {
-	fmt.Printf("\nGenerating your " + config.Harmony + " theme...\n")
+	fmt.Printf("\nWriting your " + config.Harmony + " theme to " + config.Output + "...\n")
 
 	// Build in memory theme
 	// themeLine := TAB + `--at-harmony-primary: ` + _color + ";\n"
