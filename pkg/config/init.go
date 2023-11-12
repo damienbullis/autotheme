@@ -9,23 +9,25 @@ import (
 )
 
 type Config struct {
-	Primary  string
-	Harmony  string
-	Scalar   float64
-	Output   string
-	Darkmode bool
-	Noise    interface{}
+	Primary   string
+	Harmony   string
+	Scalar    float64
+	Output    string
+	Darkmode  bool
+	Noise     interface{}
+	Gradients bool
 	// TODO: Add more config options
 }
 
 func GetConfig() Config {
 	return Config{
-		Primary:  viper.GetString("primary"),
-		Harmony:  viper.GetString("harmony"),
-		Scalar:   viper.GetFloat64("scalar"),
-		Output:   viper.GetString("output"),
-		Darkmode: viper.GetBool("darkmode"),
-		Noise:    viper.GetBool("noise"),
+		Primary:   viper.GetString("primary"),
+		Harmony:   viper.GetString("harmony"),
+		Scalar:    viper.GetFloat64("scalar"),
+		Output:    viper.GetString("output"),
+		Darkmode:  viper.GetBool("darkmode"),
+		Noise:     viper.GetBool("noise"),
+		Gradients: viper.GetBool("gradients"),
 	}
 
 }

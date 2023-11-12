@@ -5,6 +5,10 @@ import (
 )
 
 func GenerateGradients(config *config.Config, palette *Palette) []string {
+	if !config.Gradients {
+		return []string{}
+	}
+
 	main := &palette.Harmony.Harmony0.Main
 	harmony := []*HarmonyColorType{
 		&palette.Harmony.Harmony1,

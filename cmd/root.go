@@ -47,10 +47,7 @@ var rootCmd = &cobra.Command{
 		core.PrintNoise(&noise)
 		core.GenerateFilters(&config, &palette)
 		gradients := core.GenerateGradients(&config, &palette)
-
-		for _, gradient := range gradients {
-			fmt.Println(gradient)
-		}
+		core.PrintGradients(&gradients)
 
 		// Write theme to file
 		// NEXT: add rest of the options into the WriteTheme function
