@@ -3,6 +3,7 @@ package cmd
 import (
 	"autotheme/pkg/config"
 	"autotheme/pkg/core"
+	"autotheme/pkg/core/print"
 	"fmt"
 	"os"
 	"strconv"
@@ -33,21 +34,21 @@ var rootCmd = &cobra.Command{
 		config := config.GetConfig()
 
 		palette := core.GeneratePalette(&config)
-		core.PrintPalette(&palette)
+		print.PrintPalette(&palette)
 
 		scale := core.GenerateScale(&config)
-		core.PrintScaling(&scale)
+		print.PrintScaling(&scale)
 
 		spacing := core.GenerateSpacing(&config, &scale)
 		text := core.GenerateText(&config, &scale)
-		core.PrintSpacing(&spacing)
-		core.PrintText(&text)
+		print.PrintSpacing(&spacing)
+		print.PrintText(&text)
 
 		noise := core.GenerateNoise(&config)
-		core.PrintNoise(&noise)
+		print.PrintNoise(&noise)
 		core.GenerateFilters(&config, &palette)
 		gradients := core.GenerateGradients(&config, &palette)
-		core.PrintGradients(&gradients)
+		print.PrintGradients(&gradients)
 
 		// Write theme to file
 		// NEXT: add rest of the options into the WriteTheme function
