@@ -64,18 +64,11 @@ func generateRandomNumber(min, max int) int {
 }
 
 func GenerateNoise(config *config.Config) string {
-	var noise Noise
-	if config.Noise == false {
+	if !config.Noise {
 		return ""
 	}
 
-	if config.Noise == FractalNoise {
-		noise = FractalNoise
-	} else {
-		noise = Turbulence
-	}
-
-	svg := generateSVG(noise, generateRandomFloat(0.63, 0.78), generateRandomNumber(2, 5))
+	svg := generateSVG(FractalNoise, generateRandomFloat(0.63, 0.78), generateRandomNumber(2, 5))
 
 	// Add the SVG header
 	return "data:image/svg+xml," + svg
