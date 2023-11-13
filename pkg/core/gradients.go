@@ -2,11 +2,13 @@ package core
 
 import (
 	"autotheme/pkg/config"
+
+	"github.com/lucasb-eyer/go-colorful"
 )
 
-func GenerateGradients(config *config.Config, palette *Palette) []string {
+func GenerateGradients(config *config.Config, palette *Palette) [][]*colorful.Color {
 	if !config.Gradients {
-		return []string{}
+		return [][]*colorful.Color{}
 	}
 
 	main := &palette.Harmony.Harmony0.Main
@@ -18,17 +20,30 @@ func GenerateGradients(config *config.Config, palette *Palette) []string {
 		palette.Harmony.Harmony5,
 	}
 
-	var gradients []string
-	for _, color := range harmony {
-		if color == nil {
+	var gradients [][]*colorful.Color
+	for _, c := range harmony {
+		if c == nil {
 			continue
 		}
 
 		// Generate gradients
-		gradient := "in Oklab, " + main.Hex() + ", " + color.Main.Hex()
+		gradient := []*colorful.Color{
+			main,
+			&c.Main,
+		}
 		gradients = append(gradients, gradient)
 	}
-	rainbow := "in Oklab, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF"
+
+	// Add rainbow gradient
+	rainbow := []*colorful.Color{
+		{R: 1, G: 0, B: 0},
+		{R: 1, G: 0.5, B: 0},
+		{R: 1, G: 1, B: 0},
+		{R: 0, G: 1, B: 0},
+		{R: 0, G: 0, B: 1},
+		{R: 0.29, G: 0, B: 0.51},
+		{R: 0.55, G: 0, B: 1},
+	}
 	gradients = append(gradients, rainbow)
 
 	return gradients

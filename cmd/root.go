@@ -34,25 +34,23 @@ var rootCmd = &cobra.Command{
 		config := config.GetConfig()
 
 		palette := core.GeneratePalette(&config)
-		print.PrintPalette(&palette)
-
 		scale := core.GenerateScale(&config)
-		print.PrintScaling(&scale)
-
 		spacing := core.GenerateSpacing(&config, &scale)
 		text := core.GenerateText(&config, &scale)
+		noise := core.GenerateNoise(&config)
+		// core.GenerateFilters(&config, &palette) // TODO: finish filters
+		gradients := core.GenerateGradients(&config, &palette)
+
+		print.PrintPalette(&palette)
+		print.PrintScaling(&scale)
 		print.PrintSpacing(&spacing)
 		print.PrintText(&text)
-
-		noise := core.GenerateNoise(&config)
 		print.PrintNoise(&noise)
-		core.GenerateFilters(&config, &palette)
-		gradients := core.GenerateGradients(&config, &palette)
 		print.PrintGradients(&gradients)
 
 		// Write theme to file
 		// NEXT: add rest of the options into the WriteTheme function
-		core.WriteTheme(&palette, &config, &spacing, &text)
+		core.WriteTheme(&config, &palette, &spacing, &text, &noise, &gradients)
 
 		fmt.Println("\nAutoTheme Finished! (" + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms)")
 	},

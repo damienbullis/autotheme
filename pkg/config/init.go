@@ -14,8 +14,9 @@ type Config struct {
 	Scalar    float64
 	Output    string
 	Darkmode  bool
-	Noise     interface{}
+	Noise     bool
 	Gradients bool
+	Prefix    string
 	// TODO: Add more config options
 }
 
@@ -28,6 +29,7 @@ func GetConfig() Config {
 		Darkmode:  viper.GetBool("darkmode"),
 		Noise:     viper.GetBool("noise"),
 		Gradients: viper.GetBool("gradients"),
+		Prefix:    viper.GetString("prefix"),
 	}
 
 }
