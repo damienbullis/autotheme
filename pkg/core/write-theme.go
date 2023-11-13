@@ -13,6 +13,7 @@ const TAB = "    "
 func WriteTheme(
 	config *config.Config,
 	palette *Palette,
+	scale *[]float64,
 	spacing *[]float64,
 	text *[]float64,
 	noise *string,
@@ -31,6 +32,8 @@ func WriteTheme(
 
 	// Add harmony vars
 	writeHarmony(&rootTheme, palette, config)
+
+	writeScale(&rootTheme, scale, config)
 
 	// NEXT: add spacing vars
 	// NEXT: add text vars
@@ -52,6 +55,16 @@ func writeRgb(value *colorful.Color) string {
 	r, g, b := value.Clamped().RGB255()
 	return strconv.Itoa(int(r)) + ", " + strconv.Itoa(int(g)) + ", " + strconv.Itoa(int(b))
 
+}
+
+func writeScale(rootTheme *string, scale *[]float64, config *config.Config) {
+	*rootTheme += TAB + "/* Scale */\n"
+
+	for i, scale := range *scale {
+		*rootTheme += writeLine("scale-"+strconv.Itoa(i+1), strconv.FormatFloat(scale, 'f', 3, 64), config.Prefix)
+	}
+
+	*rootTheme += TAB + "/* Scale End */\n\n"
 }
 
 func writeHarmony(rootTheme *string, palette *Palette, config *config.Config) {

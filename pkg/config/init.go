@@ -9,27 +9,40 @@ import (
 )
 
 type Config struct {
-	Primary   string
-	Harmony   string
-	Scalar    float64
-	Output    string
-	Darkmode  bool
-	Noise     bool
-	Gradients bool
-	Prefix    string
+	Primary    string
+	Harmony    string
+	Scalar     float64
+	Output     string
+	Entrypoint string
+	Darkmode   bool
+	Noise      bool
+	Gradients  bool
+	Prefix     string
 	// TODO: Add more config options
 }
 
 func GetConfig() Config {
+	var entry string
+	if e := viper.Get("entrypoint"); e == nil {
+		entry = ""
+	} else {
+		if _, ok := e.(string); !ok {
+			fmt.Println("Error: entrypoint must be a string")
+			os.Exit(0)
+		}
+		entry = string(e.(string))
+	}
+
 	return Config{
-		Primary:   viper.GetString("primary"),
-		Harmony:   viper.GetString("harmony"),
-		Scalar:    viper.GetFloat64("scalar"),
-		Output:    viper.GetString("output"),
-		Darkmode:  viper.GetBool("darkmode"),
-		Noise:     viper.GetBool("noise"),
-		Gradients: viper.GetBool("gradients"),
-		Prefix:    viper.GetString("prefix"),
+		Primary:    viper.GetString("primary"),
+		Harmony:    viper.GetString("harmony"),
+		Scalar:     viper.GetFloat64("scalar"),
+		Output:     viper.GetString("output"),
+		Entrypoint: entry,
+		Darkmode:   viper.GetBool("darkmode"),
+		Noise:      viper.GetBool("noise"),
+		Gradients:  viper.GetBool("gradients"),
+		Prefix:     viper.GetString("prefix"),
 	}
 
 }
