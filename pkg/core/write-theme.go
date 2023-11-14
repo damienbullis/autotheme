@@ -44,15 +44,25 @@ func WriteTheme(
 
 }
 
-// TODO: FIX THIS
 func writeGradient(rootTheme *string, gradients [][]colorful.Color, config config.Config) {
 	*rootTheme += "\n" + TAB + "/* Gradients */\n"
 
 	*rootTheme += writeLine("direction", "to right", config.Prefix)
 
 	for i, gradient := range gradients {
-		*rootTheme += writeLine("gradient-"+strconv.Itoa(i+1), "linear-gradient(var(--at-direction), "+writeRgb(gradient[0])+", "+writeRgb(gradient[1])+")", config.Prefix)
+		line := "linear-gradient(" + "var(--at-direction), "
+		for j, color := range gradient {
+			// TODO: switch writeRgb with var()
+
+			line += "rgba(" + writeRgb(color) + ", var(--at-opacity))"
+			if j < len(gradient)-1 {
+				line += ", "
+			}
+		}
+		line += ")"
+		*rootTheme += writeLine("gradient-"+strconv.Itoa(i+1), line, config.Prefix)
 	}
+
 }
 
 func writeNoise(rootTheme *string, noise string, config config.Config) {
@@ -64,7 +74,7 @@ func writeNoise(rootTheme *string, noise string, config config.Config) {
 func writeSpacing(rootTheme *string, scale []float64, config config.Config) {
 	*rootTheme += "\n" + TAB + "/* Spacing */\n"
 
-	// TODO: Add in config option for root spacing?
+	// FEATURE: Add in config option for root spacing?
 	root := 4.0
 
 	for i, size := range scale {
@@ -75,7 +85,7 @@ func writeSpacing(rootTheme *string, scale []float64, config config.Config) {
 func writeTextSize(rootTheme *string, scale []float64, config config.Config) {
 	*rootTheme += "\n" + TAB + "/* Text Size */\n"
 
-	// TODO: Add in config option for root text size?
+	// FEATURE: Add in config option for root text size?
 	root := 16.0
 
 	*rootTheme += writeLine("text-xs", strconv.FormatFloat(scale[0]*root, 'f', 3, 64)+"px", config.Prefix)
