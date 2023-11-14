@@ -32,9 +32,12 @@ func WriteTheme(
 	writeHarmony(&rootTheme, palette, config)
 
 	writeScale(&rootTheme, scale, config)
+	writeTextSize(&rootTheme, scale, config)
+	writeSpacing(&rootTheme, scale, config)
 
-	// NEXT: add spacing vars
-	// NEXT: add text vars
+	// rootTheme += "\n" + TAB + "/* Properties */\n"
+	// rootTheme += TAB + "font-size: var(--" + config.Prefix + "-text-root);\n"
+
 	// NEXT: add noise vars
 	// NEXT: add gradient vars
 
@@ -42,6 +45,34 @@ func WriteTheme(
 	fmt.Println(rootStart + rootTheme + rootEnd)
 
 	// Write theme to file
+
+}
+
+func writeSpacing(rootTheme *string, scale []float64, config config.Config) {
+	*rootTheme += "\n" + TAB + "/* Spacing */\n"
+
+	// TODO: Add in config option for root spacing?
+	root := 4.0
+
+	for i, size := range scale {
+		*rootTheme += writeLine("spacing-"+strconv.Itoa(i+1), strconv.FormatFloat(size*root, 'f', 3, 64)+"px", config.Prefix)
+	}
+}
+
+func writeTextSize(rootTheme *string, scale []float64, config config.Config) {
+	*rootTheme += "\n" + TAB + "/* Text Size */\n"
+
+	// TODO: Add in config option for root text size?
+	root := 16.0
+
+	*rootTheme += writeLine("text-xs", strconv.FormatFloat(scale[0]*root, 'f', 3, 64)+"px", config.Prefix)
+	*rootTheme += writeLine("text-sm", strconv.FormatFloat(scale[1]*root, 'f', 3, 64)+"px", config.Prefix)
+	*rootTheme += writeLine("text-md", strconv.FormatFloat(scale[2]*root, 'f', 3, 64)+"px", config.Prefix)
+	*rootTheme += writeLine("text-lg", strconv.FormatFloat(scale[3]*root, 'f', 3, 64)+"px", config.Prefix)
+	*rootTheme += writeLine("text-xl", strconv.FormatFloat(scale[4]*root, 'f', 3, 64)+"px", config.Prefix)
+	*rootTheme += writeLine("text-2xl", strconv.FormatFloat(scale[5]*root, 'f', 3, 64)+"px", config.Prefix)
+	*rootTheme += writeLine("text-3xl", strconv.FormatFloat(scale[6]*root, 'f', 3, 64)+"px", config.Prefix)
+	*rootTheme += writeLine("text-4xl", strconv.FormatFloat(scale[7]*root, 'f', 3, 64)+"px", config.Prefix)
 
 }
 
@@ -56,18 +87,17 @@ func writeRgb(value *colorful.Color) string {
 }
 
 func writeScale(rootTheme *string, scale []float64, config config.Config) {
-	*rootTheme += TAB + "/* Scale */\n"
+	*rootTheme += "\n" + TAB + "/* Scale */\n"
 
 	for i, scale := range scale {
 		*rootTheme += writeLine("scale-"+strconv.Itoa(i+1), strconv.FormatFloat(scale, 'f', 3, 64), config.Prefix)
 	}
 
-	*rootTheme += TAB + "/* Scale End */\n\n"
 }
 
 func writeHarmony(rootTheme *string, palette Palette, config config.Config) {
+	*rootTheme += "\n" + TAB + "/* Harmony */\n"
 
-	*rootTheme += TAB + "/* Harmony */\n"
 	for i, harm := range []*HarmonyColorType{
 		&palette.Harmony.Harmony0,
 		&palette.Harmony.Harmony1,
@@ -106,11 +136,10 @@ func writeHarmony(rootTheme *string, palette Palette, config config.Config) {
 		*rootTheme += writeLine(keyStart+"-gray4", writeRgb(&harm.Gray4), config.Prefix)
 
 	}
-	*rootTheme += TAB + "/* Harmony End */\n\n"
 }
 
 func writeDarkPalette(rootTheme *string, palette Palette, config config.Config) {
-	*rootTheme += TAB + "/* Dark Palette */\n"
+	*rootTheme += "\n" + TAB + "/* Dark Palette */\n"
 	*rootTheme += writeLine("dark-bkgd", writeRgb(&palette.Dark.Background), config.Prefix)
 
 	for i, color := range []*TextColorType{
@@ -133,11 +162,10 @@ func writeDarkPalette(rootTheme *string, palette Palette, config config.Config) 
 		*rootTheme += writeLine(keyStart+"-grey", writeRgb(&color.Neutral), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-contrast", writeRgb(&color.Contrast), config.Prefix)
 	}
-	*rootTheme += TAB + "/* Dark Palette End */\n\n"
 }
 
 func writeLightPalette(rootTheme *string, palette Palette, config config.Config) {
-	*rootTheme += TAB + "/* Light Palette */\n"
+	*rootTheme += "\n" + TAB + "/* Light Palette */\n"
 	*rootTheme += writeLine("light-bkgd", writeRgb(&palette.Light.Background), config.Prefix)
 	for i, color := range []*TextColorType{
 		&palette.Light.Harmony0,
@@ -159,5 +187,4 @@ func writeLightPalette(rootTheme *string, palette Palette, config config.Config)
 		*rootTheme += writeLine(keyStart+"-grey", writeRgb(&color.Neutral), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-contrast", writeRgb(&color.Contrast), config.Prefix)
 	}
-	*rootTheme += TAB + "/* Light Palette End */\n\n"
 }
