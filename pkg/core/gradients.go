@@ -6,12 +6,12 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-func GenerateGradients(config *config.Config, palette *Palette) [][]*colorful.Color {
+func GenerateGradients(config config.Config, palette Palette) [][]colorful.Color {
 	if !config.Gradients {
-		return [][]*colorful.Color{}
+		return [][]colorful.Color{}
 	}
 
-	main := &palette.Harmony.Harmony0.Main
+	main := palette.Harmony.Harmony0.Main
 	harmony := []*HarmonyColorType{
 		&palette.Harmony.Harmony1,
 		palette.Harmony.Harmony2,
@@ -20,22 +20,22 @@ func GenerateGradients(config *config.Config, palette *Palette) [][]*colorful.Co
 		palette.Harmony.Harmony5,
 	}
 
-	var gradients [][]*colorful.Color
+	var gradients [][]colorful.Color
 	for _, c := range harmony {
 		if c == nil {
 			continue
 		}
 
 		// Generate gradients
-		gradient := []*colorful.Color{
+		gradient := []colorful.Color{
 			main,
-			&c.Main,
+			c.Main,
 		}
 		gradients = append(gradients, gradient)
 	}
 
 	// Add rainbow gradient
-	rainbow := []*colorful.Color{
+	rainbow := []colorful.Color{
 		{R: 1, G: 0, B: 0},
 		{R: 1, G: 0.5, B: 0},
 		{R: 1, G: 1, B: 0},

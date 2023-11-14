@@ -74,7 +74,7 @@ type Palette struct {
 // Text = 7:1 / Large Text = 4.5:1
 
 // Builds the palette based on the color and harmony provided
-func GeneratePalette(config *config.Config) Palette {
+func GeneratePalette(config config.Config) Palette {
 	// check if color was supplied
 	if config.Primary == "" {
 		fmt.Println("No color supplied, picking, random color...")

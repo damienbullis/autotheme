@@ -63,7 +63,7 @@ func generateRandomNumber(min, max int) int {
 	return min + rand.Intn(max-min)
 }
 
-func GenerateNoise(config *config.Config) string {
+func GenerateNoise(config config.Config) string {
 	if !config.Noise {
 		return ""
 	}

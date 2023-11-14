@@ -7,7 +7,7 @@ import (
 )
 
 // GenerateScale generates the spacing for the theme
-func GenerateScale(config *config.Config) []float64 {
+func GenerateScale(config config.Config) []float64 {
 	scalar := config.Scalar
 	if scalar == 0.0 {
 		scalar = (1 + math.Sqrt(5)) / 2

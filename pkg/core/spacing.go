@@ -4,18 +4,13 @@ import (
 	"autotheme/pkg/config"
 )
 
-func GenerateSpacing(config *config.Config, scaling *[]float64) []float64 {
+func GenerateSpacing(config config.Config, scaling []float64) []float64 {
 	const root = 4.0
 
-	spacing := [8]float64{
-		(*scaling)[0] * root,
-		(*scaling)[1] * root,
-		(*scaling)[2] * root,
-		(*scaling)[3] * root,
-		(*scaling)[4] * root,
-		(*scaling)[5] * root,
-		(*scaling)[6] * root,
-		(*scaling)[7] * root,
+	spacing := [8]float64{}
+
+	for i := 0; i < 8; i++ {
+		spacing[i] = root * scaling[i]
 	}
 
 	return spacing[:]

@@ -9,7 +9,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-func PrintPalette(palette *core.Palette) {
+func PrintPalette(palette core.Palette) {
 	light := []*core.TextColorType{
 		&palette.Light.Harmony0,
 		&palette.Light.Harmony1,

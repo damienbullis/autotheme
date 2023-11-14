@@ -11,13 +11,11 @@ import (
 const TAB = "    "
 
 func WriteTheme(
-	config *config.Config,
-	palette *Palette,
-	scale *[]float64,
-	spacing *[]float64,
-	text *[]float64,
-	noise *string,
-	gradients *[][]*colorful.Color,
+	config config.Config,
+	palette Palette,
+	scale []float64,
+	noise string,
+	gradients [][]colorful.Color,
 ) {
 	fmt.Printf("\nWriting your " + config.Harmony + " theme to " + config.Output + "...\n")
 	// Build in memory theme
@@ -57,17 +55,17 @@ func writeRgb(value *colorful.Color) string {
 
 }
 
-func writeScale(rootTheme *string, scale *[]float64, config *config.Config) {
+func writeScale(rootTheme *string, scale []float64, config config.Config) {
 	*rootTheme += TAB + "/* Scale */\n"
 
-	for i, scale := range *scale {
+	for i, scale := range scale {
 		*rootTheme += writeLine("scale-"+strconv.Itoa(i+1), strconv.FormatFloat(scale, 'f', 3, 64), config.Prefix)
 	}
 
 	*rootTheme += TAB + "/* Scale End */\n\n"
 }
 
-func writeHarmony(rootTheme *string, palette *Palette, config *config.Config) {
+func writeHarmony(rootTheme *string, palette Palette, config config.Config) {
 
 	*rootTheme += TAB + "/* Harmony */\n"
 	for i, harm := range []*HarmonyColorType{
@@ -111,7 +109,7 @@ func writeHarmony(rootTheme *string, palette *Palette, config *config.Config) {
 	*rootTheme += TAB + "/* Harmony End */\n\n"
 }
 
-func writeDarkPalette(rootTheme *string, palette *Palette, config *config.Config) {
+func writeDarkPalette(rootTheme *string, palette Palette, config config.Config) {
 	*rootTheme += TAB + "/* Dark Palette */\n"
 	*rootTheme += writeLine("dark-bkgd", writeRgb(&palette.Dark.Background), config.Prefix)
 
@@ -138,7 +136,7 @@ func writeDarkPalette(rootTheme *string, palette *Palette, config *config.Config
 	*rootTheme += TAB + "/* Dark Palette End */\n\n"
 }
 
-func writeLightPalette(rootTheme *string, palette *Palette, config *config.Config) {
+func writeLightPalette(rootTheme *string, palette Palette, config config.Config) {
 	*rootTheme += TAB + "/* Light Palette */\n"
 	*rootTheme += writeLine("light-bkgd", writeRgb(&palette.Light.Background), config.Prefix)
 	for i, color := range []*TextColorType{
