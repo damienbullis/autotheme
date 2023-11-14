@@ -37,11 +37,6 @@ func WriteTheme(
 	writeNoise(&rootTheme, noise, config)
 	writeGradient(&rootTheme, gradients, config)
 
-	// rootTheme += "\n" + TAB + "/* Properties */\n"
-	// rootTheme += TAB + "font-size: var(--" + config.Prefix + "-text-root);\n"
-
-	// NEXT: add gradient vars
-
 	// Check theme string
 	fmt.Println(rootStart + rootTheme + rootEnd)
 
@@ -49,6 +44,7 @@ func WriteTheme(
 
 }
 
+// TODO: FIX THIS
 func writeGradient(rootTheme *string, gradients [][]colorful.Color, config config.Config) {
 	*rootTheme += "\n" + TAB + "/* Gradients */\n"
 

@@ -17,6 +17,6 @@ func CalcTints(color colorful.Color, num int) []colorful.Color {
 
 func Tint(color colorful.Color, factor float64) colorful.Color {
 	l, a, b := color.Lab()
-	l = l + ((1 - l) * factor)
+	l = l + ((1 - l + .2) * factor)
 	return colorful.Lab(l, a, b).Clamped()
 }
