@@ -58,7 +58,7 @@ func LoadConfig() {
 		viper.SetConfigFile(cfgfile.(string))
 	} else {
 		// Use default config file name and directory
-		viper.SetConfigName(".autotheme")
+		viper.SetConfigName("autotheme")
 		viper.AddConfigPath(".")
 		viper.AddConfigPath("./config")
 		viper.AddConfigPath("./.config")
