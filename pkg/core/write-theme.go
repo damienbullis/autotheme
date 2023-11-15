@@ -51,12 +51,24 @@ func writeGradient(rootTheme *string, gradients [][]colorful.Color, config confi
 
 	for i, gradient := range gradients {
 		line := "linear-gradient(" + "var(--at-direction), "
-		for j, color := range gradient {
-			// TODO: switch writeRgb with var()
-
-			line += "rgba(" + writeRgb(color) + ", var(--at-opacity))"
-			if j < len(gradient)-1 {
-				line += ", "
+		if i == len(gradients)-1 {
+			// for last gradient
+			for j, color := range gradient {
+				line += "rgba(" + writeRgb(color) + ", var(--at-opacity))"
+				if j < len(gradient)-1 {
+					line += ", "
+				}
+			}
+		} else {
+			for j := range gradient {
+				if j == 0 {
+					line += "rgba(var(--" + config.Prefix + "-harmony0-main), var(--at-opacity))"
+				} else {
+					line += "rgba(var(--" + config.Prefix + "-harmony" + strconv.Itoa(i+1) + "-main), var(--at-opacity))"
+				}
+				if j < len(gradient)-1 {
+					line += ", "
+				}
 			}
 		}
 		line += ")"
