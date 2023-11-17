@@ -7,10 +7,10 @@
 ### Next
 
 - [ ] Finishing writing theme
-- [ ] Add method to harmony struct so that we can refactor some functions
-- [ ] Remove gradients and just base it on harmonies
+- [x] Add method to harmony struct so that we can refactor some functions
+- [x] Remove gradients and just base it on harmonies
 - [ ] General Cleanup
-- [ ] Finish Configs?? Mostly...
+- [x] Finish Configs?? Mostly...
 
 ### Backlog
 
@@ -29,10 +29,9 @@
 
 - [ ] Core
   - [ ] Finish config file
-    - [ ] \*Hash file for caching
-    - [ ] Integrate finished config
     - [ ] Add json schema for the config file
     - [ ] Add Tests
+    - [ ] _Hash file for caching??_
 - [ ] Installers
   - [ ] bash cli install
   - [ ] go install
