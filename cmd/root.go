@@ -36,17 +36,15 @@ var rootCmd = &cobra.Command{
 		palette := core.GeneratePalette(config)
 		scale := core.GenerateScale(config)
 		noise := core.GenerateNoise(config)
-		gradients := core.GenerateGradients(config, palette)
 
 		// core.GenerateFilters(&config, &palette) // TODO: finish filters
 
 		print.PrintPalette(palette)
 		print.PrintScaling(scale)
 		print.PrintNoise(noise)
-		print.PrintGradients(gradients)
 
 		// Write theme to file
-		core.WriteTheme(config, palette, scale, noise, gradients)
+		core.WriteTheme(config, palette, scale, noise)
 
 		fmt.Println("\nAutoTheme Finished! (" + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms)")
 	},
@@ -76,6 +74,7 @@ func init() {
 	viper.SetDefault("darkmode", true)
 	viper.SetDefault("prefix", "at")
 	viper.SetDefault("scalar", nil)
+	viper.SetDefault("rootFontSize", 16)
 
 	viper.SetDefault("entrypoint", nil)
 }
