@@ -18,6 +18,7 @@ type Config struct {
 	Noise      bool
 	Gradients  bool
 	Prefix     string
+	RootFont   int
 	// TODO: Add more config options
 }
 
@@ -43,6 +44,7 @@ func GetConfig() Config {
 		Noise:      viper.GetBool("noise"),
 		Gradients:  viper.GetBool("gradients"),
 		Prefix:     viper.GetString("prefix"),
+		RootFont:   viper.GetInt("rootFontSize"),
 	}
 
 }
@@ -52,10 +54,10 @@ func LoadConfig() {
 
 	viper.AutomaticEnv()
 
-	if cfgfile := viper.Get("config"); cfgfile != "" {
+	if cfgfile := viper.GetString("config"); cfgfile != "" {
 		// Use config file from the flag.
 		fmt.Println("Using config file:", cfgfile)
-		viper.SetConfigFile(cfgfile.(string))
+		viper.SetConfigFile(cfgfile)
 	} else {
 		// Use default config file name and directory
 		viper.SetConfigName("autotheme")
@@ -76,7 +78,11 @@ func LoadConfig() {
 		}
 	}
 
-	// NEXT: Remove this later
+	PrintSettings()
+}
+
+// NEXT: Remove this later
+func PrintSettings() {
 	fmt.Println()
 	mapped := viper.AllSettings()
 	utils.PrintMap(mapped)
