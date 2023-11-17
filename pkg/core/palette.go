@@ -63,6 +63,27 @@ type HarmonyType struct {
 	Harmony5 *HarmonyColorType
 }
 
+func (h HarmonyType) GetColors() []HarmonyColorType {
+	nonNilColors := []HarmonyColorType{
+		h.Harmony0,
+		h.Harmony1,
+	}
+	if h.Harmony2 != nil {
+		nonNilColors = append(nonNilColors, *h.Harmony2)
+	}
+	if h.Harmony3 != nil {
+		nonNilColors = append(nonNilColors, *h.Harmony3)
+	}
+	if h.Harmony4 != nil {
+		nonNilColors = append(nonNilColors, *h.Harmony4)
+	}
+	if h.Harmony5 != nil {
+		nonNilColors = append(nonNilColors, *h.Harmony5)
+	}
+
+	return nonNilColors
+}
+
 type Palette struct {
 	Light   ModeType
 	Dark    ModeType
