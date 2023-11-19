@@ -9,10 +9,10 @@ import (
 )
 
 func CheckColorFlag() error {
-	if clr := viper.GetString("primary"); clr != "" {
+	if clr := viper.GetString("color"); clr != "" {
 		len := utf8.RuneCountInString(clr)
 		if (len != 7 && len != 4) || clr[0] != '#' {
-			return errors.New("primary color flag is invalid, please provide a valid hex code (e.g. #000000 or #000)")
+			return errors.New("color flag is invalid... please provide a valid hex code (e.g. #000000 or #000)")
 		}
 	}
 	return nil

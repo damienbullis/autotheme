@@ -2,9 +2,8 @@ package core
 
 import (
 	"autotheme/pkg/config"
-	h "autotheme/pkg/core/harmony"
+	"autotheme/pkg/core/harmony"
 	"autotheme/pkg/utils"
-	"fmt"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -96,22 +95,10 @@ type Palette struct {
 
 // Builds the palette based on the color and harmony provided
 func GeneratePalette(config config.Config) Palette {
-	// check if color was supplied
-	if config.Primary == "" {
-		fmt.Println("No color supplied, picking, random color...")
-		config.Primary = utils.GetRandomColor()
-	}
-
 	hex, _ := colorful.Hex(config.Primary)
 
-	// check if harmony was supplied
-	if config.Harmony == "" {
-		fmt.Println("No harmony supplied, picking random harmony...")
-		config.Harmony = h.GetRandomHarmony()
-	}
-
 	// Get the harmony function
-	harmonyFn := h.GetHarmonyFn(config.Harmony)
+	harmonyFn := harmony.GetHarmonyFn(config.Harmony)
 
 	// Generate the palette based on the harmony colors
 	var palette []ColorType
