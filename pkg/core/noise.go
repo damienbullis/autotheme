@@ -36,9 +36,7 @@ func generateSVG(typeValue Noise, baseFrequency float64, numOctaves int) string 
 	// give me the
 	// feTurbulence filter
 	filter := fmt.Sprintf(
-		`<filter id='noise'>
-<feTurbulence type='%s' baseFrequency='%f' numOctaves='%d' stitchTiles='stitch' />
-</filter>`, typeValue, baseFrequency, numOctaves,
+		`<filter id='noise'><feTurbulence type='%s' baseFrequency='%f' numOctaves='%d' stitchTiles='stitch' /></filter>`, typeValue, baseFrequency, numOctaves,
 	)
 
 	// Rectangular shape using the noise filter
@@ -48,7 +46,7 @@ func generateSVG(typeValue Noise, baseFrequency float64, numOctaves int) string 
 	svgClosing := `</svg>`
 
 	// Combine all parts to form the final SVG string
-	finalSVG := fmt.Sprintf("%s %s %s %s", svg, filter, rect, svgClosing)
+	finalSVG := svg + filter + rect + svgClosing
 
 	return urlEncode(finalSVG)
 }

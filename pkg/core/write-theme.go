@@ -3,6 +3,8 @@ package core
 import (
 	"autotheme/pkg/config"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/lucasb-eyer/go-colorful"
@@ -18,16 +20,18 @@ func WriteTheme(
 ) {
 	fmt.Printf("\nWriting your " + config.Harmony + " theme to " + config.Output + "...\n")
 	// Build in memory theme
-	rootStart := "\n:root {\n"
+	rootStart := "\n:root {\n" + TAB + "/* Root Variables */"
 	rootTheme := ""
 	rootEnd := "}\n"
+
+	darkStart := "\n\n.dark-mode {\n" + TAB + "/* Dark Mode Variables */"
+	darkTheme := ""
+	darkEnd := "}\n"
 
 	// Add palette vars
 	writeLightPalette(&rootTheme, palette, config)
 	writeDarkPalette(&rootTheme, palette, config)
-	// NEXT: add prefer-color-scheme (darkmode) vars
-
-	writeColorScheme(&rootTheme, palette, config)
+	writeColorScheme(&rootTheme, &darkTheme, palette, config)
 
 	// Add harmony vars
 	writeHarmony(&rootTheme, palette, config)
@@ -42,10 +46,97 @@ func WriteTheme(
 	fmt.Println(rootStart + rootTheme + rootEnd)
 
 	// Write theme to file
+	err := writeFile(config.Output, rootStart+rootTheme+rootEnd+darkStart+darkTheme+darkEnd)
+
+	if err != nil {
+		fmt.Println("Error writing theme to file: ", err)
+		os.Exit(0)
+	}
 
 }
 
-func writeColorScheme(rootTheme *string, palette Palette, config config.Config) {
+func writeFile(output string, content string) error {
+	outputPath, filename := filepath.Split(output)
+	// Ensure the output path exists
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		err := os.MkdirAll(outputPath, 0755)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Check if the file already exists
+	filePath := filepath.Join(outputPath, filename)
+	if _, err := os.Stat(filePath); err == nil {
+		fmt.Println("File already exists. Overwriting...")
+	}
+
+	// Create or open the file
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Write the content to the file
+	_, err = file.WriteString(content)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("'%s' created successfully.\n", filePath)
+	return nil
+}
+
+func writeColorScheme(
+	rootTheme *string,
+	darkTheme *string,
+	palette Palette,
+	config config.Config,
+) {
+
+	keywords := []string{
+		"-main",
+		"-dark",
+		"-light",
+		"-contrast",
+		"-grey",
+	}
+
+	*rootTheme += "\n" + TAB + "/* Color Scheme */\n"
+	harmony := palette.Harmony.GetColors()
+
+	for i := 0; i < len(harmony); i++ {
+		for _, keyword := range keywords {
+			k := keyword
+			if k == "-main" {
+				k = ""
+			}
+			key := "text-" + strconv.Itoa(i) + k
+			val := "rgba(var(--" + config.Prefix + "-light" + strconv.Itoa(i) + keyword + "), var(--" + config.Prefix + "-opacity))"
+			*rootTheme += writeLine(key, val, config.Prefix)
+		}
+	}
+
+	// First, is the light theme
+	// example: --at-text0-main: rgba(var(--at-light0-main), var(--at-opacity));
+	// other possible: --at-text-0-
+
+	// Second, is the dark theme
+	if config.Darkmode {
+		*darkTheme += "\n" + TAB + "/* Color Scheme */\n"
+		for i := 0; i < len(harmony); i++ {
+			for _, keyword := range keywords {
+				k := keyword
+				if k == "-main" {
+					k = ""
+				}
+				key := "text-" + strconv.Itoa(i) + k
+				val := "rgba(var(--" + config.Prefix + "-dark" + strconv.Itoa(i) + keyword + "), var(--" + config.Prefix + "-opacity))"
+				*darkTheme += writeLine(key, val, config.Prefix)
+			}
+		}
+	}
 }
 
 func writeGradient(rootTheme *string, palette Palette, config config.Config) {
@@ -58,17 +149,17 @@ func writeGradient(rootTheme *string, palette Palette, config config.Config) {
 
 	// Add harmony gradients
 	for i := range colors {
-		line := "linear-gradient(" + "var(--at-direction), "
+		line := "linear-gradient(" + "\n" + TAB + TAB + "var(--at-direction),"
 		if i < colorsLen-1 {
 			for j := 0; j < 2; j++ {
 				if j == 0 {
-					line += "rgba(var(--" + config.Prefix + "-harmony0-main), var(--at-opacity)), "
+					line += "\n" + TAB + TAB + "rgba(var(--" + config.Prefix + "-harmony0-main), var(--at-opacity)), "
 				} else {
-					line += "rgba(var(--" + config.Prefix + "-harmony" + strconv.Itoa(i+1) + "-main), var(--at-opacity)"
+					line += "\n" + TAB + TAB + "rgba(var(--" + config.Prefix + "-harmony" + strconv.Itoa(i+1) + "-main), var(--at-opacity)"
 				}
 			}
 
-			line += ")"
+			line += ")\n" + TAB + ")"
 			*rootTheme += writeLine("gradient-"+strconv.Itoa(i+1), line, config.Prefix)
 
 		}
@@ -86,17 +177,17 @@ func writeGradient(rootTheme *string, palette Palette, config config.Config) {
 	}
 	rainbowLen := len(rainbow)
 
-	line := "linear-gradient(" + "var(--at-direction), "
+	line := "linear-gradient(" + "\n" + TAB + TAB + "var(--at-direction),"
 	// Add rainbow gradient last
 	for j, c := range rainbow {
-		line += "rgba(" + writeRgb(c) + ", var(--at-opacity))"
+		line += "\n" + TAB + TAB + "rgba(" + writeRgb(c) + ", var(--at-opacity))"
 
 		if j < rainbowLen-1 {
 
-			line += ", "
+			line += ","
 		}
 	}
-	line += ")"
+	line += "\n" + TAB + ")"
 	*rootTheme += writeLine("gradient-"+strconv.Itoa(colorsLen), line, config.Prefix)
 
 }
@@ -126,8 +217,6 @@ func writeSpacing(rootTheme *string, scale []float64, config config.Config) {
 
 func writeTextSize(rootTheme *string, scale []float64, config config.Config) {
 	*rootTheme += "\n" + TAB + "/* Text Size */"
-
-	*rootTheme += "\n" + TAB + "font-size: " + strconv.Itoa(config.RootFont) + "px;\n"
 
 	*rootTheme += writeLine("text-xs", strconv.FormatFloat(scale[0], 'f', 3, 64)+"rem", config.Prefix)
 	*rootTheme += writeLine("text-sm", strconv.FormatFloat(scale[1], 'f', 3, 64)+"rem", config.Prefix)
