@@ -65,7 +65,14 @@ func LoadConfig() {
 	// Create logger
 	var err error
 
-	utils.Log, err = utils.NewLogger(viper.GetBool("silent"), viper.GetString("log-file"))
+	var logFile interface{}
+	if viper.IsSet("log-file") {
+		logFile = viper.GetString("log-file")
+	} else {
+		logFile = nil
+	}
+
+	utils.Log, err = utils.NewLogger(viper.GetBool("silent"), logFile)
 	if err != nil {
 		panic(err)
 	}

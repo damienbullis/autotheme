@@ -18,7 +18,6 @@ func WriteTheme(
 	scale []float64,
 	noise string,
 ) {
-	fmt.Printf("\nWriting your " + config.Harmony + " theme to " + config.Output + "...\n")
 	// Build in memory theme
 	rootStart := "\n:root {\n" + TAB + "/* Root Variables */"
 	rootTheme := ""
@@ -42,11 +41,12 @@ func WriteTheme(
 	writeNoise(&rootTheme, noise, config)
 	writeGradient(&rootTheme, palette, config)
 
+	fullTheme := rootStart + rootTheme + rootEnd + darkStart + darkTheme + darkEnd
 	// Check theme string
-	fmt.Println(rootStart + rootTheme + rootEnd)
+	// fmt.Println(fullTheme)
 
 	// Write theme to file
-	err := writeFile(config.Output, rootStart+rootTheme+rootEnd+darkStart+darkTheme+darkEnd)
+	err := writeFile(config.Output, fullTheme)
 
 	if err != nil {
 		fmt.Println("Error writing theme to file: ", err)
@@ -216,7 +216,7 @@ func writeSpacing(rootTheme *string, scale []float64, config config.Config) {
 }
 
 func writeTextSize(rootTheme *string, scale []float64, config config.Config) {
-	*rootTheme += "\n" + TAB + "/* Text Size */"
+	*rootTheme += "\n" + TAB + "/* Text Size */\n"
 
 	*rootTheme += writeLine("text-xs", strconv.FormatFloat(scale[0], 'f', 3, 64)+"rem", config.Prefix)
 	*rootTheme += writeLine("text-sm", strconv.FormatFloat(scale[1], 'f', 3, 64)+"rem", config.Prefix)
