@@ -58,24 +58,27 @@ func init() {
 	rootCmd.Flags().StringP("primary", "p", "", "Primary color (hex) for AutoTheme to use. If not supplied, AutoTheme will pick a random color.")
 	rootCmd.Flags().StringP("harmony", "a", "", "Harmony for AutoTheme to use. If not supplied, AutoTheme will pick a random harmony")
 	rootCmd.Flags().StringP("output", "o", "src/index.css", "Output file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file.")
-	rootCmd.Flags().BoolP("visualize", "v", false, "Generate a interactive preview of the theme.")
+	rootCmd.Flags().BoolP("verbose", "v", false, "Verbose output for AutoTheme.")
+	rootCmd.Flags().BoolP("preview", "r", false, "Preview the theme in the browser.")
 
 	// Bind flags to viper
 	viper.BindPFlag("config", rootCmd.Flags().Lookup("config"))
 	viper.BindPFlag("primary", rootCmd.Flags().Lookup("primary"))
 	viper.BindPFlag("harmony", rootCmd.Flags().Lookup("harmony"))
 	viper.BindPFlag("output", rootCmd.Flags().Lookup("output"))
-	viper.BindPFlag("visualize", rootCmd.Flags().Lookup("visualize"))
+	viper.BindPFlag("verbose", rootCmd.Flags().Lookup("verbose"))
+	viper.BindPFlag("preview", rootCmd.Flags().Lookup("preview"))
 
-	// Utility options
+	// Non-Cli options
 	viper.SetDefault("noise", true)
 	viper.SetDefault("filters", true)
 	viper.SetDefault("gradients", true)
 	viper.SetDefault("darkmode", true)
 	viper.SetDefault("prefix", "at")
 	viper.SetDefault("scalar", nil)
-	viper.SetDefault("rootFontSize", 16)
+	viper.SetDefault("fontsize", 16)
 
+	// ??? Not sure
 	viper.SetDefault("entrypoint", nil)
 }
 

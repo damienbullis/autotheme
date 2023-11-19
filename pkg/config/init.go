@@ -44,7 +44,7 @@ func GetConfig() Config {
 		Noise:      viper.GetBool("noise"),
 		Gradients:  viper.GetBool("gradients"),
 		Prefix:     viper.GetString("prefix"),
-		RootFont:   viper.GetInt("rootFontSize"),
+		RootFont:   viper.GetInt("fontsize"),
 	}
 
 }
