@@ -57,32 +57,36 @@ var rootCmd = &cobra.Command{
 func init() {
 	cobra.OnInitialize(config.LoadConfig)
 
-	// Root command flags
+	// CLI ONLY
+	rootCmd.Flags().BoolP("silent", "s", false, "Silence all output from AutoTheme.")
 	rootCmd.Flags().String("config", "", "Config file (default is ./.autotheme)")
+	rootCmd.Flags().String("log-file", "", "Log file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file.")
+
+	// Root command flags
 	rootCmd.Flags().StringP("color", "c", "", "Primary color (hex) for AutoTheme to use. If not supplied, AutoTheme will pick a random color.")
 	rootCmd.Flags().StringP("harmony", "a", "", "Harmony for AutoTheme to use. If not supplied, AutoTheme will pick a random harmony")
 	rootCmd.Flags().StringP("output", "o", "src/index.css", "Output file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file.")
-	rootCmd.Flags().BoolP("silent", "s", false, "Silence all output from AutoTheme.")
-	rootCmd.Flags().String("log-file", "", "Log file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file.")
 	rootCmd.Flags().Bool("preview", false, "Generate a preview for your theme in the browser.")
 
-	// Bind flags to viper
+	// Bind cli-only flags to viper
 	viper.BindPFlag("config", rootCmd.Flags().Lookup("config"))
+	viper.BindPFlag("silent", rootCmd.Flags().Lookup("silent"))
+	viper.BindPFlag("log-file", rootCmd.Flags().Lookup("log-file"))
+
+	// Bind root command flags to viper
 	viper.BindPFlag("color", rootCmd.Flags().Lookup("color"))
 	viper.BindPFlag("harmony", rootCmd.Flags().Lookup("harmony"))
 	viper.BindPFlag("output", rootCmd.Flags().Lookup("output"))
-	viper.BindPFlag("silent", rootCmd.Flags().Lookup("silent"))
-	viper.BindPFlag("log-file", rootCmd.Flags().Lookup("log-file"))
 	viper.BindPFlag("preview", rootCmd.Flags().Lookup("preview"))
 
-	// Non-Cli options
+	// Non-Cli defaults
 	viper.SetDefault("noise", true)
 	viper.SetDefault("filters", true)
 	viper.SetDefault("gradients", true)
 	viper.SetDefault("darkmode", true)
 	viper.SetDefault("prefix", "at")
-	viper.SetDefault("scalar", 0)
-	viper.SetDefault("fontsize", 16)
+	viper.SetDefault("scalar", 0.0)
+	viper.SetDefault("fontsize", 16.0)
 
 	// ??? Not sure
 	viper.SetDefault("entrypoint", "")
