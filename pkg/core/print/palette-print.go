@@ -1,15 +1,15 @@
 package print
 
 import (
+	c "autotheme/pkg/constants"
 	"autotheme/pkg/core"
 	"autotheme/pkg/utils"
-	"fmt"
 	"strconv"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-func PrintPalette(palette core.Palette) {
+func PrintPalette(palette core.Palette) (string, string) {
 	light := []*core.TextColorType{
 		&palette.Light.Harmony0,
 		&palette.Light.Harmony1,
@@ -26,12 +26,11 @@ func PrintPalette(palette core.Palette) {
 		palette.Dark.Harmony4,
 		palette.Dark.Harmony5,
 	}
+	line := "Text Colors: \n"
 
-	fmt.Println("\n» Text Colors:")
-	fmt.Println(utils.Str(core.TAB+"These colors should be used for text elements (text, icons, etc.)", &colorful.Color{R: 0.5, G: 0.5, B: 0.5}, nil))
+	line += utils.Str(core.TAB+"These colors should be used for text elements (text, icons, etc.)\n", &colorful.Color{R: 0.5, G: 0.5, B: 0.5}, nil)
 
-	fmt.Println("\n" + core.TAB + "Light Mode")
-	fmt.Println()
+	line += "\n" + core.TAB + c.IconLight.Str() + " Light Mode\n\n"
 	for i, color := range light {
 		if color == nil {
 			continue
@@ -43,11 +42,10 @@ func PrintPalette(palette core.Palette) {
 		str += utils.Str("         ", nil, &color.Neutral)
 		str += utils.Str("         ", nil, &color.Contrast)
 
-		fmt.Println(str + "\n")
+		line += str + "\n"
 	}
 
-	fmt.Println("\n" + core.TAB + "Dark Mode")
-	fmt.Println()
+	line += "\n" + core.TAB + c.IconDark.Str() + " Dark Mode\n\n"
 	for i, color := range dark {
 		if color == nil {
 			continue
@@ -60,26 +58,13 @@ func PrintPalette(palette core.Palette) {
 		str += utils.Str("         ", nil, &color.Neutral)
 		str += utils.Str("         ", nil, &color.Contrast)
 
-		fmt.Println(str + "\n")
+		line += str + "\n"
 	}
 
-	fmt.Printf("\n» Harmony Palette:\n")
-	fmt.Println(utils.Str(core.TAB+"These colors should be used for non-text elements (backgrounds, borders, etc.)", &colorful.Color{R: 0.5, G: 0.5, B: 0.5}, nil))
-	fmt.Println()
+	line2 := "Harmony Palette:\n"
+	line2 += utils.Str(core.TAB+"These colors should be used for non-text elements (backgrounds, borders, etc.)\n", &colorful.Color{R: 0.5, G: 0.5, B: 0.5}, nil) + "\n"
 
-	harmony := []*core.HarmonyColorType{}
-	harmony = append(harmony, &palette.Harmony.Harmony0)
-	harmony = append(harmony, &palette.Harmony.Harmony1)
-	harmony = append(harmony, palette.Harmony.Harmony2)
-	harmony = append(harmony, palette.Harmony.Harmony3)
-	harmony = append(harmony, palette.Harmony.Harmony4)
-	harmony = append(harmony, palette.Harmony.Harmony5)
-
-	for i, color := range harmony {
-		if color == nil {
-			continue
-		}
-
+	for i, color := range palette.Harmony.GetColors() {
 		str, str2 := core.TAB+strconv.Itoa(i+1)+": ", "\n"+core.TAB+"   "
 
 		str += utils.Str("         ", nil, &color.Dark5)
@@ -99,7 +84,8 @@ func PrintPalette(palette core.Palette) {
 		str2 += utils.Str("         ", nil, &color.Gray3)
 		str2 += utils.Str("         ", nil, &color.Gray4)
 
-		fmt.Println(str, str2)
-		fmt.Println()
+		line2 += str + str2 + "\n"
 	}
+
+	return line, line2
 }
