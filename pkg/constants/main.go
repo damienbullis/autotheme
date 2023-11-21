@@ -6,17 +6,30 @@ type Icons string
 
 const (
 	// Icons
-	IconCheck  Icons = "✔"
-	IconCross  Icons = "✘"
-	IconWarn   Icons = "⚠"
-	IconWait   Icons = "⌛"
-	IconWrench Icons = "🔧"
-	IconCog    Icons = "⚙"
-	IconRocket Icons = "🚀"
-	IconStar   Icons = "★"
-	IconStar2  Icons = "☆"
-	IconArrow  Icons = "➤"
+	IconCheck     Icons = "✔"
+	IconCross     Icons = "✘"
+	IconWarn      Icons = "⚠"
+	IconWait      Icons = "⌛"
+	IconWrench    Icons = "🔧"
+	IconCog       Icons = "⚙"
+	IconRocket    Icons = "🚀"
+	IconFire      Icons = "🔥"
+	IconStar      Icons = "★"
+	IconStar2     Icons = "☆"
+	IconArrow     Icons = "➤"
+	IconLight     Icons = "⚪️"
+	IconDark      Icons = "⚫️"
+	IconLightning Icons = "⚡️"
+	IconRecycle   Icons = "♻️"
+	IconSparkles  Icons = "✨"
+	IconRainbow   Icons = "🌈"
+	IconDNA       Icons = "🧬"
+	IconPalette   Icons = "🎨"
 )
+
+func (i Icons) Str() string {
+	return string(i)
+}
 
 type Anims string
 
