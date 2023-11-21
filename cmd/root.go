@@ -36,7 +36,7 @@ var rootCmd = &cobra.Command{
 		utils.Log.Info("AutoTheme Started! (v" + utils.GetVersion() + ")")
 
 		// Run root command here
-		utils.PrettyPrint(config)
+		// utils.PrettyPrint(config)
 
 		// Generate theme
 		utils.Log.Debug("Generating theme start...")
