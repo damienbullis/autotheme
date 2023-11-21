@@ -1,6 +1,50 @@
 package constants
 
-import "github.com/lucasb-eyer/go-colorful"
+import (
+	"os"
+
+	"github.com/lucasb-eyer/go-colorful"
+)
+
+var emojiSupported bool
+
+func init() {
+	emojiSupported = supportsEmoji()
+}
+
+func supportsEmoji() bool {
+	termProgram := os.Getenv("TERM_PROGRAM")
+	termEmulator := os.Getenv("TERM_EMULATOR")
+	// Check if the terminal is likely to support emoji
+	return termProgram == "Apple_Terminal" ||
+		termProgram == "vscode" ||
+		termEmulator == "tmux" ||
+		termEmulator == "alacritty" ||
+		termEmulator == "iterm"
+}
+
+type IconFallbackMap map[Icons]string
+
+var fallbackMap = IconFallbackMap{
+	IconCheck:     "[√]",
+	IconCross:     "[x]",
+	IconWarn:      "[!]",
+	IconWait:      "[...]",
+	IconWrench:    "",
+	IconCog:       "",
+	IconRocket:    "",
+	IconFire:      "",
+	IconStar:      "[*]",
+	IconArrow:     "[->]",
+	IconLight:     "[ ]",
+	IconDark:      "[■]",
+	IconLightning: "[~]",
+	IconRecycle:   "[♻]",
+	IconSparkles:  "[*]",
+	IconRainbow:   "[~]",
+	IconDNA:       "",
+	IconPalette:   "",
+}
 
 type Icons string
 
@@ -15,7 +59,6 @@ const (
 	IconRocket    Icons = "🚀"
 	IconFire      Icons = "🔥"
 	IconStar      Icons = "★"
-	IconStar2     Icons = "☆"
 	IconArrow     Icons = "➤"
 	IconLight     Icons = "⚪️"
 	IconDark      Icons = "⚫️"
@@ -28,7 +71,10 @@ const (
 )
 
 func (i Icons) Str() string {
-	return string(i)
+	if emojiSupported {
+		return string(i)
+	}
+	return fallbackMap[i]
 }
 
 type Anims string
