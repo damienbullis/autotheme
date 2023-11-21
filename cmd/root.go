@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"autotheme/pkg/config"
+	c "autotheme/pkg/constants"
 	"autotheme/pkg/core"
 	"autotheme/pkg/core/print"
 	"autotheme/pkg/utils"
@@ -37,20 +38,27 @@ var rootCmd = &cobra.Command{
 		// Run root command here
 		utils.PrettyPrint(config)
 
+		// Generate theme
+		utils.Log.Debug("Generating theme start...")
 		palette := core.GeneratePalette(config)
 		scale := core.GenerateScale(config)
 		noise := core.GenerateNoise(config)
+		utils.Log.Debug("Generating theme end...")
 
 		// core.GenerateFilters(&config, &palette) // TODO: finish filters
 
-		print.PrintPalette(palette)
+		text, harmony := print.PrintPalette(palette)
+		utils.Log.Info("\n" + c.IconPalette.Str() + " " + text + "\n")
+		utils.Log.Info("\n" + c.IconPalette.Str() + " " + harmony + "\n")
+		utils.Log.Info(c.IconRocket.Str() + " Palette Generated! (" + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms)\n")
+
 		print.PrintScaling(scale)
 		print.PrintNoise(noise)
 
 		// Write theme to file
 		core.WriteTheme(config, palette, scale, noise)
 
-		fmt.Println("\nAutoTheme Finished! (" + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms)")
+		utils.Log.Info(c.IconCheck.Str() + " AutoTheme Finished! (" + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms)")
 	},
 }
 
