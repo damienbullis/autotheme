@@ -95,6 +95,7 @@ type Palette struct {
 
 // Builds the palette based on the color and harmony provided
 func GeneratePalette(config config.Config) Palette {
+	utils.Log.Debug("GeneratingPalette - Start")
 	hex, _ := colorful.Hex(config.Primary)
 
 	// Get the harmony function
@@ -122,6 +123,7 @@ func GeneratePalette(config config.Config) Palette {
 		Harmony: buildHarmonyStruct(palette),
 	}
 
+	utils.Log.Debug("GeneratingPalette - End")
 	return results
 }
 

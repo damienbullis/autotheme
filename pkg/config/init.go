@@ -1,12 +1,13 @@
 package config
 
 import (
+	"autotheme/pkg/constants"
 	"autotheme/pkg/core/harmony"
 	"autotheme/pkg/utils"
-	"fmt"
 	"math"
 	"os"
 
+	"github.com/lucasb-eyer/go-colorful"
 	"github.com/spf13/viper"
 )
 
@@ -25,22 +26,33 @@ type Config struct {
 }
 
 func GetConfig() Config {
+	utils.Log.Debug("GetConfig - Start")
 	// check some values and set defaults if not provided
 	if viper.GetString("primary") == "" {
 		c := utils.GetRandomColor()
-		fmt.Println("No color provided... using random color: " + c)
+		utils.Log.Info("%s %s | No color provided... using random color: %s", constants.IconCog.Str(), constants.StageInit, c)
 		viper.Set("primary", c)
 	}
 	if viper.GetString("harmony") == "" {
 		h := harmony.GetRandomHarmony()
-		fmt.Println("No harmony provided... using random harmony: " + h)
+		utils.Log.Info("%s %s | No harmony provided... using random harmony: %s", constants.IconCog.Str(), constants.StageInit, h)
 		viper.Set("harmony", h)
 	}
 	if viper.GetFloat64("scalar") == 0 {
 		s := (1 + math.Sqrt(5)) / 2
-		fmt.Println("No scalar provided... using default: " + fmt.Sprintf("%f", s))
+		utils.Log.Info("%s %s | No scalar provided... using default: "+utils.Str(
+			"%f",
+			&colorful.Color{
+				R: 0.5,
+				G: 0.5,
+				B: 0.5,
+			},
+			nil,
+		), constants.IconCog.Str(), constants.StageInit, s)
 		viper.Set("scalar", s)
 	}
+	utils.Log.Debug("GetConfig - End")
+
 	// Return the config struct
 	return Config{
 		Primary:    viper.GetString("primary"),
@@ -54,7 +66,6 @@ func GetConfig() Config {
 		Prefix:     viper.GetString("prefix"),
 		RootFont:   viper.GetInt("fontsize"),
 	}
-
 }
 
 func LoadConfig() {
@@ -79,7 +90,7 @@ func LoadConfig() {
 
 	if cfgfile := viper.GetString("config"); cfgfile != "" {
 		// Use config file from the flag.
-		utils.Log.Info("Using config file: " + cfgfile)
+		utils.Log.Info("%s Using config file: %s", constants.StageInit, cfgfile)
 		viper.SetConfigFile(cfgfile)
 	} else {
 		// Use default config file name and directory
@@ -94,9 +105,10 @@ func LoadConfig() {
 		// Handle errors reading the config file
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found
-			utils.Log.Info("Using zero-config...")
+			utils.Log.Info("%s %s | Using zero-config...", constants.IconCog.Str(), constants.StageInit)
 		} else {
-			fmt.Println("\nError found in config file at: ", viper.ConfigFileUsed(), "\n", err)
+			utils.Log.Error("\nError found in config file at: %s", viper.ConfigFileUsed())
+			utils.Log.Error(err.Error())
 			os.Exit(0)
 		}
 	}

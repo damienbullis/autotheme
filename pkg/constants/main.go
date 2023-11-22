@@ -44,6 +44,7 @@ var fallbackMap = IconFallbackMap{
 	IconRainbow:   "[~]",
 	IconDNA:       "",
 	IconPalette:   "",
+	IconPackage:   "",
 }
 
 type Icons string
@@ -68,6 +69,7 @@ const (
 	IconRainbow   Icons = "🌈"
 	IconDNA       Icons = "🧬"
 	IconPalette   Icons = "🎨"
+	IconPackage   Icons = "📦"
 )
 
 func (i Icons) Str() string {
