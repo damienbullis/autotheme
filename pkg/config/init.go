@@ -7,7 +7,6 @@ import (
 	"math"
 	"os"
 
-	"github.com/lucasb-eyer/go-colorful"
 	"github.com/spf13/viper"
 )
 
@@ -25,33 +24,27 @@ type Config struct {
 	// TODO: Add more config options
 }
 
+const stage = constants.StageInit
+
 func GetConfig() Config {
-	utils.Log.Debug("GetConfig - Start")
+	utils.Log.Debug("[ %s ] GetConfig - Start", stage)
 	// check some values and set defaults if not provided
 	if viper.GetString("primary") == "" {
 		c := utils.GetRandomColor()
-		utils.Log.Info("%s %s | No color provided... using random color: %s", constants.IconCog.Str(), constants.StageInit, c)
+		utils.Log.Debug("[ %s ] No color provided... using %s", stage, c)
 		viper.Set("primary", c)
 	}
 	if viper.GetString("harmony") == "" {
 		h := harmony.GetRandomHarmony()
-		utils.Log.Info("%s %s | No harmony provided... using random harmony: %s", constants.IconCog.Str(), constants.StageInit, h)
+		utils.Log.Debug("[ %s ] No harmony provided... using %s", stage, h)
 		viper.Set("harmony", h)
 	}
 	if viper.GetFloat64("scalar") == 0 {
 		s := (1 + math.Sqrt(5)) / 2
-		utils.Log.Info("%s %s | No scalar provided... using default: "+utils.Str(
-			"%f",
-			&colorful.Color{
-				R: 0.5,
-				G: 0.5,
-				B: 0.5,
-			},
-			nil,
-		), constants.IconCog.Str(), constants.StageInit, s)
+		utils.Log.Debug("[ %s ] No scalar provided... using %f", stage, s)
 		viper.Set("scalar", s)
 	}
-	utils.Log.Debug("GetConfig - End")
+	utils.Log.Debug("[ %s ] GetConfig - End", stage)
 
 	// Return the config struct
 	return Config{
@@ -90,7 +83,7 @@ func LoadConfig() {
 
 	if cfgfile := viper.GetString("config"); cfgfile != "" {
 		// Use config file from the flag.
-		utils.Log.Info("%s Using config file: %s", constants.StageInit, cfgfile)
+		utils.Log.Info("[ %s ] Config file provided %s", stage, cfgfile)
 		viper.SetConfigFile(cfgfile)
 	} else {
 		// Use default config file name and directory
@@ -105,7 +98,7 @@ func LoadConfig() {
 		// Handle errors reading the config file
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found
-			utils.Log.Info("%s %s | Using zero-config...", constants.IconCog.Str(), constants.StageInit)
+			utils.Log.Debug("[ %s ] Using zero-config...", stage)
 		} else {
 			utils.Log.Error("\nError found in config file at: %s", viper.ConfigFileUsed())
 			utils.Log.Error(err.Error())
