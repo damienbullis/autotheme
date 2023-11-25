@@ -2,15 +2,17 @@ package cmd
 
 import (
 	"autotheme/pkg/config"
+	"autotheme/pkg/constants"
+
 	c "autotheme/pkg/constants"
 	"autotheme/pkg/core"
-	"autotheme/pkg/core/print"
 	"autotheme/pkg/utils"
 	"fmt"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -33,27 +35,30 @@ var rootCmd = &cobra.Command{
 		startTime := time.Now()
 		config := config.GetConfig()
 
-		utils.Log.Info("AutoTheme Started! (v" + utils.GetVersion() + ")")
-
-		// Run root command here
-		// utils.PrettyPrint(config)
+		var introStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(config.Primary))
+		utils.Log.Info(introStyle.Render("\nAutoTheme " + ("(v" + utils.GetVersion() + ")\n")))
 
 		// Generate theme
-		utils.Log.Debug("Generating theme start...")
+		utils.Log.Debug("[ %s ] Generating theme start...", constants.StageBuild)
 		palette := core.GeneratePalette(config)
+
+		utils.Log.Info(
+			utils.FgStr("grey", "%s %s\n%s %s\n%s %s\n"),
+			"Light colors generated...",
+			c.IconCheck.Str(),
+			"Dark colors generated...",
+			c.IconCheck.Str(),
+			"Theme colors generated...",
+			c.IconCheck.Str(),
+		)
+
+		utils.Log.Info("\n" + introStyle.Render(c.IconRocket.Str()+" Palette Generated!\n"))
 		scale := core.GenerateScale(config)
+
 		noise := core.GenerateNoise(config)
-		utils.Log.Debug("Generating theme end...")
+		utils.Log.Debug("[ %s ] Generating theme end", constants.StageBuild)
 
 		// core.GenerateFilters(&config, &palette) // TODO: finish filters
-
-		text, harmony := print.PrintPalette(palette)
-		utils.Log.Info("\n" + c.IconPalette.Str() + " " + text + "\n")
-		utils.Log.Info("\n" + c.IconPalette.Str() + " " + harmony + "\n")
-		utils.Log.Info(c.IconRocket.Str() + " Palette Generated! (" + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms)\n")
-
-		print.PrintScaling(scale)
-		print.PrintNoise(noise)
 
 		// Write theme to file
 		core.WriteTheme(config, palette, scale, noise)

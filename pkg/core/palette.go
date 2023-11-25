@@ -2,8 +2,11 @@ package core
 
 import (
 	"autotheme/pkg/config"
+	"autotheme/pkg/constants"
 	"autotheme/pkg/core/harmony"
 	"autotheme/pkg/utils"
+	"fmt"
+	"strings"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -23,6 +26,16 @@ type TextColorType struct {
 	Light    colorful.Color
 	Neutral  colorful.Color
 	Contrast colorful.Color
+}
+
+func (t *TextColorType) GetColors() []colorful.Color {
+	return []colorful.Color{
+		t.Main,
+		t.Dark,
+		t.Light,
+		t.Neutral,
+		t.Contrast,
+	}
 }
 
 type HarmonyColorType struct {
@@ -62,6 +75,27 @@ type HarmonyType struct {
 	Harmony5 *HarmonyColorType
 }
 
+func (m ModeType) GetColors() []TextColorType {
+	nonNilColors := []TextColorType{
+		m.Harmony0,
+		m.Harmony1,
+	}
+	if m.Harmony2 != nil {
+		nonNilColors = append(nonNilColors, *m.Harmony2)
+	}
+	if m.Harmony3 != nil {
+		nonNilColors = append(nonNilColors, *m.Harmony3)
+	}
+	if m.Harmony4 != nil {
+		nonNilColors = append(nonNilColors, *m.Harmony4)
+	}
+	if m.Harmony5 != nil {
+		nonNilColors = append(nonNilColors, *m.Harmony5)
+	}
+
+	return nonNilColors
+}
+
 func (h HarmonyType) GetColors() []HarmonyColorType {
 	nonNilColors := []HarmonyColorType{
 		h.Harmony0,
@@ -89,21 +123,49 @@ type Palette struct {
 	Harmony HarmonyType
 }
 
+var stage = string(constants.StageBuild)
+
+func Tab(n int) string {
+	return strings.Repeat("  ", n)
+}
+
 // Calc the contrast ratio of the colors based on the best off white and black colors
 // [WCAG 2.2 AAA](https://www.w3.org/TR/WCAG22/#contrast-minimum)
 // Text = 7:1 / Large Text = 4.5:1
 
 // Builds the palette based on the color and harmony provided
 func GeneratePalette(config config.Config) Palette {
-	utils.Log.Debug("GeneratingPalette - Start")
 	hex, _ := colorful.Hex(config.Primary)
+	utils.Log.Info("Calculating your %s color scheme\n\n",
+		utils.Str(config.Harmony, &hex, nil),
+	)
 
 	// Get the harmony function
 	harmonyFn := harmony.GetHarmonyFn(config.Harmony)
-
+	harmony := harmonyFn(hex)
+	hLength := len(harmony)
 	// Generate the palette based on the harmony colors
 	var palette []ColorType
-	for _, color := range harmonyFn(hex) {
+	for i, color := range harmony {
+		var char string
+		end := ""
+		start := "        "
+		if i == hLength-1 {
+			char = "╰─ "
+		} else if i == 0 {
+			char = "─┬─ "
+			start = "HARMONY"
+			end = "(primary)"
+		} else {
+			char = "├─ "
+		}
+
+		utils.Log.Info(
+			"%s %s %s\n",
+			utils.FgStr("grey", start+Tab(1)+char),
+			utils.Str(color.Hex(), &color, nil),
+			utils.FgStr("grey", end),
+		)
 		h, s, _ := color.Hsl()
 		palette = append(palette, ColorType{
 			Color:  color,
@@ -116,14 +178,13 @@ func GeneratePalette(config config.Config) Palette {
 	}
 
 	bestOffW, bestOffB := getOffWB(palette, hex)
-
+	fmt.Println()
 	results := Palette{
 		Light:   buildModeStruct(palette, bestOffW, "light"),
 		Dark:    buildModeStruct(palette, bestOffB, "dark"),
 		Harmony: buildHarmonyStruct(palette),
 	}
 
-	utils.Log.Debug("GeneratingPalette - End")
 	return results
 }
 
@@ -199,7 +260,6 @@ func buildTextColorStruct(color ColorType, offColor colorful.Color, mode string)
 func getTextColor(colors []colorful.Color, offColor colorful.Color) colorful.Color {
 	for _, color := range colors {
 		// Return the first color that has a contrast ratio of 7:1
-
 		if cr := utils.ContrastRatio(color, offColor); cr >= 7 {
 			return color
 		}
@@ -210,6 +270,7 @@ func getTextColor(colors []colorful.Color, offColor colorful.Color) colorful.Col
 }
 
 func buildHarmonyStruct(palette []ColorType) HarmonyType {
+
 	var harmony HarmonyType
 	for i, color := range palette {
 		switch i {
@@ -290,7 +351,6 @@ func buildHarmonyColorStruct(color ColorType) HarmonyColorType {
 			results.Light5 = tint
 		}
 	}
-
 	return results
 }
 

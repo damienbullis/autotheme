@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"autotheme/pkg/constants"
 	"os"
 	"strconv"
 
@@ -48,4 +49,19 @@ func str(text string, fgColor, bgColor *colorful.Color) string {
 
 func GetRandomColor() string {
 	return colorful.FastHappyColor().Hex()
+}
+
+func FgStr(color, text string) string {
+	if c, ok := constants.ColorMap[color]; ok {
+		return Str(text, &c, nil)
+	}
+	Log.Error("Color %s not supported by ColorMap", color)
+	return text
+}
+func BgStr(color, text string) string {
+	if c, ok := constants.ColorMap[color]; ok {
+		return Str(text, nil, &c)
+	}
+	Log.Error("Color %s not supported by ColorMap", color)
+	return text
 }

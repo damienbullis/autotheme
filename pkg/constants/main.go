@@ -36,8 +36,6 @@ var fallbackMap = IconFallbackMap{
 	IconFire:      "",
 	IconStar:      "[*]",
 	IconArrow:     "[->]",
-	IconLight:     "[ ]",
-	IconDark:      "[■]",
 	IconLightning: "[~]",
 	IconRecycle:   "[♻]",
 	IconSparkles:  "[*]",
@@ -59,10 +57,8 @@ const (
 	IconCog       Icons = "⚙"
 	IconRocket    Icons = "🚀"
 	IconFire      Icons = "🔥"
-	IconStar      Icons = "★"
+	IconStar      Icons = "🌟"
 	IconArrow     Icons = "➤"
-	IconLight     Icons = "⚪️"
-	IconDark      Icons = "⚫️"
 	IconLightning Icons = "⚡️"
 	IconRecycle   Icons = "♻️"
 	IconSparkles  Icons = "✨"
@@ -112,7 +108,7 @@ var (
 	yellow  = colorful.Color{R: 1, G: 1, B: 0}
 	cyan    = colorful.Color{R: 0, G: 1, B: 1}
 	magenta = colorful.Color{R: 1, G: 0, B: 1}
-	gray    = colorful.Color{R: 0.5, G: 0.5, B: 0.5}
+	grey    = colorful.Color{R: 0.5, G: 0.5, B: 0.5}
 	orange  = colorful.Color{R: 1, G: 0.5, B: 0}
 	purple  = colorful.Color{R: 0.5, G: 0, B: 1}
 	pink    = colorful.Color{R: 1, G: 0, B: 0.5}
@@ -127,7 +123,7 @@ var (
 		"yellow":  yellow,
 		"cyan":    cyan,
 		"magenta": magenta,
-		"gray":    gray,
+		"grey":    grey,
 		"orange":  orange,
 		"purple":  purple,
 		"pink":    pink,

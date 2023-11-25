@@ -65,9 +65,9 @@ func (l *MyLogger) Debug(format string, v ...any) {
 
 func (l *MyLogger) Info(format string, v ...any) {
 	l.consoleLogger.Printf(format, v...)
-	if l.fileLogger != nil {
-		l.fileLogger.Printf("[INFO] "+format, v...)
-	}
+	// if l.fileLogger != nil {
+	// l.fileLogger.Printf("[INFO] "+format, v...)
+	// }
 }
 
 func (l *MyLogger) Warn(format string, v ...any) {
