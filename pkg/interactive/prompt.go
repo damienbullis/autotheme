@@ -25,7 +25,7 @@ func Prompt() {
 		os.Exit(1)
 	}
 	if color == "" {
-		fmt.Print(utils.FgStr("grey", "...picking you a color..."))
+		fmt.Print(utils.FgStr("grey", "...thinking..."))
 		color = utils.GetRandomColor()
 
 		// Prompt user to confirm random color
@@ -58,8 +58,8 @@ func Prompt() {
 		os.Exit(1)
 	}
 	if harmonyInput == "" {
-		fmt.Print(utils.FgStr("grey", "\r...picking a harmony..."))
 		harmonyInput = harmony.GetRandomHarmony()
+		fmt.Printf(utils.FgStr("grey", "\r...how about %s..."), harmonyInput)
 	} else if config.CheckHarmonyFlag(harmonyInput) != nil {
 		utils.Log.Error("Invalid harmony provided")
 		os.Exit(1)
