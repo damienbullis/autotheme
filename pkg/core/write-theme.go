@@ -2,7 +2,8 @@ package core
 
 import (
 	"autotheme/pkg/config"
-	"fmt"
+	"autotheme/pkg/constants"
+	"autotheme/pkg/utils"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -49,9 +50,20 @@ func WriteTheme(
 	err := writeFile(config.Output, fullTheme)
 
 	if err != nil {
-		fmt.Println("Error writing theme to file: ", err)
+		utils.Log.Error("Error writing theme to file: %s", err)
 		os.Exit(0)
 	}
+	utils.Log.Info(
+		"'%s' %s %s",
+		config.Output,
+		utils.FgStr("grey", "generated..."),
+		utils.FgStr("green", constants.IconCheck.Str()),
+	)
+	utils.Log.Debug(
+		"[ %s ] '%s' created successfully.",
+		constants.StageDone,
+		config.Output,
+	)
 
 }
 
@@ -68,7 +80,7 @@ func writeFile(output string, content string) error {
 	// Check if the file already exists
 	filePath := filepath.Join(outputPath, filename)
 	if _, err := os.Stat(filePath); err == nil {
-		fmt.Println("File already exists. Overwriting...")
+		utils.Log.Warn("File already exists. Overwriting...")
 	}
 
 	// Create or open the file
@@ -84,7 +96,6 @@ func writeFile(output string, content string) error {
 		return err
 	}
 
-	fmt.Printf("'%s' created successfully.\n", filePath)
 	return nil
 }
 
