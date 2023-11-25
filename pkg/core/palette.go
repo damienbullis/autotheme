@@ -130,15 +130,16 @@ var stage = string(constants.StageBuild)
 // Builds the palette based on the color and harmony provided
 func GeneratePalette(config config.Config) Palette {
 	hex, _ := colorful.Hex(config.Primary)
-	utils.Log.Debug(
-		"[ %s ] Harmony: '%s' & Primary: '%s'\n",
-		stage,
-		config.Harmony,
-		config.Primary,
-	)
+
 	utils.Log.Info("Calculating your %s color scheme with %s\n",
 		utils.Str(config.Harmony, &hex, nil),
 		utils.Str(config.Primary, &hex, nil),
+	)
+	utils.Log.Debug(
+		"[ %s ] Calculating your %s color scheme with %s\n",
+		stage,
+		config.Harmony,
+		config.Primary,
 	)
 
 	// Get the harmony function
@@ -164,9 +165,7 @@ func GeneratePalette(config config.Config) Palette {
 		Dark:    buildModeStruct(palette, bestOffB, "dark"),
 		Harmony: buildHarmonyStruct(palette),
 	}
-	utils.Log.Debug("[ %s ] Light: %+v\n", stage, results.Light)
-	utils.Log.Debug("[ %s ] Dark: %+v\n", stage, results.Dark)
-	utils.Log.Debug("[ %s ] Harmony: %+v\n", stage, results.Harmony)
+
 	return results
 }
 
@@ -230,6 +229,7 @@ func buildTextColorStruct(color ColorType, offColor colorful.Color, mode string)
 	} else if mode == "dark" {
 		contrast = color.OffW
 	}
+
 	return TextColorType{
 		Main:     makeAccessible(color.Color, offColor),
 		Dark:     getTextColor(color.Shades, offColor),
@@ -273,7 +273,6 @@ func buildHarmonyStruct(palette []ColorType) HarmonyType {
 			harmony.Harmony5 = &temp
 		}
 	}
-
 	return harmony
 }
 
@@ -332,6 +331,7 @@ func buildHarmonyColorStruct(color ColorType) HarmonyColorType {
 			results.Light5 = tint
 		}
 	}
+
 	return results
 }
 
