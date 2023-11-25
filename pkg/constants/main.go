@@ -30,9 +30,8 @@ var fallbackMap = IconFallbackMap{
 	IconCheck:     "[√]",
 	IconCross:     "[x]",
 	IconWarn:      "[!]",
-	IconWait:      "[...]",
-	IconWrench:    "",
 	IconRocket:    "",
+	IconParty:     "",
 	IconFire:      "",
 	IconStar:      "[*]",
 	IconLightning: "[~]",
@@ -51,9 +50,8 @@ const (
 	IconWarn      Icons = "⚠"
 	IconLightning Icons = "⚡️"
 	// Emoji
-	IconWait     Icons = "⌛"
-	IconWrench   Icons = "🔧"
 	IconRocket   Icons = "🚀"
+	IconParty    Icons = "🎉"
 	IconFire     Icons = "🔥"
 	IconStar     Icons = "🌟"
 	IconSparkles Icons = "✨"

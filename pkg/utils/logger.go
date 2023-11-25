@@ -5,8 +5,6 @@ import (
 	"io"
 	"log"
 	"os"
-
-	"github.com/lucasb-eyer/go-colorful"
 )
 
 type MyLogger struct {
@@ -71,14 +69,14 @@ func (l *MyLogger) Info(format string, v ...any) {
 }
 
 func (l *MyLogger) Warn(format string, v ...any) {
-	l.consoleLogger.Printf(Str("[WARN] "+format, &colorful.Color{R: 255, G: 165, B: 0}, nil), v...)
+	l.consoleLogger.Printf(FgStr("grey", "[WARN] "+format), v...)
 	if l.fileLogger != nil {
 		l.fileLogger.Printf("[WARN] "+format, v...)
 	}
 }
 
 func (l *MyLogger) Error(format string, v ...any) {
-	l.consoleLogger.Printf(Str("[ERROR] "+format, &colorful.Color{R: 255, G: 0, B: 0}, nil), v...)
+	l.consoleLogger.Printf(FgStr("red", "[ERROR] "+format), v...)
 	if l.fileLogger != nil {
 		l.fileLogger.Printf("[ERROR] "+format, v...)
 	}
