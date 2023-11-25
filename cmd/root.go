@@ -20,9 +20,9 @@ var rootCmd = &cobra.Command{
 	Long:    `AutoTheme is a zero-config theme generator using color theory, sensible options & defaults, and modern HTML and CSS features.`,
 	Aliases: []string{"auto"},
 	Args: func(cmd *cobra.Command, args []string) error {
-		if err := config.CheckColorFlag(); err != nil {
+		if err := config.CheckColorFlag(viper.GetString("color")); err != nil {
 			return err
-		} else if err := config.CheckHarmonyFlag(); err != nil {
+		} else if err := config.CheckHarmonyFlag(viper.GetString("harmony")); err != nil {
 			return err
 		}
 

@@ -34,11 +34,10 @@ var initCmd = &cobra.Command{
 		)
 
 		if yes {
-			utils.Log.Error("Interactive Prompt is not yet implemented.")
-			interactive.Prompt()
-		} else {
 			utils.Log.Error("'Yes' configuration is not yet implemented.")
 			// core.WriteConfig()
+		} else {
+			interactive.Prompt()
 		}
 
 		utils.Log.Info(
