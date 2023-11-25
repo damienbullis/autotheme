@@ -119,6 +119,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
+
 	cobra.OnInitialize(config.LoadConfig)
 
 	// CLI ONLY
@@ -154,6 +155,21 @@ func init() {
 
 	// ??? Not sure
 	viper.SetDefault("entrypoint", "")
+
+	// Create logger
+	var err error
+	var logFile interface{}
+
+	if viper.IsSet("log-file") {
+		logFile = viper.GetString("log-file")
+	} else {
+		logFile = nil
+	}
+
+	utils.Log, err = utils.NewLogger(viper.GetBool("silent"), logFile)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func Execute() {

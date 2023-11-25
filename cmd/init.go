@@ -1,41 +1,50 @@
 package cmd
 
 import (
+	"autotheme/pkg/constants"
 	"autotheme/pkg/interactive"
-	"fmt"
+	"autotheme/pkg/utils"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
+var (
+	yes bool
+)
+
 func init() {
 	rootCmd.AddCommand(initCmd)
-
 	// Init command flags
-	initCmd.Flags().BoolP("interactive", "i", false, "Enable interactive mode for the init command")
+	initCmd.Flags().BoolVarP(&yes, "yes", "y", false, "Skip interactive mode and use default values")
 
 	// Bind flags to viper
-	viper.BindPFlag("interactive", initCmd.Flags().Lookup("interactive"))
-
+	viper.BindPFlag("yes", initCmd.Flags().Lookup("yes"))
 }
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initialize AutoTheme",
-	Long:  `Generated a config file for AutoTheme.`,
+	Short: "Initialize AutoTheme configuration",
+	Long:  `Generate a configuration file for AutoTheme. This will generate the file in your current working directory (CWD)`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Initializing AutoTheme...")
-		// Run init command here
+		utils.Log.Info(
+			utils.FgStr("grey", "\nInitializing AutoTheme (v%s)..."),
+			utils.GetVersion(),
+		)
 
-		// Check if interactive mode is enabled
-		if viper.GetBool("interactive") {
+		if yes {
+			utils.Log.Error("Interactive Prompt is not yet implemented.")
 			interactive.Prompt()
 		} else {
-			fmt.Println("Auto generating config file...")
-			// NEXT: Generate config file
+			utils.Log.Error("'Yes' configuration is not yet implemented.")
+			// core.WriteConfig()
 		}
 
-		fmt.Println("AutoTheme Initialized!")
+		utils.Log.Info(
+			"\n%s %s\n",
+			"Your AutoTheme configuration has been generated.",
+			utils.FgStr("green", constants.IconCheck.Str()),
+		)
 	},
 }

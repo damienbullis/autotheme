@@ -68,21 +68,6 @@ func LoadConfig() {
 
 	viper.AutomaticEnv()
 
-	// Create logger
-	var err error
-
-	var logFile interface{}
-	if viper.IsSet("log-file") {
-		logFile = viper.GetString("log-file")
-	} else {
-		logFile = nil
-	}
-
-	utils.Log, err = utils.NewLogger(viper.GetBool("silent"), logFile)
-	if err != nil {
-		panic(err)
-	}
-
 	if cfgfile := viper.GetString("config"); cfgfile != "" {
 		// Use config file from the flag.
 		utils.Log.Info("[ %s ] Config file provided %s", stage, cfgfile)
