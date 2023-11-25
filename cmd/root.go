@@ -2,14 +2,11 @@ package cmd
 
 import (
 	"autotheme/pkg/config"
-	"autotheme/pkg/constants"
-
 	c "autotheme/pkg/constants"
 	"autotheme/pkg/core"
 	"autotheme/pkg/utils"
 	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
@@ -36,34 +33,77 @@ var rootCmd = &cobra.Command{
 		config := config.GetConfig()
 
 		var introStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(config.Primary))
-		utils.Log.Info(introStyle.Render("\nAutoTheme " + ("(v" + utils.GetVersion() + ")\n")))
+		utils.Log.Info(
+			"\n%s %s\n\n",
+			introStyle.Render("AutoTheme"),
+			utils.FgStr("grey", "(v"+utils.GetVersion()+")"),
+		)
 
 		// Generate theme
-		utils.Log.Debug("[ %s ] Generating theme start...", constants.StageBuild)
+		utils.Log.Debug("[ %s ] Generating theme...", c.StageBuild)
 		palette := core.GeneratePalette(config)
 
 		utils.Log.Info(
-			utils.FgStr("grey", "%s %s\n%s %s\n%s %s\n"),
-			"Light colors generated...",
-			c.IconCheck.Str(),
-			"Dark colors generated...",
-			c.IconCheck.Str(),
-			"Theme colors generated...",
-			c.IconCheck.Str(),
+			"%s %s %s",
+			"Light",
+			utils.FgStr("grey", "mode colors generated..."),
+			utils.FgStr("green", c.IconCheck.Str()),
 		)
+		utils.Log.Debug("[ %s ] Light mode colors:\n%+v\n", c.StageBuild, palette.Light)
 
-		utils.Log.Info("\n" + introStyle.Render(c.IconRocket.Str()+" Palette Generated!\n"))
+		if config.Darkmode {
+			utils.Log.Info(
+				"%s %s %s",
+				"Dark",
+				utils.FgStr("grey", "mode colors generated..."),
+				utils.FgStr("green", c.IconCheck.Str()),
+			)
+			utils.Log.Debug("[ %s ] Dark mode colors:\n%+v\n", c.StageBuild, palette.Dark)
+		}
+
+		utils.Log.Info(
+			"%s %s %s",
+			"Harmony",
+			utils.FgStr("grey", "colors generated..."),
+			utils.FgStr("green", c.IconCheck.Str()),
+		)
+		utils.Log.Debug("[ %s ] Harmony colors:\n%+v\n", c.StageBuild, palette.Harmony)
+
 		scale := core.GenerateScale(config)
+		utils.Log.Info(
+			"%s %s %s",
+			"Scale",
+			utils.FgStr("grey", "generated..."),
+			utils.FgStr("green", c.IconCheck.Str()),
+		)
+		utils.Log.Debug("[ %s ] Scale:\n%+v\n", c.StageBuild, scale)
 
 		noise := core.GenerateNoise(config)
-		utils.Log.Debug("[ %s ] Generating theme end", constants.StageBuild)
+		utils.Log.Info(
+			"%s %s %s",
+			"Noise",
+			utils.FgStr("grey", "generated..."),
+			utils.FgStr("green", c.IconCheck.Str()),
+		)
+		utils.Log.Debug("[ %s ] Noise:\n%+v\n", c.StageBuild, noise)
 
 		// core.GenerateFilters(&config, &palette) // TODO: finish filters
 
 		// Write theme to file
 		core.WriteTheme(config, palette, scale, noise)
 
-		utils.Log.Info(c.IconCheck.Str() + " AutoTheme Finished! (" + strconv.FormatInt(time.Since(startTime).Milliseconds(), 10) + "ms)")
+		utils.Log.Info(
+			"\n%s %s %s",
+			c.IconParty.Str(),
+			introStyle.Render("AutoTheme has finished generating your theme!"),
+			utils.FgStr("grey", fmt.Sprintf("(%dms)", time.Since(startTime).Milliseconds())),
+		)
+		utils.Log.Debug(
+			"[ %s ] AutoTheme has finished generating your theme! (%dms)",
+			c.StageDone,
+			time.Since(startTime).Milliseconds(),
+		)
+
 	},
 }
 
