@@ -104,6 +104,17 @@ var rootCmd = &cobra.Command{
 			time.Since(startTime).Milliseconds(),
 		)
 
+		if config.Preview {
+			utils.Log.Info(
+				"\n%s %s %s",
+				c.IconRocket.Str(),
+				"Launching preview in your browser...",
+				utils.FgStr("grey", "(This may take a few seconds)"),
+			)
+			utils.Log.Debug("[ %s ] Launching preview in your browser...", c.StageDone)
+			// core.LaunchPreview(config)
+		}
+
 	},
 }
 
