@@ -5,8 +5,6 @@ import (
 	"autotheme/pkg/constants"
 	"autotheme/pkg/core/harmony"
 	"autotheme/pkg/utils"
-	"fmt"
-	"strings"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -125,10 +123,6 @@ type Palette struct {
 
 var stage = string(constants.StageBuild)
 
-func Tab(n int) string {
-	return strings.Repeat("  ", n)
-}
-
 // Calc the contrast ratio of the colors based on the best off white and black colors
 // [WCAG 2.2 AAA](https://www.w3.org/TR/WCAG22/#contrast-minimum)
 // Text = 7:1 / Large Text = 4.5:1
@@ -136,36 +130,23 @@ func Tab(n int) string {
 // Builds the palette based on the color and harmony provided
 func GeneratePalette(config config.Config) Palette {
 	hex, _ := colorful.Hex(config.Primary)
-	utils.Log.Info("Calculating your %s color scheme\n\n",
+	utils.Log.Debug(
+		"[ %s ] Harmony: '%s' & Primary: '%s'\n",
+		stage,
+		config.Harmony,
+		config.Primary,
+	)
+	utils.Log.Info("Calculating your %s color scheme with %s\n",
 		utils.Str(config.Harmony, &hex, nil),
+		utils.Str(config.Primary, &hex, nil),
 	)
 
 	// Get the harmony function
 	harmonyFn := harmony.GetHarmonyFn(config.Harmony)
 	harmony := harmonyFn(hex)
-	hLength := len(harmony)
 	// Generate the palette based on the harmony colors
 	var palette []ColorType
-	for i, color := range harmony {
-		var char string
-		end := ""
-		start := "        "
-		if i == hLength-1 {
-			char = "╰─ "
-		} else if i == 0 {
-			char = "─┬─ "
-			start = "HARMONY"
-			end = "(primary)"
-		} else {
-			char = "├─ "
-		}
-
-		utils.Log.Info(
-			"%s %s %s\n",
-			utils.FgStr("grey", start+Tab(1)+char),
-			utils.Str(color.Hex(), &color, nil),
-			utils.FgStr("grey", end),
-		)
+	for _, color := range harmony {
 		h, s, _ := color.Hsl()
 		palette = append(palette, ColorType{
 			Color:  color,
@@ -178,13 +159,14 @@ func GeneratePalette(config config.Config) Palette {
 	}
 
 	bestOffW, bestOffB := getOffWB(palette, hex)
-	fmt.Println()
 	results := Palette{
 		Light:   buildModeStruct(palette, bestOffW, "light"),
 		Dark:    buildModeStruct(palette, bestOffB, "dark"),
 		Harmony: buildHarmonyStruct(palette),
 	}
-
+	utils.Log.Debug("[ %s ] Light: %+v\n", stage, results.Light)
+	utils.Log.Debug("[ %s ] Dark: %+v\n", stage, results.Dark)
+	utils.Log.Debug("[ %s ] Harmony: %+v\n", stage, results.Harmony)
 	return results
 }
 
@@ -270,7 +252,6 @@ func getTextColor(colors []colorful.Color, offColor colorful.Color) colorful.Col
 }
 
 func buildHarmonyStruct(palette []ColorType) HarmonyType {
-
 	var harmony HarmonyType
 	for i, color := range palette {
 		switch i {

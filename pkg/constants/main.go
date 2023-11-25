@@ -2,6 +2,7 @@ package constants
 
 import (
 	"os"
+	"strings"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -31,16 +32,12 @@ var fallbackMap = IconFallbackMap{
 	IconWarn:      "[!]",
 	IconWait:      "[...]",
 	IconWrench:    "",
-	IconCog:       "",
 	IconRocket:    "",
 	IconFire:      "",
 	IconStar:      "[*]",
-	IconArrow:     "[->]",
 	IconLightning: "[~]",
-	IconRecycle:   "[♻]",
 	IconSparkles:  "[*]",
 	IconRainbow:   "[~]",
-	IconDNA:       "",
 	IconPalette:   "",
 	IconPackage:   "",
 }
@@ -48,24 +45,21 @@ var fallbackMap = IconFallbackMap{
 type Icons string
 
 const (
-	// Icons
+	// ASCII
 	IconCheck     Icons = "✔"
 	IconCross     Icons = "✘"
 	IconWarn      Icons = "⚠"
-	IconWait      Icons = "⌛"
-	IconWrench    Icons = "🔧"
-	IconCog       Icons = "⚙"
-	IconRocket    Icons = "🚀"
-	IconFire      Icons = "🔥"
-	IconStar      Icons = "🌟"
-	IconArrow     Icons = "➤"
 	IconLightning Icons = "⚡️"
-	IconRecycle   Icons = "♻️"
-	IconSparkles  Icons = "✨"
-	IconRainbow   Icons = "🌈"
-	IconDNA       Icons = "🧬"
-	IconPalette   Icons = "🎨"
-	IconPackage   Icons = "📦"
+	// Emoji
+	IconWait     Icons = "⌛"
+	IconWrench   Icons = "🔧"
+	IconRocket   Icons = "🚀"
+	IconFire     Icons = "🔥"
+	IconStar     Icons = "🌟"
+	IconSparkles Icons = "✨"
+	IconRainbow  Icons = "🌈"
+	IconPalette  Icons = "🎨"
+	IconPackage  Icons = "📦"
 )
 
 func (i Icons) Str() string {
@@ -130,3 +124,7 @@ var (
 		"teal":    teal,
 	}
 )
+
+func Tab(n int) string {
+	return strings.Repeat("  ", n)
+}
