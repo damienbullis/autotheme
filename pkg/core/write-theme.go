@@ -11,7 +11,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-const TAB = "    "
+var TAB = constants.Tab(2)
 
 func WriteTheme(
 	config config.Config,
@@ -80,7 +80,7 @@ func writeFile(output string, content string) error {
 	// Check if the file already exists
 	filePath := filepath.Join(outputPath, filename)
 	if _, err := os.Stat(filePath); err == nil {
-		utils.Log.Warn("File already exists. Overwriting...")
+		utils.Log.Warn("Overwriting your previous %s...", filename)
 	}
 
 	// Create or open the file
@@ -194,7 +194,6 @@ func writeGradient(rootTheme *string, palette Palette, config config.Config) {
 		line += "\n" + TAB + TAB + "rgba(" + writeRgb(c) + ", var(--at-opacity))"
 
 		if j < rainbowLen-1 {
-
 			line += ","
 		}
 	}

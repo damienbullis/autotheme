@@ -21,6 +21,7 @@ type Config struct {
 	Gradients  bool
 	Prefix     string
 	RootFont   int
+	Preview    bool
 	// TODO: Add more config options
 }
 
@@ -58,6 +59,7 @@ func GetConfig() Config {
 		Gradients:  viper.GetBool("gradients"),
 		Prefix:     viper.GetString("prefix"),
 		RootFont:   viper.GetInt("fontsize"),
+		Preview:    viper.GetBool("preview"),
 	}
 }
 

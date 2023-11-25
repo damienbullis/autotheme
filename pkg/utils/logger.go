@@ -54,18 +54,14 @@ func NewLogger(silent bool, logFile interface{}) (*MyLogger, error) {
 
 }
 
-// TODO: FINISH THIS
+func (l *MyLogger) Info(format string, v ...any) {
+	l.consoleLogger.Printf(format, v...)
+}
+
 func (l *MyLogger) Debug(format string, v ...any) {
 	if l.fileLogger != nil {
 		l.fileLogger.Printf("[DEBUG] "+format, v...)
 	}
-}
-
-func (l *MyLogger) Info(format string, v ...any) {
-	l.consoleLogger.Printf(format, v...)
-	// if l.fileLogger != nil {
-	// l.fileLogger.Printf("[INFO] "+format, v...)
-	// }
 }
 
 func (l *MyLogger) Warn(format string, v ...any) {
