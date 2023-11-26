@@ -68,7 +68,7 @@ func Prompt() {
 	}
 
 	utils.Log.Info(
-		utils.Str("Dark Mode: %s %s\n", &clr, nil),
+		utils.Str("%s %s\n", &clr, nil),
 		strings.ToUpper(darkmode),
 		constants.IconCheck.Str(),
 	)
