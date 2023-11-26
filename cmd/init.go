@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"autotheme/pkg/constants"
 	"autotheme/pkg/interactive"
 	"autotheme/pkg/utils"
 
@@ -29,7 +28,7 @@ var initCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Log.Info(
-			utils.FgStr("grey", "\nInitializing AutoTheme (v%s)...\n"),
+			utils.FgStr("grey", "\nInitializing AutoTheme (v%s)...\n\n"),
 			utils.GetVersion(),
 		)
 
@@ -38,11 +37,5 @@ var initCmd = &cobra.Command{
 		} else {
 			interactive.Prompt()
 		}
-
-		utils.Log.Info(
-			"\n%s %s\n",
-			"Your AutoTheme configuration has been generated.",
-			utils.FgStr("green", constants.IconCheck.Str()),
-		)
 	},
 }
