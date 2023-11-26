@@ -2,7 +2,6 @@ package core
 
 import (
 	"autotheme/pkg/config"
-	"autotheme/pkg/constants"
 	"autotheme/pkg/core/harmony"
 	"autotheme/pkg/utils"
 
@@ -121,8 +120,6 @@ type Palette struct {
 	Harmony HarmonyType
 }
 
-var stage = string(constants.StageBuild)
-
 // Calc the contrast ratio of the colors based on the best off white and black colors
 // [WCAG 2.2 AAA](https://www.w3.org/TR/WCAG22/#contrast-minimum)
 // Text = 7:1 / Large Text = 4.5:1
@@ -134,12 +131,6 @@ func GeneratePalette(config config.Config) Palette {
 	utils.Log.Info("Calculating your %s color scheme with %s\n",
 		utils.Str(config.Harmony, &hex, nil),
 		utils.Str(config.Primary, &hex, nil),
-	)
-	utils.Log.Debug(
-		"[ %s ] Calculating your %s color scheme with %s\n",
-		stage,
-		config.Harmony,
-		config.Primary,
 	)
 
 	// Get the harmony function

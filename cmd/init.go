@@ -34,7 +34,6 @@ var initCmd = &cobra.Command{
 		)
 
 		if yes {
-			utils.Log.Error("'Yes' configuration is not yet implemented.")
 			// core.WriteConfig()
 		} else {
 			interactive.Prompt()

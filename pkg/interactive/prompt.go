@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/lipgloss"
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 func Prompt() {
@@ -27,11 +27,20 @@ func Prompt() {
 	if color == "" {
 		fmt.Print(utils.FgStr("grey", "...thinking..."))
 		color = utils.GetRandomColor()
-
+		cstr, err := colorful.Hex(color)
+		if err != nil {
+			utils.Log.Error("Error converting color to hex: %s", err)
+			os.Exit(1)
+		}
 		// Prompt user to confirm random color
-		fmt.Printf("\nUse %s as your color? %s ", lipgloss.NewStyle().Foreground(lipgloss.Color(color)).Render(color), utils.FgStr("grey", "(y/n)"))
+		fmt.Printf(
+			"\nUse %s as your color? %s ",
+			utils.Str(color, &cstr, nil),
+			utils.FgStr("grey", "(y/n)"),
+		)
+
 		var confirm string
-		_, err := fmt.Scanln(&confirm)
+		_, err = fmt.Scanln(&confirm)
 		if err != nil && err.Error() != "unexpected newline" {
 			utils.Log.Error("Error reading input: %s", err)
 			os.Exit(1)
@@ -43,7 +52,7 @@ func Prompt() {
 		utils.Log.Error("Invalid color provided")
 		os.Exit(1)
 	}
-	fmt.Printf("%s\n", utils.FgStr("green", constants.IconCheck.Str()))
+
 	// Prompt user for harmony
 	fmt.Printf(
 		"%s %s ",

@@ -24,9 +24,9 @@ func supportsEmoji() bool {
 		termEmulator == "iterm"
 }
 
-type IconFallbackMap map[Icons]string
+type iconFallbackMap map[Icons]string
 
-var fallbackMap = IconFallbackMap{
+var fallbackMap = iconFallbackMap{
 	IconCheck:     "[√]",
 	IconCross:     "[x]",
 	IconWarn:      "[!]",
@@ -66,19 +66,6 @@ func (i Icons) Str() string {
 	}
 	return fallbackMap[i]
 }
-
-type Anims string
-
-const (
-	AnimDots     Anims = "⠋⠙⠚⠞⠖⠦⠴⠲⠳⠓"
-	AnimDots2    Anims = "⣾⣽⣻⢿⡿⣟⣯⣷"
-	AnimBars     Anims = "▁▃▄▅▆▇█▇▆▅▄▃"
-	AnimGradient Anims = "█▓▒░"
-	AnimSquare   Anims = "◰◳◲◱"
-	AnimCircle   Anims = "◴◷◶◵"
-	AnimArc      Anims = "◜◝◞◟"
-	AnimBounce   Anims = "⠁⠂⠄⠂"
-)
 
 type Stages string
 
@@ -126,3 +113,16 @@ var (
 func Tab(n int) string {
 	return strings.Repeat("  ", n)
 }
+
+// type Anims string
+
+// const (
+// 	AnimDots     Anims = "⠋⠙⠚⠞⠖⠦⠴⠲⠳⠓"
+// 	AnimDots2    Anims = "⣾⣽⣻⢿⡿⣟⣯⣷"
+// 	AnimBars     Anims = "▁▃▄▅▆▇█▇▆▅▄▃"
+// 	AnimGradient Anims = "█▓▒░"
+// 	AnimSquare   Anims = "◰◳◲◱"
+// 	AnimCircle   Anims = "◴◷◶◵"
+// 	AnimArc      Anims = "◜◝◞◟"
+// 	AnimBounce   Anims = "⠁⠂⠄⠂"
+// )

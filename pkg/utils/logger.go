@@ -2,80 +2,38 @@
 package utils
 
 import (
-	"io"
+	"fmt"
 	"log"
 	"os"
+
+	"github.com/spf13/viper"
 )
 
-type MyLogger struct {
-	fileLogger    *log.Logger
+type Logger struct {
 	consoleLogger *log.Logger
-	silent        bool
 }
 
-func NewLogger(silent bool, logFile interface{}) (*MyLogger, error) {
-	stdOut := os.Stdout
-
-	if silent {
-		stdOut = nil
-	}
-
-	var fileWriter io.Writer
-
-	// if log wasnt provided, use nothing for fileWriter
-	if logFile == nil {
-		fileWriter = nil
-	} else {
-		if logFile := logFile.(string); logFile != "" {
-			// if log was provided, use it as a file path
-			file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-			if err != nil {
-				return nil, err
-			}
-			fileWriter = file
-		} else {
-			// if log was provided but is empty, use stdout
-			fileWriter = stdOut
-		}
-
-	}
-
-	results := &MyLogger{
-		fileLogger:    nil,
-		consoleLogger: log.New(stdOut, "", 0),
-		silent:        silent,
-	}
-
-	if fileWriter != nil {
-		results.fileLogger = log.New(fileWriter, "[AutoTheme] ", log.LstdFlags)
-	}
-
-	return results, nil
-
-}
-
-func (l *MyLogger) Info(format string, v ...any) {
+func (l *Logger) Info(format string, v ...any) {
 	l.consoleLogger.Printf(format, v...)
 }
 
-func (l *MyLogger) Debug(format string, v ...any) {
-	if l.fileLogger != nil {
-		l.fileLogger.Printf("[DEBUG] "+format, v...)
-	}
+func (l *Logger) Warn(format string, v ...any) {
+	l.consoleLogger.Printf(FgStr("grey", "[WARN] ")+format, v...)
 }
 
-func (l *MyLogger) Warn(format string, v ...any) {
-	l.consoleLogger.Printf(FgStr("grey", "[WARN] "+format), v...)
-	if l.fileLogger != nil {
-		l.fileLogger.Printf("[WARN] "+format, v...)
-	}
+func (l *Logger) Error(format string, v ...any) {
+	l.consoleLogger.Printf(FgStr("red", "[ERROR] ")+format, v...)
 }
 
-func (l *MyLogger) Error(format string, v ...any) {
-	l.consoleLogger.Printf(FgStr("red", "[ERROR] "+format), v...)
-	if l.fileLogger != nil {
-		l.fileLogger.Printf("[ERROR] "+format, v...)
+var Log *Logger
+
+func init() {
+	writer := os.Stdout
+	if viper.GetBool("silent") {
+		fmt.Printf("Silent mode enabled\n")
+		writer = nil
+	}
+	Log = &Logger{
+		consoleLogger: log.New(writer, "", 0),
 	}
 }
-
-var Log *MyLogger

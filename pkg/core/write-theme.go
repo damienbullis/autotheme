@@ -59,11 +59,6 @@ func WriteTheme(
 		utils.FgStr("grey", "generated..."),
 		utils.FgStr("green", constants.IconCheck.Str()),
 	)
-	utils.Log.Debug(
-		"[ %s ] '%s' created successfully.",
-		constants.StageDone,
-		config.Output,
-	)
 
 }
 

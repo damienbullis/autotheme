@@ -28,24 +28,19 @@ type Config struct {
 const stage = constants.StageInit
 
 func GetConfig() Config {
-	utils.Log.Debug("[ %s ] GetConfig - Start", stage)
 	// check some values and set defaults if not provided
 	if viper.GetString("primary") == "" {
 		c := utils.GetRandomColor()
-		utils.Log.Debug("[ %s ] No color provided... using %s", stage, c)
 		viper.Set("primary", c)
 	}
 	if viper.GetString("harmony") == "" {
 		h := harmony.GetRandomHarmony()
-		utils.Log.Debug("[ %s ] No harmony provided... using %s", stage, h)
 		viper.Set("harmony", h)
 	}
 	if viper.GetFloat64("scalar") == 0 {
 		s := (1 + math.Sqrt(5)) / 2
-		utils.Log.Debug("[ %s ] No scalar provided... using %f", stage, s)
 		viper.Set("scalar", s)
 	}
-	utils.Log.Debug("[ %s ] GetConfig - End", stage)
 
 	// Return the config struct
 	return Config{
@@ -85,7 +80,7 @@ func LoadConfig() {
 		// Handle errors reading the config file
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found
-			utils.Log.Debug("[ %s ] Using zero-config...", stage)
+			// utils.Log.Debug("[ %s ] Using zero-config...", stage)
 		} else {
 			utils.Log.Error("\nError found in config file at: %s", viper.ConfigFileUsed())
 			utils.Log.Error(err.Error())

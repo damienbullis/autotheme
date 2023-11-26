@@ -20,12 +20,16 @@ var rootCmd = &cobra.Command{
 	Long:    `AutoTheme is a zero-config theme generator using color theory, sensible options & defaults, and modern HTML and CSS features.`,
 	Aliases: []string{"auto"},
 	Args: func(cmd *cobra.Command, args []string) error {
-		if err := config.CheckColorFlag(viper.GetString("color")); err != nil {
-			return err
-		} else if err := config.CheckHarmonyFlag(viper.GetString("harmony")); err != nil {
-			return err
+		if viper.IsSet("color") && viper.GetString("color") != "" {
+			if err := config.CheckColorFlag(viper.GetString("color")); err != nil {
+				return err
+			}
 		}
-
+		if viper.IsSet("harmony") && viper.GetString("harmony") != "" {
+			if err := config.CheckHarmonyFlag(viper.GetString("harmony")); err != nil {
+				return err
+			}
+		}
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -40,7 +44,6 @@ var rootCmd = &cobra.Command{
 		)
 
 		// Generate theme
-		utils.Log.Debug("[ %s ] Generating theme...", c.StageBuild)
 		palette := core.GeneratePalette(config)
 
 		utils.Log.Info(
@@ -49,7 +52,6 @@ var rootCmd = &cobra.Command{
 			utils.FgStr("grey", "mode colors generated..."),
 			utils.FgStr("green", c.IconCheck.Str()),
 		)
-		utils.Log.Debug("[ %s ] Light mode colors:\n%+v\n", c.StageBuild, palette.Light)
 
 		if config.Darkmode {
 			utils.Log.Info(
@@ -58,7 +60,6 @@ var rootCmd = &cobra.Command{
 				utils.FgStr("grey", "mode colors generated..."),
 				utils.FgStr("green", c.IconCheck.Str()),
 			)
-			utils.Log.Debug("[ %s ] Dark mode colors:\n%+v\n", c.StageBuild, palette.Dark)
 		}
 
 		utils.Log.Info(
@@ -67,7 +68,6 @@ var rootCmd = &cobra.Command{
 			utils.FgStr("grey", "colors generated..."),
 			utils.FgStr("green", c.IconCheck.Str()),
 		)
-		utils.Log.Debug("[ %s ] Harmony colors:\n%+v\n", c.StageBuild, palette.Harmony)
 
 		scale := core.GenerateScale(config)
 		utils.Log.Info(
@@ -76,7 +76,6 @@ var rootCmd = &cobra.Command{
 			utils.FgStr("grey", "generated..."),
 			utils.FgStr("green", c.IconCheck.Str()),
 		)
-		utils.Log.Debug("[ %s ] Scale:\n%+v\n", c.StageBuild, scale)
 
 		noise := core.GenerateNoise(config)
 		utils.Log.Info(
@@ -85,7 +84,6 @@ var rootCmd = &cobra.Command{
 			utils.FgStr("grey", "generated..."),
 			utils.FgStr("green", c.IconCheck.Str()),
 		)
-		utils.Log.Debug("[ %s ] Noise:\n%+v\n", c.StageBuild, noise)
 
 		// core.GenerateFilters(&config, &palette) // TODO: finish filters
 
@@ -98,11 +96,6 @@ var rootCmd = &cobra.Command{
 			introStyle.Render("AutoTheme has finished generating your theme!"),
 			utils.FgStr("grey", fmt.Sprintf("(%dms)", time.Since(startTime).Milliseconds())),
 		)
-		utils.Log.Debug(
-			"[ %s ] AutoTheme has finished generating your theme! (%dms)",
-			c.StageDone,
-			time.Since(startTime).Milliseconds(),
-		)
 
 		if config.Preview {
 			utils.Log.Info(
@@ -111,7 +104,6 @@ var rootCmd = &cobra.Command{
 				"Launching preview in your browser...",
 				utils.FgStr("grey", "(This may take a few seconds)"),
 			)
-			utils.Log.Debug("[ %s ] Launching preview in your browser...", c.StageDone)
 			// core.LaunchPreview(config)
 		}
 
@@ -125,7 +117,6 @@ func init() {
 	// CLI ONLY
 	rootCmd.Flags().BoolP("silent", "s", false, "Silence all output from AutoTheme.")
 	rootCmd.Flags().String("config", "", "Config file (default is ./.autotheme)")
-	rootCmd.Flags().String("log-file", "", "Log file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file.")
 
 	// Root command flags
 	rootCmd.Flags().StringP("color", "c", "", "Primary color (hex) for AutoTheme to use. If not supplied, AutoTheme will pick a random color.")
@@ -136,7 +127,6 @@ func init() {
 	// Bind cli-only flags to viper
 	viper.BindPFlag("config", rootCmd.Flags().Lookup("config"))
 	viper.BindPFlag("silent", rootCmd.Flags().Lookup("silent"))
-	viper.BindPFlag("log-file", rootCmd.Flags().Lookup("log-file"))
 
 	// Bind root command flags to viper
 	viper.BindPFlag("color", rootCmd.Flags().Lookup("color"))
@@ -154,22 +144,7 @@ func init() {
 	viper.SetDefault("fontsize", 16.0)
 
 	// ??? Not sure
-	viper.SetDefault("entrypoint", "")
-
-	// Create logger
-	var err error
-	var logFile interface{}
-
-	if viper.IsSet("log-file") {
-		logFile = viper.GetString("log-file")
-	} else {
-		logFile = nil
-	}
-
-	utils.Log, err = utils.NewLogger(viper.GetBool("silent"), logFile)
-	if err != nil {
-		panic(err)
-	}
+	// viper.SetDefault("entrypoint", "")
 }
 
 func Execute() {
