@@ -29,7 +29,7 @@ var initCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.Log.Info(
-			utils.FgStr("grey", "\nInitializing AutoTheme (v%s)..."),
+			utils.FgStr("grey", "\nInitializing AutoTheme (v%s)...\n"),
 			utils.GetVersion(),
 		)
 
