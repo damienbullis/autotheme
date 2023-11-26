@@ -57,7 +57,8 @@ const (
 	IconSparkles Icons = "✨"
 	IconRainbow  Icons = "🌈"
 	IconPalette  Icons = "🎨"
-	IconPackage  Icons = "📦"
+
+	IconPackage Icons = "📦"
 )
 
 func (i Icons) Str() string {
@@ -77,38 +78,21 @@ const (
 
 type Colors map[string]colorful.Color
 
-var (
-	// Colors
-	black   = colorful.Color{R: 0, G: 0, B: 0}
-	white   = colorful.Color{R: 1, G: 1, B: 1}
-	red     = colorful.Color{R: 1, G: 0, B: 0}
-	green   = colorful.Color{R: 0, G: 1, B: 0}
-	blue    = colorful.Color{R: 0, G: 0, B: 1}
-	yellow  = colorful.Color{R: 1, G: 1, B: 0}
-	cyan    = colorful.Color{R: 0, G: 1, B: 1}
-	magenta = colorful.Color{R: 1, G: 0, B: 1}
-	grey    = colorful.Color{R: 0.5, G: 0.5, B: 0.5}
-	orange  = colorful.Color{R: 1, G: 0.5, B: 0}
-	purple  = colorful.Color{R: 0.5, G: 0, B: 1}
-	pink    = colorful.Color{R: 1, G: 0, B: 0.5}
-	teal    = colorful.Color{R: 0, G: 0.5, B: 1}
-	// ColorMap
-	ColorMap = Colors{
-		"black":   black,
-		"white":   white,
-		"red":     red,
-		"green":   green,
-		"blue":    blue,
-		"yellow":  yellow,
-		"cyan":    cyan,
-		"magenta": magenta,
-		"grey":    grey,
-		"orange":  orange,
-		"purple":  purple,
-		"pink":    pink,
-		"teal":    teal,
-	}
-)
+var ColorMap = Colors{
+	"black":   colorful.Color{R: 0, G: 0, B: 0},
+	"white":   colorful.Color{R: 1, G: 1, B: 1},
+	"red":     colorful.Color{R: 1, G: 0, B: 0},
+	"green":   colorful.Color{R: 0, G: 1, B: 0},
+	"blue":    colorful.Color{R: 0, G: 0, B: 1},
+	"yellow":  colorful.Color{R: 1, G: 1, B: 0},
+	"cyan":    colorful.Color{R: 0, G: 1, B: 1},
+	"magenta": colorful.Color{R: 1, G: 0, B: 1},
+	"grey":    colorful.Color{R: 0.5, G: 0.5, B: 0.5},
+	"orange":  colorful.Color{R: 1, G: 0.5, B: 0},
+	"purple":  colorful.Color{R: 0.5, G: 0, B: 1},
+	"pink":    colorful.Color{R: 1, G: 0, B: 0.5},
+	"teal":    colorful.Color{R: 0, G: 0.5, B: 1},
+}
 
 func Tab(n int) string {
 	return strings.Repeat("  ", n)
