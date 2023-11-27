@@ -115,6 +115,6 @@ func HarmonyPrompt() (string, error) {
 	if m, ok := m.(harmonyModel); ok && m.choice != "" {
 		return m.choice, nil
 	} else {
-		return "", errors.New("nevermind")
+		return "", errors.New("exit")
 	}
 }

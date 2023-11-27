@@ -17,12 +17,12 @@ func Prompt() {
 		os.Exit(1)
 	}
 	clr, _ := colorful.Hex(color)
-	utils.Log.Info(utils.Str("%s %s\n", &clr, nil), color, constants.IconCheck.Str())
+	utils.Log.Info(utils.Str("\n%s %s\n", &clr, nil), color, constants.IconCheck.Str())
 
 	// Check new Harmony prompt
 	harmony, err := HarmonyPrompt()
 	if err != nil {
-		if err.Error() == "nevermind" {
+		if err.Error() == "exit" {
 			clearScreen()
 			utils.Log.Info("\nExiting...\n")
 			os.Exit(0)
@@ -50,7 +50,7 @@ func Prompt() {
 	} else {
 		darkmode = "true"
 	}
-
+	clearLine()
 	utils.Log.Info(
 		utils.Str("%s %s\n", &clr, nil),
 		strings.ToUpper(darkmode),
@@ -68,4 +68,7 @@ func Prompt() {
 
 func clearScreen() {
 	fmt.Print("\033[H\033[2J")
+}
+func clearLine() {
+	fmt.Print("\033[2K\r")
 }
