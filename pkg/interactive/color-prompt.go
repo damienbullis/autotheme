@@ -2,38 +2,97 @@ package interactive
 
 import (
 	"autotheme/pkg/config"
+	"autotheme/pkg/constants"
 	"autotheme/pkg/utils"
+	"errors"
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/lucasb-eyer/go-colorful"
 )
 
+type colorModel struct {
+	textInput textinput.Model
+	err       error
+}
+
+func (m colorModel) Init() tea.Cmd {
+	return textinput.Blink
+}
+
+func (m colorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyEnter, tea.KeyCtrlC, tea.KeyEsc:
+			return m, tea.Quit
+		}
+
+	// We handle errors just like any other message
+	case error:
+		m.err = msg
+		return m, nil
+	}
+
+	m.textInput, cmd = m.textInput.Update(msg)
+	return m, cmd
+}
+
+func (m colorModel) View() string {
+	s := "  Enter a color:\n\n"
+	s += m.textInput.View() + "\n\n"
+	s += utils.FgStr("grey", "  (esc to quit)") + "\n\n"
+
+	if m.err != nil {
+		s += utils.FgStr("red", fmt.Sprintf(
+			"  %s %s",
+			constants.IconCross.Str(),
+			m.err,
+		)) + "\n"
+	}
+
+	return s
+}
+
+func initialModel() colorModel {
+	ti := textinput.New()
+	ti.Placeholder = "(press enter to use a random color)"
+	ti.Focus()
+	return colorModel{
+		textInput: ti,
+		err:       nil,
+	}
+}
+
 func ColorPrompt() (string, error) {
+	p := tea.NewProgram(initialModel())
 
-	// Prompt user for color
-	utils.Log.Info(
-		"%s %s ",
-		"Please enter a color:",
-		utils.FgStr("grey", "(or enter to use a random color)"),
-	)
-	var color string
-
-	// Read answer
-	_, err := fmt.Scanln(&color)
-	if err != nil && err.Error() != "unexpected newline" {
-		return "", err
+	m, err := p.Run()
+	if err != nil {
+		utils.Log.Error("Error running prompt: %s", err)
+		os.Exit(1)
 	}
 
-	if color == "" {
-		// if color is empty, get a random color
+	if m, ok := m.(colorModel); ok {
+		if m.textInput.Value() == "" {
+			for i := 0; i < 6; i++ {
+				fmt.Printf("\033[2K\033[1A")
+			}
+
+			return getColor()
+		}
+		color := m.textInput.Value()
+		if err := config.CheckColorFlag(color); err != nil {
+			return "", err
+		}
+		return color, nil
+	} else {
 		return getColor()
-
-	} else if config.CheckColorFlag(color) != nil {
-		// if color is not valid, prompt again
-		return ColorPrompt()
 	}
-	return color, nil
 }
 
 func getColor() (string, error) {
@@ -57,7 +116,9 @@ func getColor() (string, error) {
 		return color, nil
 	}
 	if confirm == "n" || confirm == "N" || confirm == "no" {
+		fmt.Printf("\033[2K\033[1A\r")
+
 		return getColor()
 	}
-	return "", nil
+	return "", errors.New("exit")
 }
