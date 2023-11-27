@@ -11,15 +11,20 @@ import (
 )
 
 func Prompt() {
+	// Prompt user for color
 	color, err := ColorPrompt()
 	if err != nil {
 		utils.Log.Error("%s\n", err)
 		os.Exit(1)
 	}
-	clr, _ := colorful.Hex(color)
-	utils.Log.Info(utils.Str("\n%s %s\n", &clr, nil), color, constants.IconCheck.Str())
 
-	// Check new Harmony prompt
+	result, _ := colorful.Hex(color)
+
+	// Result
+	clearScreen()
+	utils.Log.Info(utils.Str("%s %s\n", &result, nil), color, constants.IconCheck.Str())
+
+	// Prompt user for harmony
 	harmony, err := HarmonyPrompt()
 	if err != nil {
 		if err.Error() == "exit" {
@@ -31,7 +36,10 @@ func Prompt() {
 			os.Exit(1)
 		}
 	}
-	utils.Log.Info(utils.Str("%s %s\n", &clr, nil), harmony, constants.IconCheck.Str())
+	clearScreen()
+
+	utils.Log.Info(utils.Str("%s %s\n", &result, nil), color, constants.IconCheck.Str())
+	utils.Log.Info(utils.Str("%s %s\n", &result, nil), harmony, constants.IconCheck.Str())
 
 	// Prompt user for darkmode
 	fmt.Printf(
@@ -52,7 +60,7 @@ func Prompt() {
 	}
 	clearLine()
 	utils.Log.Info(
-		utils.Str("%s %s\n", &clr, nil),
+		utils.Str("%s %s\n", &result, nil),
 		strings.ToUpper(darkmode),
 		constants.IconCheck.Str(),
 	)
