@@ -12,6 +12,8 @@ import (
 
 func Prompt() {
 	// Prompt user for color
+	clearScreen()
+	utils.Log.Info("\nInitialize your %s config!\n\n", utils.FgStr("magenta", "AutoTheme"))
 	color, err := ColorPrompt()
 	if err != nil {
 		utils.Log.Error("%s\n", err)

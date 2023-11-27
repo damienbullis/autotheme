@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"autotheme/pkg/interactive"
-	"autotheme/pkg/utils"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -27,11 +26,6 @@ var initCmd = &cobra.Command{
 	Long:  `Generate a configuration file for AutoTheme. This will generate the file in your current working directory (CWD)`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		utils.Log.Info(
-			utils.FgStr("grey", "\nInitializing AutoTheme (v%s)...\n\n"),
-			utils.GetVersion(),
-		)
-
 		if yes {
 			// core.WriteConfig()
 		} else {

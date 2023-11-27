@@ -95,6 +95,7 @@ func ColorPrompt() (string, error) {
 	}
 }
 
+// Replace this with a prompt that uses the bubbletea library
 func getColor() (string, error) {
 	color := utils.GetRandomColor()
 	cstr, _ := colorful.Hex(color)
