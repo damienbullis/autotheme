@@ -16,6 +16,9 @@ func Prompt() {
 	utils.Log.Info("\nInitialize your %s config!\n\n", utils.FgStr("magenta", "AutoTheme"))
 	color, err := ColorPrompt()
 	if err != nil {
+		if err.Error() == "exit" {
+			os.Exit(0)
+		}
 		utils.Log.Error("%s\n", err)
 		os.Exit(1)
 	}

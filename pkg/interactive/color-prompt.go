@@ -10,7 +10,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/lucasb-eyer/go-colorful"
 )
 
 type colorModel struct {
@@ -28,7 +27,10 @@ func (m colorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyEnter, tea.KeyCtrlC, tea.KeyEsc:
+		case tea.KeyCtrlC, tea.KeyEsc:
+			m.err = errors.New("exit")
+			return m, tea.Quit
+		case tea.KeyEnter:
 			return m, tea.Quit
 		}
 
@@ -58,7 +60,7 @@ func (m colorModel) View() string {
 	return s
 }
 
-func initialModel() colorModel {
+func initialColorModel() colorModel {
 	ti := textinput.New()
 	ti.Placeholder = "(press enter to use a random color)"
 	ti.Focus()
@@ -68,8 +70,23 @@ func initialModel() colorModel {
 	}
 }
 
+type confirmColorModel struct {
+	textInput textinput.Model
+	err       error
+}
+
+func initialConfirmColorModel() confirmColorModel {
+	ti := textinput.New()
+	ti.Placeholder = "(y/n)"
+	ti.Focus()
+	return confirmColorModel{
+		textInput: ti,
+		err:       nil,
+	}
+}
+
 func ColorPrompt() (string, error) {
-	p := tea.NewProgram(initialModel())
+	p := tea.NewProgram(initialColorModel())
 
 	m, err := p.Run()
 	if err != nil {
@@ -78,48 +95,20 @@ func ColorPrompt() (string, error) {
 	}
 
 	if m, ok := m.(colorModel); ok {
+		if m.err != nil && m.err.Error() == "exit" {
+			return "", errors.New("exit")
+		}
 		if m.textInput.Value() == "" {
-			for i := 0; i < 6; i++ {
-				fmt.Printf("\033[2K\033[1A")
-			}
-
-			return getColor()
+			return "", errors.New("not implemented (add random color)")
 		}
 		color := m.textInput.Value()
+
 		if err := config.CheckColorFlag(color); err != nil {
 			return "", err
 		}
-		return color, nil
-	} else {
-		return getColor()
-	}
-}
 
-// Replace this with a prompt that uses the bubbletea library
-func getColor() (string, error) {
-	color := utils.GetRandomColor()
-	cstr, _ := colorful.Hex(color)
-
-	// Prompt user to confirm random color
-	utils.Log.Info(
-		"Use %s? %s ",
-		utils.Str(color, &cstr, nil),
-		utils.FgStr("grey", "(y/n)"),
-	)
-	var confirm string
-
-	_, err := fmt.Scanln(&confirm)
-	if err != nil && err.Error() != "unexpected newline" {
-		utils.Log.Error("Error reading input: %s", err)
-		os.Exit(1)
-	}
-	if confirm == "y" || confirm == "Y" || confirm == "yes" || confirm == "" {
 		return color, nil
 	}
-	if confirm == "n" || confirm == "N" || confirm == "no" {
-		fmt.Printf("\033[2K\033[1A\r")
 
-		return getColor()
-	}
-	return "", errors.New("exit")
+	return "", errors.New("not implemented")
 }
