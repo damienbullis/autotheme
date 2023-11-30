@@ -142,7 +142,7 @@ func colorConfirmPrompt() (string, error) {
 		os.Exit(1)
 	}
 
-	clearLinesAndMoveCursor(6)
+	clearLinesAndMoveCursor(8)
 	if m, ok := m.(confirmColorModel); ok {
 		if m.err != nil && m.err.Error() == "exit" {
 			return "", errors.New("exit")

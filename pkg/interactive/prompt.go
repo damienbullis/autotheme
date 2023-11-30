@@ -33,17 +33,16 @@ func createOutputStr(color colorful.Color) func(value, title string) string {
 func Prompt() {
 	// Prompt user for color
 	clearScreen()
-	utils.Log.Info("\nInitialize your %s config!\n\n", utils.FgStr("magenta", "AutoTheme"))
+	output := strings.Builder{}
+	output.WriteString(fmt.Sprintf("\nInitialize your %s config!\n\n", utils.FgStr("magenta", "AutoTheme")))
+	utils.Log.Info(output.String())
 	color, err := ColorPrompt()
 	handleError(err)
 
 	result, _ := colorful.Hex(color)
 	outputStr := createOutputStr(result)
-	output := strings.Builder{}
+
 	output.WriteString(outputStr(color, "Primary"))
-	// Result
-	// clearLinesAndMoveCursor(1)
-	// TODO: Add in a full result of for the user to see, rather than just minimal info like this
 	utils.Log.Info(output.String())
 
 	// Prompt user for harmony
