@@ -5,7 +5,6 @@ import (
 	"autotheme/pkg/utils"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -17,6 +16,8 @@ func Prompt() {
 	color, err := ColorPrompt()
 	if err != nil {
 		if err.Error() == "exit" {
+			clearScreen()
+			utils.Log.Info("\nExiting...\n")
 			os.Exit(0)
 		}
 		utils.Log.Error("%s\n", err)
@@ -26,7 +27,8 @@ func Prompt() {
 	result, _ := colorful.Hex(color)
 
 	// Result
-	clearScreen()
+	// clearLinesAndMoveCursor(1)
+	// TODO: Add in a full result of for the user to see, rather than just minimal info like this
 	utils.Log.Info(utils.Str("%s %s\n", &result, nil), color, constants.IconCheck.Str())
 
 	// Prompt user for harmony
@@ -43,34 +45,27 @@ func Prompt() {
 	}
 	clearScreen()
 
+	// TODO: replace with result
 	utils.Log.Info(utils.Str("%s %s\n", &result, nil), color, constants.IconCheck.Str())
 	utils.Log.Info(utils.Str("%s %s\n", &result, nil), harmony, constants.IconCheck.Str())
 
 	// Prompt user for darkmode
-	fmt.Printf(
-		"%s %s ",
-		"Using dark mode?",
-		utils.FgStr("grey", "(y/n)"),
-	)
-	var darkmode string
-	_, err = fmt.Scanln(&darkmode)
-	if err != nil && err.Error() != "unexpected newline" {
-		utils.Log.Error("Error reading input: %s", err)
-		os.Exit(1)
+	darkmode, err := DarkmodePrompt()
+	if err != nil {
+		if err.Error() == "exit" {
+			clearScreen()
+			utils.Log.Info("\nExiting...\n")
+			os.Exit(0)
+		} else {
+			utils.Log.Error("\n%s\n", err)
+			os.Exit(1)
+		}
 	}
-	if darkmode != "y" && darkmode != "Y" && darkmode != "yes" && darkmode != "" {
-		darkmode = "false"
-	} else {
-		darkmode = "true"
-	}
-	clearLine()
-	utils.Log.Info(
-		utils.Str("%s %s\n", &result, nil),
-		strings.ToUpper(darkmode),
-		constants.IconCheck.Str(),
-	)
+	clearScreen()
 
-	// NEXT: Add in harmony options
+	utils.Log.Info(utils.Str("%s %s\n", &result, nil), color, constants.IconCheck.Str())
+	utils.Log.Info(utils.Str("%s %s\n", &result, nil), harmony, constants.IconCheck.Str())
+	utils.Log.Info(utils.Str("%s %s\n", &result, nil), darkmode, constants.IconCheck.Str())
 
 	// Prompt user for output
 	// NEXT: Add in output directory

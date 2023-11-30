@@ -88,6 +88,7 @@ func (m harmonyModel) View() string {
 	return s.String()
 }
 
+// TODO: Harmony needs to handle empty input = random
 func HarmonyPrompt() (string, error) {
 	p := tea.NewProgram(harmonyModel{
 		options: []string{

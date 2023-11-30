@@ -160,8 +160,10 @@ func colorConfirmPrompt() (string, error) {
 }
 
 func clearLinesAndMoveCursor(lines int) {
-	fmt.Printf("\033[%dA", lines)
-	fmt.Printf("\033[2K")
+	for i := 0; i < lines; i++ {
+		fmt.Print("\033[A")
+		fmt.Print("\033[2K")
+	}
 }
 
 func ColorPrompt() (string, error) {
