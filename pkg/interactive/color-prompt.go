@@ -10,6 +10,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 type colorModel struct {
@@ -71,6 +72,7 @@ func initialColorModel() colorModel {
 }
 
 type confirmColorModel struct {
+	color     string
 	textInput textinput.Model
 	err       error
 }
@@ -80,9 +82,86 @@ func initialConfirmColorModel() confirmColorModel {
 	ti.Placeholder = "(y/n)"
 	ti.Focus()
 	return confirmColorModel{
+		color:     utils.GetRandomColor(),
 		textInput: ti,
 		err:       nil,
 	}
+}
+
+func (m confirmColorModel) Init() tea.Cmd {
+	return textinput.Blink
+}
+
+func (m confirmColorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyCtrlC, tea.KeyEsc:
+			m.err = errors.New("exit")
+			return m, tea.Quit
+		case tea.KeyEnter:
+			return m, tea.Quit
+		}
+
+	// We handle errors just like any other message
+	case error:
+		m.err = msg
+		return m, nil
+	}
+
+	m.textInput, cmd = m.textInput.Update(msg)
+	return m, cmd
+}
+
+func (m confirmColorModel) View() string {
+	c, _ := colorful.Hex(m.color)
+
+	s := "  Use this color? " + utils.Str(m.color, &c, nil) + "\n\n"
+	s += m.textInput.View() + "\n\n"
+	s += utils.FgStr("grey", "  (esc to quit)") + "\n\n"
+
+	if m.err != nil {
+		s += utils.FgStr("red", fmt.Sprintf(
+			"  %s %s",
+			constants.IconCross.Str(),
+			m.err,
+		)) + "\n"
+	}
+
+	return s
+}
+
+func colorConfirmPrompt() (string, error) {
+	confirm := tea.NewProgram(initialConfirmColorModel())
+
+	m, err := confirm.Run()
+	if err != nil {
+		utils.Log.Error("Error running prompt: %s", err)
+		os.Exit(1)
+	}
+
+	if m, ok := m.(confirmColorModel); ok {
+		if m.err != nil && m.err.Error() == "exit" {
+			return "", errors.New("exit")
+		}
+
+		confirm := m.textInput.Value()
+
+		if confirm == "y" || confirm == "Y" || confirm == "yes" || confirm == "" {
+			return m.color, nil
+		} else {
+			return "", errors.New("exit")
+		}
+	}
+
+	return "", errors.New("should not be here")
+}
+
+func clearLinesAndMoveCursor(lines int) {
+	fmt.Printf("\033[%dA", lines)
+	fmt.Printf("\033[2K")
 }
 
 func ColorPrompt() (string, error) {
@@ -98,8 +177,10 @@ func ColorPrompt() (string, error) {
 		if m.err != nil && m.err.Error() == "exit" {
 			return "", errors.New("exit")
 		}
+		// If user pressed enter, use a random color
 		if m.textInput.Value() == "" {
-			return "", errors.New("not implemented (add random color)")
+			clearLinesAndMoveCursor(6)
+			return colorConfirmPrompt()
 		}
 		color := m.textInput.Value()
 
@@ -107,8 +188,9 @@ func ColorPrompt() (string, error) {
 			return "", err
 		}
 
+		// Success
 		return color, nil
 	}
 
-	return "", errors.New("not implemented")
+	return "", errors.New("should not be here")
 }
