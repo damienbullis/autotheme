@@ -2,6 +2,7 @@ package interactive
 
 import (
 	"autotheme/pkg/constants"
+	"autotheme/pkg/core/harmony"
 	"autotheme/pkg/utils"
 	"errors"
 	"fmt"
@@ -90,21 +91,12 @@ func (m harmonyModel) View() string {
 
 // TODO: Harmony needs to handle empty input = random
 func HarmonyPrompt() (string, error) {
+	options := []string{
+		"random",
+	}
+	options = append(options, harmony.HarmonyTypes...)
 	p := tea.NewProgram(harmonyModel{
-		options: []string{
-			"Random",
-			"Analogous",
-			"Complementary",
-			"Split Complementary",
-			"Triadic",
-			"Tetradic",
-			"Square",
-			"Rectangle",
-			"Lunar Eclipse",
-			"Bi-Polar",
-			"Aurelian",
-			"Retrograde",
-		},
+		options: options,
 	})
 
 	m, err := p.Run()
@@ -114,6 +106,9 @@ func HarmonyPrompt() (string, error) {
 	}
 
 	if m, ok := m.(harmonyModel); ok && m.choice != "" {
+		if m.choice == "random" {
+			return harmony.GetRandomHarmony(), nil
+		}
 		return m.choice, nil
 	} else {
 		return "", errors.New("exit")
