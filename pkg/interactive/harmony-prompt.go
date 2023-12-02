@@ -72,19 +72,22 @@ func randomIcon(currentIndex *int) string {
 	return icons[index]
 }
 
+const rst = "\033[0m"
+
 func (m harmonyModel) View() string {
 	s := strings.Builder{}
-	s.WriteString("\nSelect a harmony\n")
-	s.WriteString(utils.FgStr("grey", "(use ⬆/⬇ to navigate, enter to select)\n\n"))
+	harmonyStr := rst + "\n  Select a harmony\n" + rst
+	harmonyStr += fmt.Sprintf("%s \n\n", utils.FgStr("grey", "  (⬆/⬇ to navigate)"))
+	s.WriteString(utils.FgStr("grey", harmonyStr))
 
 	for i := 0; i < len(m.options); i++ {
 		if m.cursor == i {
-			s.WriteString(fmt.Sprintf("%s %s\n", randomIcon(&i), m.options[i]))
+			s.WriteString(fmt.Sprintf("  %s %s\n", randomIcon(&i), m.options[i]))
 		} else {
-			s.WriteString(utils.FgStr("grey", m.options[i]+"\n"))
+			s.WriteString(utils.FgStr("grey", "  "+m.options[i]+"\n"))
 		}
 	}
-	s.WriteString(utils.FgStr("grey", "\n(press q to quit)\n"))
+	s.WriteString(utils.FgStr("grey", "\n  (press q to quit)\n"))
 
 	return s.String()
 }
@@ -98,7 +101,6 @@ func HarmonyPrompt() (string, error) {
 	p := tea.NewProgram(harmonyModel{
 		options: options,
 	})
-
 	m, err := p.Run()
 	if err != nil {
 		utils.Log.Error("Error running prompt: %s", err)

@@ -46,7 +46,7 @@ func (m colorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m colorModel) View() string {
-	s := "  Enter a color:\n\n"
+	s := "  Enter a color?\n\n"
 	s += m.textInput.View() + "\n\n"
 	s += utils.FgStr("grey", "  (esc to quit)") + "\n\n"
 
