@@ -28,24 +28,33 @@ func checkOutput(path string) error {
 	}
 
 	fullfile := filepath.Join(absPath, "autotheme.css")
-	// recursively create directories if they don't exist
-	if err := os.MkdirAll(absPath, os.ModePerm); err != nil {
-		return err
-	}
 
-	// create file
-	file, err := os.Create(fullfile)
+	// Check if the directory already exists
+	dirInfo, err := os.Stat(absPath)
 	if err != nil {
+		// If the directory doesn't exist, try to create it
+		if os.IsNotExist(err) {
+			return fmt.Errorf("directory %s does not exist", absPath)
+		}
 		return err
 	}
 
-	defer file.Close()
-
-	if err := os.Remove(fullfile); err != nil {
-		return err
+	if !dirInfo.IsDir() {
+		return fmt.Errorf("%s is not a directory", absPath)
 	}
 
-	return nil
+	// Check if the file already exists
+	_, err = os.Stat(fullfile)
+	if err == nil {
+		return fmt.Errorf("file %s already exists", fullfile)
+	}
+
+	// If the error is due to the file not existing, it's acceptable
+	if os.IsNotExist(err) {
+		return nil
+	}
+
+	return err
 }
 
 func (m outputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -59,11 +68,14 @@ func (m outputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case tea.KeyEnter:
 			if m.textInput.Value() == "" {
-				m.textInput.SetValue("./")
+				m.textInput.SetValue(".")
 			}
 
 			if err := checkOutput(m.textInput.Value()); err != nil {
 				m.err = err
+				return m, nil
+			} else if m.textInput.Value() == "/" {
+				m.err = errors.New("cannot use root directory")
 				return m, nil
 			}
 
