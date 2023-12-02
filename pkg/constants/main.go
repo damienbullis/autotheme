@@ -24,23 +24,6 @@ func supportsEmoji() bool {
 		termEmulator == "iterm"
 }
 
-type iconFallbackMap map[Icons]string
-
-var fallbackMap = iconFallbackMap{
-	IconCheck:     "[√]",
-	IconCross:     "[x]",
-	IconWarn:      "[!]",
-	IconRocket:    "",
-	IconParty:     "",
-	IconFire:      "",
-	IconStar:      "[*]",
-	IconLightning: "[~]",
-	IconSparkles:  "[*]",
-	IconRainbow:   "[~]",
-	IconPalette:   "",
-	IconPackage:   "",
-}
-
 type Icons string
 
 const (
@@ -57,6 +40,7 @@ const (
 	IconSparkles Icons = "✨"
 	IconRainbow  Icons = "🌈"
 	IconPalette  Icons = "🎨"
+	IconDevil    Icons = "😈"
 
 	IconPackage Icons = "📦"
 )
@@ -65,7 +49,7 @@ func (i Icons) Str() string {
 	if emojiSupported {
 		return string(i)
 	}
-	return fallbackMap[i]
+	return ""
 }
 
 type Stages string
