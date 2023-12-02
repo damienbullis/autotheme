@@ -81,8 +81,8 @@ type Colors map[string]colorful.Color
 var ColorMap = Colors{
 	"black":   colorful.Color{R: 0, G: 0, B: 0},
 	"white":   colorful.Color{R: 1, G: 1, B: 1},
-	"red":     colorful.Color{R: 1, G: 0, B: 0},
-	"green":   colorful.Color{R: 0, G: 1, B: 0},
+	"red":     colorful.Color{R: 1, G: 0.25, B: 0.25},
+	"green":   colorful.Color{R: 0, G: 1, B: 0.5},
 	"blue":    colorful.Color{R: 0, G: 0, B: 1},
 	"yellow":  colorful.Color{R: 1, G: 1, B: 0},
 	"cyan":    colorful.Color{R: 0, G: 1, B: 1},
