@@ -5,6 +5,8 @@ import (
 	"autotheme/pkg/utils"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -19,6 +21,33 @@ func (m outputModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
+func checkOutput(path string) error {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+
+	fullfile := filepath.Join(absPath, "autotheme.css")
+	// recursively create directories if they don't exist
+	if err := os.MkdirAll(absPath, os.ModePerm); err != nil {
+		return err
+	}
+
+	// create file
+	file, err := os.Create(fullfile)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	if err := os.Remove(fullfile); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m outputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -29,6 +58,15 @@ func (m outputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.err = errors.New("exit")
 			return m, tea.Quit
 		case tea.KeyEnter:
+			if m.textInput.Value() == "" {
+				m.textInput.SetValue("./")
+			}
+
+			if err := checkOutput(m.textInput.Value()); err != nil {
+				m.err = err
+				return m, nil
+			}
+
 			return m, tea.Quit
 		}
 
@@ -78,12 +116,11 @@ func OutputPrompt() (string, error) {
 	}
 
 	if m, ok := m.(outputModel); ok {
-		if m.textInput.Value() == "" {
-
-			return OutputPrompt()
-		} else {
-			return m.textInput.Value(), nil
+		if m.err != nil && m.err.Error() == "exit" {
+			return "", errors.New("exit")
 		}
+
+		return m.textInput.Value(), nil
 	} else {
 		return "", errors.New("exit")
 	}

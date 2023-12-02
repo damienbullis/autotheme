@@ -67,7 +67,7 @@ func Prompt() {
 	// Prompt user for output
 	outputPath, err := OutputPrompt()
 	handleError(err)
-	output.WriteString(outputStr(outputPath, "Output Path"))
+	output.WriteString(outputStr(outputPath, "Output"))
 
 	clearScreen()
 	utils.Log.Info(output.String())
