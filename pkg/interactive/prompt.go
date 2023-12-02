@@ -80,9 +80,9 @@ func Prompt() {
 	output.WriteString(
 		fmt.Sprintf(
 			"\n%s %s %s\n",
-			"AutoTheme",
-			utils.FgStr("grey", "config initialized!"),
-			utils.FgStr("green", constants.IconCheck.Str()),
+			utils.FgStr("white", "AutoTheme"),
+			"config initialized!",
+			constants.IconDevil.Str(),
 		),
 	)
 	utils.Log.Info(output.String())
