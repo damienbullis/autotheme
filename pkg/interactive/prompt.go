@@ -5,6 +5,7 @@ import (
 	"autotheme/pkg/utils"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/lucasb-eyer/go-colorful"
@@ -34,7 +35,9 @@ func Prompt() {
 	// Prompt user for color
 	clearScreen()
 	output := strings.Builder{}
-	output.WriteString(fmt.Sprintf("\nInitialize your %s config!\n\n", utils.FgStr("magenta", "AutoTheme")))
+	output.WriteString(
+		fmt.Sprintf("\nInitializing %s...\n\n", utils.FgStr("white", "AutoTheme")))
+
 	utils.Log.Info(output.String())
 	color, err := ColorPrompt()
 	handleError(err)
@@ -42,37 +45,53 @@ func Prompt() {
 	result, _ := colorful.Hex(color)
 	outputStr := createOutputStr(result)
 
-	output.WriteString(outputStr(color, "Primary"))
+	output.WriteString(outputStr(color, "Primary Color"))
 	utils.Log.Info(output.String())
 
 	// Prompt user for harmony
 	harmony, err := HarmonyPrompt()
 	handleError(err)
-	clearScreen()
-
 	output.WriteString(outputStr(harmony, "Harmony"))
 
+	clearScreen()
 	utils.Log.Info(output.String())
 
 	// Prompt user for darkmode
-	// darkmode, err := DarkmodePrompt()
-	// handleError(err)
-	// // clearScreen()
+	darkmode, err := DarkmodePrompt()
+	handleError(err)
+	output.WriteString(outputStr(strconv.FormatBool(darkmode), "Darkmode"))
 
-	// output.Write([]byte(
-	// 	outputStr(darkmode, "Darkmode"),
-	// ))
+	clearScreen()
+	utils.Log.Info(output.String())
 
 	// Prompt user for output
-	// NEXT: Add in output directory
+	outputPath, err := OutputPrompt()
+	handleError(err)
+	output.WriteString(outputStr(outputPath, "Output Path"))
+
+	clearScreen()
+	utils.Log.Info(output.String())
+
+	// TODO: Prompt the use for Entrypoint?
 
 	// Finally, generate config file
 	// NEXT: Generate config file
+	clearScreen()
+	output.WriteString(
+		fmt.Sprintf(
+			"\n%s %s %s\n",
+			"AutoTheme",
+			utils.FgStr("grey", "config initialized!"),
+			utils.FgStr("green", constants.IconCheck.Str()),
+		),
+	)
+	utils.Log.Info(output.String())
 }
 
 func clearScreen() {
 	fmt.Print("\033[H\r\033[2J\r")
 }
-func clearLine() {
-	fmt.Print("\033[2K\r")
-}
+
+// func clearLine() {
+// 	fmt.Print("\033[2K\r")
+// }
