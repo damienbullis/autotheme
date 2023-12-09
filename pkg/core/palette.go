@@ -4,6 +4,7 @@ import (
 	"autotheme/pkg/config"
 	"autotheme/pkg/core/harmony"
 	"autotheme/pkg/utils"
+	"fmt"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -56,11 +57,10 @@ type TextPalette struct {
 
 func BuildTextColors(harmonyColors []HarmonyColors, offW, offB colorful.Color) TextPalette {
 	var textColors TextPalette
-	var main, dark, light, gray, contrast []colorful.Color
-	lightL, darkL := 0.5, 0.95
+	var dark, light, gray []colorful.Color
+	lightL, darkL := 0.95, 0.05
 
 	for _, palette := range harmonyColors {
-		main = append(main, palette[Root])
 		dark = append(dark, palette[Dark1])
 		dark = append(dark, palette[Dark2])
 		dark = append(dark, palette[Dark3])
@@ -78,32 +78,28 @@ func BuildTextColors(harmonyColors []HarmonyColors, offW, offB colorful.Color) T
 
 		// Light Mode Calculations
 		h, s, _ := palette[Root].Hsl()
-		contrast = append(contrast, colorful.Hsl(h, s, lightL))
 
 		textColors.Light = append(textColors.Light, TextColors{
-			Main:     getTextColor(main, offB),
+			Main:     getTextColor([]colorful.Color{palette[Root]}, offB),
 			Dark:     getTextColor(dark, offB),
 			Light:    getTextColor(light, offB),
 			Neutral:  getTextColor(gray, offB),
-			Contrast: getTextColor(contrast, offB),
+			Contrast: colorful.Hsl(h, s, darkL),
 		})
 
 		// Dark Mode Calculations
-		contrast = append(contrast, colorful.Hsl(h, s, darkL))
 		textColors.Dark = append(textColors.Dark, TextColors{
-			Main:     getTextColor(main, offW),
+			Main:     getTextColor([]colorful.Color{palette[Root]}, offW),
 			Dark:     getTextColor(dark, offW),
 			Light:    getTextColor(light, offW),
 			Neutral:  getTextColor(gray, offW),
-			Contrast: getTextColor(contrast, offW),
+			Contrast: colorful.Hsl(h, s, lightL),
 		})
 
-		// Reset the colors
-		main = nil
+		// Reset the lists
 		dark = nil
 		light = nil
 		gray = nil
-		contrast = nil
 	}
 
 	return textColors
@@ -115,20 +111,20 @@ func BuildHarmonyColors(palette []colorful.Color) []HarmonyColors {
 		h, s, l := color.Hsl()
 		harmonyColors = append(harmonyColors, HarmonyColors{
 			Light5: colorful.Hsl(h, s, l+0.4).Clamped(),
-			Light4: colorful.Hsl(h, s, l+0.3).Clamped(),
-			Light3: colorful.Hsl(h, s, l+0.2).Clamped(),
-			Light2: colorful.Hsl(h, s, l+0.1).Clamped(),
-			Light1: colorful.Hsl(h, s, l+0.05).Clamped(),
+			Light4: colorful.Hsl(h, s, l+(.4*(4.0/5.0))).Clamped(),
+			Light3: colorful.Hsl(h, s, l+(.4*(3.0/5.0))).Clamped(),
+			Light2: colorful.Hsl(h, s, l+(.4*(2.0/5.0))).Clamped(),
+			Light1: colorful.Hsl(h, s, l+(.4*(1.0/5.0))).Clamped(),
 			Root:   color,
-			Dark1:  colorful.Hsl(h, s, l-0.05).Clamped(),
-			Dark2:  colorful.Hsl(h, s, l-0.1).Clamped(),
-			Dark3:  colorful.Hsl(h, s, l-0.2).Clamped(),
-			Dark4:  colorful.Hsl(h, s, l-0.3).Clamped(),
+			Dark1:  colorful.Hsl(h, s, l-0.4*(1.0/5.0)).Clamped(),
+			Dark2:  colorful.Hsl(h, s, l-0.4*(2.0/5.0)).Clamped(),
+			Dark3:  colorful.Hsl(h, s, l-0.4*(3.0/5.0)).Clamped(),
+			Dark4:  colorful.Hsl(h, s, l-0.4*(4.0/5.0)).Clamped(),
 			Dark5:  colorful.Hsl(h, s, l-0.4).Clamped(),
-			Gray1:  colorful.Hsl(h, s-0.1, l).Clamped(),
-			Gray2:  colorful.Hsl(h, s-0.2, l).Clamped(),
-			Gray3:  colorful.Hsl(h, s-0.3, l).Clamped(),
-			Gray4:  colorful.Hsl(h, s-0.4, l).Clamped(),
+			Gray1:  colorful.Hsl(h, s-0.2, l).Clamped(),
+			Gray2:  colorful.Hsl(h, s-0.4, l).Clamped(),
+			Gray3:  colorful.Hsl(h, s-0.6, l).Clamped(),
+			Gray4:  colorful.Hsl(h, s-0.8, l).Clamped(),
 		})
 	}
 	return harmonyColors
@@ -180,24 +176,33 @@ func makeAccessible(color, offColor colorful.Color) colorful.Color {
 
 		// if the off color is light, go darker
 		if l > ol {
-			return makeAccessible(colorful.Hsl(h, s, l+0.1), offColor)
+			return makeAccessible(colorful.Hsl(h, s, l+0.1).Clamped(), offColor)
 		}
 
 		// if the off color is dark, go lighter
-		return makeAccessible(colorful.Hsl(h, s, l-0.1), offColor)
+		return makeAccessible(colorful.Hsl(h, s, l-0.1).Clamped(), offColor)
 	}
 }
 
 func getTextColor(colors []colorful.Color, offColor colorful.Color) colorful.Color {
-	for _, color := range colors {
-		// Return the first color that has a contrast ratio of 7:1
-		if cr := utils.ContrastRatio(color, offColor); cr >= 7 {
-			return color
+	maxIndex, maxRatio := 0, 0.0
+	for i, color := range colors {
+		cr := utils.ContrastRatio(color, offColor)
+		if cr > maxRatio {
+			maxIndex = i
+			maxRatio = cr
 		}
 	}
 
-	// Make sure we have a color
-	return makeAccessible(colors[0], offColor)
+	if maxRatio >= 7 {
+		fmt.Printf("Contrast Ratio: %.2f\n", maxRatio)
+		return colors[maxIndex]
+	} else {
+		// Adjust the color manually
+		c := makeAccessible(colors[0], offColor)
+		fmt.Printf("Adjusted Contrast Ratio: %.2f\n", utils.ContrastRatio(c, offColor))
+		return c
+	}
 }
 
 // Find the best off white and black based on the color provided
