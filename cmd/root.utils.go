@@ -3,9 +3,20 @@ package cmd
 import (
 	"autotheme/pkg/core"
 	"autotheme/pkg/utils"
+	"math/rand"
 
 	lg "github.com/charmbracelet/lipgloss"
 )
+
+func getRandomNumber(min, max int) int {
+	return min + rand.Intn(max-min)
+}
+
+func removeRandomeElement(arr []int) (int, []int) {
+	index := getRandomNumber(0, len(arr))
+	el := arr[index]
+	return el, append(arr[:index], arr[index+1:]...)
+}
 
 func printTextColors(palette core.Palette) {
 
@@ -14,10 +25,17 @@ func printTextColors(palette core.Palette) {
 	harmony := palette.HarmonyPalette
 
 	length := len(harmony)
+	// how can I map over the harmony array and create a new array of the indexes instead of the values?
+	used := make([]int, length)
+	for i := range used {
+		used[i] = i
+	}
 
-	for i := 0; i < length; i++ {
-		utils.Log.Info("\n\n palette color #%d\n\n", i+1)
-		light, dark, _ := textLight[i], textDark[i], harmony[i]
+	for k := 0; k < length; k++ {
+		i, mapped := removeRandomeElement(used)
+		used = mapped
+		utils.Log.Info("\n\n\n palette color #%d\n", k+1)
+		light, dark, harm := textLight[k], textDark[k], harmony[i]
 
 		styleRoot := lg.NewStyle().Border(
 			lg.RoundedBorder(),
@@ -27,7 +45,7 @@ func printTextColors(palette core.Palette) {
 			line := styleRoot.Foreground(
 				lg.Color(v.Hex()),
 			).BorderForeground(
-				lg.Color(harmony[i][core.Dark3].Hex()),
+				lg.Color(harm[core.Dark5].Hex()),
 			).Background(
 				lg.Color(palette.OffWhite.Hex()),
 			).BorderBackground(
@@ -42,7 +60,7 @@ func printTextColors(palette core.Palette) {
 			line := styleRoot.Foreground(
 				lg.Color(v.Hex()),
 			).BorderForeground(
-				lg.Color(harmony[i][core.Light3].Hex()),
+				lg.Color(harm[core.Light5].Hex()),
 			).Background(
 				lg.Color(palette.OffBlack.Hex()),
 			).BorderBackground(
