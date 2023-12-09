@@ -45,7 +45,15 @@ var rootCmd = &cobra.Command{
 		// Generate theme
 		palette := core.GeneratePalette(config)
 		utils.Log.Info(
-			"palette (%s) \n%v ", palette.Primary.Hex(), time.Since(startTime).Milliseconds())
+			"main %s (%dms)\n", palette.Primary.Hex(), time.Since(startTime).Milliseconds())
+		utils.Log.Info(
+			"offwhite %s (%dms)\n", palette.OffWhite.Hex(), time.Since(startTime).Milliseconds())
+		utils.Log.Info(
+			"offblack %s (%dms)\n", palette.OffBlack.Hex(), time.Since(startTime).Milliseconds())
+		utils.Log.Info(
+			"number of harmony colors %d (%dms)\n", len(palette.HarmonyPalette), time.Since(startTime).Milliseconds())
+		utils.Log.Info(
+			"number of text colors %d (%dms)\n", len(palette.TextPalette.Light), time.Since(startTime).Milliseconds())
 
 		// if config.Darkmode {
 		// 	utils.Log.Info(
