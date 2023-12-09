@@ -1,7 +1,6 @@
 package config
 
 import (
-	"autotheme/pkg/constants"
 	"autotheme/pkg/core/harmony"
 	"autotheme/pkg/utils"
 	"math"
@@ -24,8 +23,6 @@ type Config struct {
 	Preview    bool
 	// TODO: Add more config options
 }
-
-const stage = constants.StageInit
 
 func GetConfig() Config {
 	// check some values and set defaults if not provided
@@ -65,7 +62,7 @@ func LoadConfig() {
 
 	if cfgfile := viper.GetString("config"); cfgfile != "" {
 		// Use config file from the flag.
-		utils.Log.Info("[ %s ] Config file provided %s", stage, cfgfile)
+		utils.Log.Info("Config file provided %s", cfgfile)
 		viper.SetConfigFile(cfgfile)
 	} else {
 		// Use default config file name and directory

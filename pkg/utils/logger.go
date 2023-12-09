@@ -13,12 +13,13 @@ type Logger struct {
 var Log *Logger
 
 func init() {
+	// TODO: add support for silent mode
 	Log = &Logger{
 		Info: func(format string, v ...any) {
 			fmt.Printf(format, v...)
 		},
 		Warn: func(format string, v ...any) {
-			fmt.Printf(FgStr("grey", "[WARN] ")+format, v...)
+			fmt.Printf(FgStr("yellow", "[WARN] ")+format, v...)
 		},
 		Error: func(format string, v ...any) {
 			fmt.Printf(FgStr("red", "[ERROR] ")+format, v...)

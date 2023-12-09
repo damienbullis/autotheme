@@ -54,24 +54,20 @@ func (i Icons) Str() string {
 
 type Stages string
 
-const (
-	StageInit  Stages = "INIT"
-	StageBuild Stages = "BUILD"
-	StageDone  Stages = "DONE"
-)
-
 type Colors map[string]colorful.Color
 
 var ColorMap = Colors{
+	// Used
+	"grey":   colorful.Color{R: 0.5, G: 0.5, B: 0.5},
+	"yellow": colorful.Color{R: 1, G: 1, B: 0},
+	"red":    colorful.Color{R: 1, G: 0.25, B: 0.25},
+	// Unused
 	"black":   colorful.Color{R: 0, G: 0, B: 0},
 	"white":   colorful.Color{R: 1, G: 1, B: 1},
-	"red":     colorful.Color{R: 1, G: 0.25, B: 0.25},
 	"green":   colorful.Color{R: 0, G: 1, B: 0.5},
 	"blue":    colorful.Color{R: 0, G: 0, B: 1},
-	"yellow":  colorful.Color{R: 1, G: 1, B: 0},
 	"cyan":    colorful.Color{R: 0, G: 1, B: 1},
 	"magenta": colorful.Color{R: 1, G: 0, B: 1},
-	"grey":    colorful.Color{R: 0.5, G: 0.5, B: 0.5},
 	"orange":  colorful.Color{R: 1, G: 0.5, B: 0},
 	"purple":  colorful.Color{R: 0.5, G: 0, B: 1},
 	"pink":    colorful.Color{R: 1, G: 0, B: 0.5},
