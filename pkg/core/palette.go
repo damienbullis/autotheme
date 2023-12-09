@@ -46,13 +46,66 @@ type Palette struct {
 	Primary        colorful.Color
 	OffWhite       colorful.Color
 	OffBlack       colorful.Color
-	TextPalette    []TextColors
+	TextPalette    TextPalette
 	HarmonyPalette []HarmonyColors
 }
+type TextPalette struct {
+	Light []TextColors
+	Dark  []TextColors
+}
 
-func BuildTextColors(harmonyColors []HarmonyColors) []TextColors {
+func BuildTextColors(harmonyColors []HarmonyColors, offW, offB colorful.Color) TextPalette {
+	var textColors TextPalette
+	var main, dark, light, gray, contrast []colorful.Color
+	lightL, darkL := 0.5, 0.95
 
-	var textColors []TextColors
+	for _, palette := range harmonyColors {
+		main = append(main, palette[Root])
+		dark = append(dark, palette[Dark1])
+		dark = append(dark, palette[Dark2])
+		dark = append(dark, palette[Dark3])
+		dark = append(dark, palette[Dark4])
+		dark = append(dark, palette[Dark5])
+		light = append(light, palette[Light1])
+		light = append(light, palette[Light2])
+		light = append(light, palette[Light3])
+		light = append(light, palette[Light4])
+		light = append(light, palette[Light5])
+		gray = append(gray, palette[Gray1])
+		gray = append(gray, palette[Gray2])
+		gray = append(gray, palette[Gray3])
+		gray = append(gray, palette[Gray4])
+
+		// Light Mode Calculations
+		h, s, _ := palette[Root].Hsl()
+		contrast = append(contrast, colorful.Hsl(h, s, lightL))
+
+		textColors.Light = append(textColors.Light, TextColors{
+			Main:     getTextColor(main, offB),
+			Dark:     getTextColor(dark, offB),
+			Light:    getTextColor(light, offB),
+			Neutral:  getTextColor(gray, offB),
+			Contrast: getTextColor(contrast, offB),
+		})
+
+		// Dark Mode Calculations
+		contrast = append(contrast, colorful.Hsl(h, s, darkL))
+		textColors.Dark = append(textColors.Dark, TextColors{
+			Main:     getTextColor(main, offW),
+			Dark:     getTextColor(dark, offW),
+			Light:    getTextColor(light, offW),
+			Neutral:  getTextColor(gray, offW),
+			Contrast: getTextColor(contrast, offW),
+		})
+
+		// Reset the colors
+		main = nil
+		dark = nil
+		light = nil
+		gray = nil
+		contrast = nil
+	}
+
 	return textColors
 }
 
@@ -100,11 +153,14 @@ func GeneratePalette(config config.Config) Palette {
 	// Generate the palette based on the harmony colors
 	harmonyPalette := BuildHarmonyColors(harmony)
 	offW, offB := getOffWB(harmonyPalette)
+	textPalette := BuildTextColors(harmonyPalette, offW, offB)
 
 	return Palette{
-		Primary:  hex,
-		OffWhite: offW,
-		OffBlack: offB,
+		Primary:        hex,
+		OffWhite:       offW,
+		OffBlack:       offB,
+		TextPalette:    textPalette,
+		HarmonyPalette: harmonyPalette,
 	}
 }
 
