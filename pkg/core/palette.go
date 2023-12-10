@@ -4,7 +4,6 @@ import (
 	"autotheme/pkg/config"
 	"autotheme/pkg/core/harmony"
 	"autotheme/pkg/utils"
-	"fmt"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -105,26 +104,37 @@ func BuildTextColors(harmonyColors []HarmonyColors, offW, offB colorful.Color) T
 	return textColors
 }
 
+func blendColors(color1, color2 colorful.Color, steps int) []colorful.Color {
+	var colors []colorful.Color
+	for i := 0; i < steps; i++ {
+		colors = append(colors, color1.BlendLab(color2, float64(i)/float64(steps)))
+	}
+	return colors
+}
+
 func BuildHarmonyColors(palette []colorful.Color) []HarmonyColors {
 	var harmonyColors []HarmonyColors
 	for _, color := range palette {
 		h, s, l := color.Hsl()
+		lightGradient := blendColors(color, colorful.Hsl(h, s, 0.92), 5)
+		darkGradient := blendColors(color, colorful.Hsl(h, s, 0.08), 5)
+		grayGradient := blendColors(color, colorful.Hsl(h, 0.0, l), 4)
 		harmonyColors = append(harmonyColors, HarmonyColors{
-			Light5: colorful.Hsl(h, s, l+0.4).Clamped(),
-			Light4: colorful.Hsl(h, s, l+(.4*(4.0/5.0))).Clamped(),
-			Light3: colorful.Hsl(h, s, l+(.4*(3.0/5.0))).Clamped(),
-			Light2: colorful.Hsl(h, s, l+(.4*(2.0/5.0))).Clamped(),
-			Light1: colorful.Hsl(h, s, l+(.4*(1.0/5.0))).Clamped(),
+			Light5: lightGradient[4],
+			Light4: lightGradient[3],
+			Light3: lightGradient[2],
+			Light2: lightGradient[1],
+			Light1: lightGradient[0],
 			Root:   color,
-			Dark1:  colorful.Hsl(h, s, l-0.4*(1.0/5.0)).Clamped(),
-			Dark2:  colorful.Hsl(h, s, l-0.4*(2.0/5.0)).Clamped(),
-			Dark3:  colorful.Hsl(h, s, l-0.4*(3.0/5.0)).Clamped(),
-			Dark4:  colorful.Hsl(h, s, l-0.4*(4.0/5.0)).Clamped(),
-			Dark5:  colorful.Hsl(h, s, l-0.4).Clamped(),
-			Gray1:  colorful.Hsl(h, s-0.2, l).Clamped(),
-			Gray2:  colorful.Hsl(h, s-0.4, l).Clamped(),
-			Gray3:  colorful.Hsl(h, s-0.6, l).Clamped(),
-			Gray4:  colorful.Hsl(h, s-0.8, l).Clamped(),
+			Dark1:  darkGradient[0],
+			Dark2:  darkGradient[1],
+			Dark3:  darkGradient[2],
+			Dark4:  darkGradient[3],
+			Dark5:  darkGradient[4],
+			Gray1:  grayGradient[0],
+			Gray2:  grayGradient[1],
+			Gray3:  grayGradient[2],
+			Gray4:  grayGradient[3],
 		})
 	}
 	return harmonyColors
@@ -195,12 +205,12 @@ func getTextColor(colors []colorful.Color, offColor colorful.Color) colorful.Col
 	}
 
 	if maxRatio >= 7 {
-		fmt.Printf("Contrast Ratio: %.2f\n", maxRatio)
+		// fmt.Printf("Contrast Ratio: %.2f\n", maxRatio)
 		return colors[maxIndex]
 	} else {
 		// Adjust the color manually
 		c := makeAccessible(colors[0], offColor)
-		fmt.Printf("Adjusted Contrast Ratio: %.2f\n", utils.ContrastRatio(c, offColor))
+		// fmt.Printf("Adjusted Contrast Ratio: %.2f\n", utils.ContrastRatio(c, offColor))
 		return c
 	}
 }
