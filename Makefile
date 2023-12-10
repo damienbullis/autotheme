@@ -9,7 +9,7 @@ build:
 
 # Run the project
 run:
-	go run main.go
+	go run main.go $(ARGS)
 
 # Clean the project
 clean:
