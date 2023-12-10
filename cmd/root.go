@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"autotheme/pkg/config"
+	"autotheme/pkg/constants"
 	"autotheme/pkg/core"
 	"autotheme/pkg/utils"
 	"fmt"
@@ -44,44 +45,56 @@ var rootCmd = &cobra.Command{
 		// Generate theme
 		palette := core.GeneratePalette(config)
 
+		utils.Log.Info(
+			"\n%s %s %s",
+			"Accessible colors",
+			utils.FgStr("grey", "generated..."),
+			utils.FgStr("green", constants.IconCheck.Str()),
+		)
 		// Print text colors
-		printTextColors(palette)
+		// printTextColors(palette)
 
-		// if config.Darkmode {
-		// 	utils.Log.Info(
-		// 		"%s %s %s",
-		// 		"Dark",
-		// 		utils.FgStr("grey", "mode colors generated..."),
-		// 		utils.FgStr("green", c.IconCheck.Str()),
-		// 	)
-		// }
+		if config.Darkmode {
+			utils.Log.Info(
+				"\n%s %s %s",
+				"Dark mode",
+				utils.FgStr("grey", "generated..."),
+				utils.FgStr("green", constants.IconCheck.Str()),
+			)
+		}
 
-		// utils.Log.Info(
-		// 	"%s %s %s",
-		// 	"Harmony",
-		// 	utils.FgStr("grey", "colors generated..."),
-		// 	utils.FgStr("green", c.IconCheck.Str()),
-		// )
+		utils.Log.Info(
+			"\n%s %s %s",
+			"Harmonies",
+			utils.FgStr("grey", "generated..."),
+			utils.FgStr("green", constants.IconCheck.Str()),
+		)
 
-		// scale := core.GenerateScale(config)
-		// utils.Log.Info(
-		// 	"%s %s %s",
-		// 	"Scale",
-		// 	utils.FgStr("grey", "generated..."),
-		// 	utils.FgStr("green", c.IconCheck.Str()),
-		// )
+		scale := core.GenerateScale(config)
+		utils.Log.Info(
+			"\n%s %s %s",
+			"Scale",
+			utils.FgStr("grey", "generated..."),
+			utils.FgStr("green", constants.IconCheck.Str()),
+		)
 
-		// noise := core.GenerateNoise(config)
-		// utils.Log.Info(
-		// 	"%s %s %s",
-		// 	"Noise",
-		// 	utils.FgStr("grey", "generated..."),
-		// 	utils.FgStr("green", c.IconCheck.Str()),
-		// )
+		noise := core.GenerateNoise(config)
+		utils.Log.Info(
+			"\n%s %s %s",
+			"Noise",
+			utils.FgStr("grey", "generated..."),
+			utils.FgStr("green", constants.IconCheck.Str()),
+		)
+		utils.Log.Info(
+			"\n\n%T %T %T",
+			palette,
+			scale,
+			noise,
+		)
+		// core.GenerateFilters(&config, &palette) // TODO: finish filters
 
-		// // core.GenerateFilters(&config, &palette) // TODO: finish filters
-
-		// // Write theme to file
+		// Write theme to file
+		// TODO: finish writing theme
 		// core.WriteTheme(config, palette, scale, noise)
 
 		// utils.Log.Info(
@@ -100,7 +113,7 @@ var rootCmd = &cobra.Command{
 		// 	)
 		// 	// core.LaunchPreview(config)
 		// }
-
+		utils.Log.Info("\n") // End with a newline
 	},
 }
 
