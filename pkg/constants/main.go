@@ -13,6 +13,7 @@ func init() {
 	emojiSupported = supportsEmoji()
 }
 
+// TODO: Verify if this is good enough
 func supportsEmoji() bool {
 	termProgram := os.Getenv("TERM_PROGRAM")
 	termEmulator := os.Getenv("TERM_EMULATOR")

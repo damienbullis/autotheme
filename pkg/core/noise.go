@@ -33,7 +33,6 @@ func generateSVG(typeValue Noise, baseFrequency float64, numOctaves int) string 
 	// SVG header
 	svg := `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'>`
 
-	// give me the
 	// feTurbulence filter
 	filter := fmt.Sprintf(
 		`<filter id='noise'><feTurbulence type='%s' baseFrequency='%f' numOctaves='%d' stitchTiles='stitch' /></filter>`, typeValue, baseFrequency, numOctaves,

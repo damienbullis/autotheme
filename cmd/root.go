@@ -51,8 +51,6 @@ var rootCmd = &cobra.Command{
 			utils.FgStr("grey", "generated..."),
 			utils.FgStr("green", constants.IconCheck.Str()),
 		)
-		// Print text colors
-		// printTextColors(palette)
 
 		if config.Darkmode {
 			utils.Log.Info(
@@ -79,14 +77,17 @@ var rootCmd = &cobra.Command{
 		)
 
 		noise := core.GenerateNoise(config)
+		if config.Noise {
+			utils.Log.Info(
+				"\n%s %s %s",
+				"Noise",
+				utils.FgStr("grey", "generated..."),
+				utils.FgStr("green", constants.IconCheck.Str()),
+			)
+		}
+
 		utils.Log.Info(
-			"\n%s %s %s",
-			"Noise",
-			utils.FgStr("grey", "generated..."),
-			utils.FgStr("green", constants.IconCheck.Str()),
-		)
-		utils.Log.Info(
-			"\n\n%T %T %T",
+			"\n\n%T\n%T\n%T",
 			palette,
 			scale,
 			noise,

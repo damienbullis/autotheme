@@ -140,15 +140,11 @@ func BuildHarmonyColors(palette []colorful.Color) []HarmonyColors {
 	return harmonyColors
 }
 
-// Calc the contrast ratio of the colors based on the best off white and black colors
-// [WCAG 2.2 AAA](https://www.w3.org/TR/WCAG22/#contrast-minimum)
-// Text = 7:1 / Large Text = 4.5:1
-
 // Builds the palette based on the color and harmony provided
 func GeneratePalette(config config.Config) Palette {
 	hex, _ := colorful.Hex(config.Primary)
 
-	utils.Log.Info("\nCalculating your %s color scheme with %s\n",
+	utils.Log.Info("Calculating your %s color scheme with %s\n",
 		utils.Str(config.Harmony, &hex, nil),
 		utils.Str(config.Primary, &hex, nil),
 	)
@@ -171,7 +167,10 @@ func GeneratePalette(config config.Config) Palette {
 }
 
 /*
-Recursively adjust the color until it has a contrast ratio of 7:1 with the off color
+Recursively adjust the color until it has a contrast ratio of 7:1 with the off color.
+
+we are calculating the contrast ratio of the colors based on the best
+off white and black colors we found
 
 [WCAG 2.2 AAA](https://www.w3.org/TR/WCAG22/#contrast-minimum)
 Text = 7:1 / Large Text = 4.5:1
