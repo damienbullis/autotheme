@@ -19,10 +19,10 @@ func init() {
 			fmt.Printf(format, v...)
 		},
 		Warn: func(format string, v ...any) {
-			fmt.Printf(FgStr("yellow", "[WARN] ")+format, v...)
+			fmt.Printf(FgStr("yellow", "\n[WARN] ")+format, v...)
 		},
 		Error: func(format string, v ...any) {
-			fmt.Printf(FgStr("red", "[ERROR] ")+format, v...)
+			fmt.Printf(FgStr("red", "\n[ERROR] ")+format, v...)
 		},
 	}
 }
