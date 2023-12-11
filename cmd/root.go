@@ -7,6 +7,7 @@ import (
 	"autotheme/pkg/utils"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
@@ -32,7 +33,7 @@ var rootCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		// startTime := time.Now()
+		startTime := time.Now()
 		config := config.GetConfig()
 
 		var introStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(config.Primary))
@@ -86,34 +87,34 @@ var rootCmd = &cobra.Command{
 			)
 		}
 
-		utils.Log.Info(
-			"\n\n%T\n%T\n%T",
-			palette,
-			scale,
-			noise,
-		)
 		// core.GenerateFilters(&config, &palette) // TODO: finish filters
 
 		// Write theme to file
-		// TODO: finish writing theme
-		// core.WriteTheme(config, palette, scale, noise)
+		core.WriteTheme(config, palette, scale, noise)
 
-		// utils.Log.Info(
-		// 	"\n%s %s %s",
-		// 	c.IconParty.Str(),
-		// 	introStyle.Render("AutoTheme has finished generating your theme!"),
-		// 	utils.FgStr("grey", fmt.Sprintf("(%dms)", time.Since(startTime).Milliseconds())),
-		// )
+		utils.Log.Info(
+			"\n'%s' %s %s",
+			config.Output,
+			utils.FgStr("grey", "generated..."),
+			utils.FgStr("green", constants.IconCheck.Str()),
+		)
 
-		// if config.Preview {
-		// 	utils.Log.Info(
-		// 		"\n%s %s %s",
-		// 		c.IconRocket.Str(),
-		// 		"Launching preview in your browser...",
-		// 		utils.FgStr("grey", "(This may take a few seconds)"),
-		// 	)
-		// 	// core.LaunchPreview(config)
-		// }
+		utils.Log.Info(
+			"\n\n%s %s %s",
+			constants.IconParty.Str(),
+			introStyle.Render("AutoTheme has finished generating your theme!"),
+			utils.FgStr("grey", fmt.Sprintf("(%dms)", time.Since(startTime).Milliseconds())),
+		)
+
+		if config.Preview {
+			utils.Log.Info(
+				"\n\n%s %s %s",
+				constants.IconRocket.Str(),
+				"Launching preview in your browser...",
+				utils.FgStr("grey", "(This may take a few seconds)"),
+			)
+			// core.LaunchPreview(config)
+		}
 		utils.Log.Info("\n") // End with a newline
 	},
 }
