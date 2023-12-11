@@ -22,19 +22,20 @@ func WriteTheme(
 	// Build in memory theme
 	rootStart := "\n:root {\n" + TAB + "/* Root Variables */"
 	rootTheme := ""
+	rootTheme += "\n" + writeLine("opacity", strconv.FormatFloat(1.0, 'f', 1, 64), config.Prefix)
 	rootEnd := "}\n"
 
-	darkStart := "\n\n.dark-mode {\n" + TAB + "/* Dark Mode Variables */"
+	darkStart := "\n.dark-mode {\n" + TAB + "/* Dark Mode Variables */"
 	darkTheme := ""
 	darkEnd := "}\n"
 
 	// Add palette vars
 	writeLightPalette(&rootTheme, palette, config)
-	writeDarkPalette(&rootTheme, palette, config)
-	writeColorScheme(&rootTheme, &darkTheme, palette, config)
+	writeDarkPalette(&darkTheme, palette, config)
 
 	// Add harmony vars
-	writeHarmony(&rootTheme, palette, config)
+	writePalette(&rootTheme, palette, config)
+	// writePaletteVars(&rootTheme, palette, config)
 
 	writeTextSize(&rootTheme, scale, config)
 	writeSpacing(&rootTheme, scale, config)
@@ -90,56 +91,15 @@ func writeFile(output string, content string) error {
 	return nil
 }
 
-func writeColorScheme(
-	rootTheme *string,
-	darkTheme *string,
-	palette Palette,
-	config config.Config,
-) {
+// func writePaletteVars(rootTheme *string, palette Palette, config config.Config) {
+// 	*rootTheme += "\n\n" + TAB + "/* Palette Vars */\n"
 
-	keywords := []string{
-		"-main",
-		"-dark",
-		"-light",
-		"-contrast",
-		"-grey",
-	}
+// 	// Add harmony vars
+// 	for i, harm := range palette.HarmonyPalette {
+// 		keyStart := "color-" + strconv.Itoa(i)
 
-	*rootTheme += "\n\n" + TAB + "/* Color Scheme */\n"
-	harmony := palette.HarmonyPalette
-
-	for i := 0; i < len(harmony); i++ {
-		for _, keyword := range keywords {
-			k := keyword
-			if k == "-main" {
-				k = ""
-			}
-			key := "text-" + strconv.Itoa(i) + k
-			val := "rgba(var(--" + config.Prefix + "-light" + strconv.Itoa(i) + keyword + "), var(--" + config.Prefix + "-opacity))"
-			*rootTheme += writeLine(key, val, config.Prefix)
-		}
-	}
-
-	// First, is the light theme
-	// example: --at-text0-main: rgba(var(--at-light0-main), var(--at-opacity));
-	// other possible: --at-text-0-
-
-	// Second, is the dark theme
-	if config.Darkmode {
-		*darkTheme += "\n" + TAB + "/* Color Scheme */\n"
-		for i := 0; i < len(harmony); i++ {
-			for _, keyword := range keywords {
-				k := keyword
-				if k == "-main" {
-					k = ""
-				}
-				key := "text-" + strconv.Itoa(i) + k
-				val := "rgba(var(--" + config.Prefix + "-dark" + strconv.Itoa(i) + keyword + "), var(--" + config.Prefix + "-opacity))"
-				*darkTheme += writeLine(key, val, config.Prefix)
-			}
-		}
-	}
-}
+// 	}
+// }
 
 func writeGradient(rootTheme *string, palette Palette, config config.Config) {
 	*rootTheme += "\n\n" + TAB + "/* Gradients */\n"
@@ -234,48 +194,48 @@ func writeRgb(value colorful.Color) string {
 
 }
 
-func writeHarmony(rootTheme *string, palette Palette, config config.Config) {
-	*rootTheme += "\n\n" + TAB + "/* Harmony */\n"
+func writePalette(rootTheme *string, palette Palette, config config.Config) {
+	*rootTheme += "\n\n" + TAB + "/* Palette */\n"
 
 	for i, harm := range palette.HarmonyPalette {
 
-		keyStart := "harmony" + strconv.Itoa(i)
+		keyStart := "color-" + strconv.Itoa(i)
 
 		// light
-		*rootTheme += writeLine(keyStart+"-light1", writeRgb(harm[Light1]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-light2", writeRgb(harm[Light2]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-light3", writeRgb(harm[Light3]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-light4", writeRgb(harm[Light4]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-light5", writeRgb(harm[Light5]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-l1", writeRgb(harm[Light1]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-l2", writeRgb(harm[Light2]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-l3", writeRgb(harm[Light3]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-l4", writeRgb(harm[Light4]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-l5", writeRgb(harm[Light5]), config.Prefix)
 
 		// base
-		*rootTheme += writeLine(keyStart+"-main", writeRgb(harm[Root]), config.Prefix)
+		*rootTheme += writeLine(keyStart, writeRgb(harm[Root]), config.Prefix)
 
 		// dark
-		*rootTheme += writeLine(keyStart+"-dark1", writeRgb(harm[Dark1]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-dark2", writeRgb(harm[Dark2]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-dark3", writeRgb(harm[Dark3]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-dark4", writeRgb(harm[Dark4]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-dark5", writeRgb(harm[Dark5]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-d1", writeRgb(harm[Dark1]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-d2", writeRgb(harm[Dark2]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-d3", writeRgb(harm[Dark3]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-d4", writeRgb(harm[Dark4]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-d5", writeRgb(harm[Dark5]), config.Prefix)
 
 		// gray
-		*rootTheme += writeLine(keyStart+"-gray1", writeRgb(harm[Gray1]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-gray2", writeRgb(harm[Gray2]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-gray3", writeRgb(harm[Gray3]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-gray4", writeRgb(harm[Gray4]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-g1", writeRgb(harm[Gray1]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-g2", writeRgb(harm[Gray2]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-g3", writeRgb(harm[Gray3]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-g4", writeRgb(harm[Gray4]), config.Prefix)
 
 	}
 }
 
 func writeDarkPalette(rootTheme *string, palette Palette, config config.Config) {
-	*rootTheme += "\n\n" + TAB + "/* Dark Palette */\n"
-	*rootTheme += writeLine("dark-bkgd", writeRgb(palette.OffBlack), config.Prefix)
+	*rootTheme += "\n\n" + TAB + "/* Dark Mode Text Colors */\n"
+	*rootTheme += writeLine("bkgd", writeRgb(palette.OffBlack), config.Prefix) + "\n"
 
 	for i, color := range palette.TextPalette.Dark {
-		keyStart := "dark" + strconv.Itoa(i)
+		keyStart := "text-" + strconv.Itoa(i)
 
 		*rootTheme += writeLine(keyStart+"-light", writeRgb(color[Light]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-main", writeRgb(color[Main]), config.Prefix)
+		*rootTheme += writeLine(keyStart, writeRgb(color[Main]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-dark", writeRgb(color[Dark]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-grey", writeRgb(color[Neutral]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-contrast", writeRgb(color[Contrast]), config.Prefix)
@@ -283,13 +243,13 @@ func writeDarkPalette(rootTheme *string, palette Palette, config config.Config) 
 }
 
 func writeLightPalette(rootTheme *string, palette Palette, config config.Config) {
-	*rootTheme += "\n\n" + TAB + "/* Light Palette */\n"
-	*rootTheme += writeLine("light-bkgd", writeRgb(palette.OffWhite), config.Prefix)
+	*rootTheme += "\n\n" + TAB + "/* Text Colors */\n"
+	*rootTheme += writeLine("bkgd", writeRgb(palette.OffWhite), config.Prefix) + "\n"
 	for i, color := range palette.TextPalette.Light {
-		keyStart := "light" + strconv.Itoa(i)
+		keyStart := "text-" + strconv.Itoa(i)
 
 		*rootTheme += writeLine(keyStart+"-light", writeRgb(color[Light]), config.Prefix)
-		*rootTheme += writeLine(keyStart+"-main", writeRgb(color[Main]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"", writeRgb(color[Main]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-dark", writeRgb(color[Dark]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-grey", writeRgb(color[Neutral]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-contrast", writeRgb(color[Contrast]), config.Prefix)
