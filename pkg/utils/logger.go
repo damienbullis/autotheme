@@ -22,7 +22,7 @@ func init() {
 			fmt.Printf(FgStr("yellow", "\n[WARN] ")+format, v...)
 		},
 		Error: func(format string, v ...any) {
-			fmt.Printf(FgStr("red", "\n[ERROR] ")+format, v...)
+			fmt.Printf(FgStr("red", "\n[ERROR] ")+format+"\n", v...)
 		},
 	}
 }

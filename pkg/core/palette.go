@@ -60,20 +60,30 @@ func BuildTextColors(harmonyColors []HarmonyColors, offW, offB colorful.Color) T
 	lightL, darkL := 0.95, 0.05
 
 	for _, palette := range harmonyColors {
-		dark = append(dark, palette[Dark1])
-		dark = append(dark, palette[Dark2])
-		dark = append(dark, palette[Dark3])
-		dark = append(dark, palette[Dark4])
-		dark = append(dark, palette[Dark5])
-		light = append(light, palette[Light1])
-		light = append(light, palette[Light2])
-		light = append(light, palette[Light3])
-		light = append(light, palette[Light4])
-		light = append(light, palette[Light5])
-		gray = append(gray, palette[Gray1])
-		gray = append(gray, palette[Gray2])
-		gray = append(gray, palette[Gray3])
-		gray = append(gray, palette[Gray4])
+		dark = append(
+			dark,
+			palette[Dark1],
+			palette[Dark2],
+			palette[Dark3],
+			palette[Dark4],
+			palette[Dark5],
+		)
+		light = append(
+			light,
+			palette[Light1],
+			palette[Light2],
+			palette[Light3],
+			palette[Light4],
+			palette[Light5],
+		)
+
+		gray = append(
+			gray,
+			palette[Gray1],
+			palette[Gray2],
+			palette[Gray3],
+			palette[Gray4],
+		)
 
 		// Light Mode Calculations
 		h, s, _ := palette[Root].Hsl()
@@ -116,25 +126,25 @@ func BuildHarmonyColors(palette []colorful.Color) []HarmonyColors {
 	var harmonyColors []HarmonyColors
 	for _, color := range palette {
 		h, s, l := color.Hsl()
-		lightGradient := blendColors(color, colorful.Hsl(h, s, 0.92), 5)
-		darkGradient := blendColors(color, colorful.Hsl(h, s, 0.08), 5)
-		grayGradient := blendColors(color, colorful.Hsl(h, 0.0, l), 4)
+		lightGradient := blendColors(color, colorful.Hsl(h, s, 0.92), 6)
+		darkGradient := blendColors(color, colorful.Hsl(h, s, 0.08), 6)
+		grayGradient := blendColors(color, colorful.Hsl(h, 0.0, l), 5)
 		harmonyColors = append(harmonyColors, HarmonyColors{
-			Light5: lightGradient[4],
-			Light4: lightGradient[3],
-			Light3: lightGradient[2],
-			Light2: lightGradient[1],
-			Light1: lightGradient[0],
+			Light5: lightGradient[5],
+			Light4: lightGradient[4],
+			Light3: lightGradient[3],
+			Light2: lightGradient[2],
+			Light1: lightGradient[1],
 			Root:   color,
-			Dark1:  darkGradient[0],
-			Dark2:  darkGradient[1],
-			Dark3:  darkGradient[2],
-			Dark4:  darkGradient[3],
-			Dark5:  darkGradient[4],
-			Gray1:  grayGradient[0],
-			Gray2:  grayGradient[1],
-			Gray3:  grayGradient[2],
-			Gray4:  grayGradient[3],
+			Dark1:  darkGradient[1],
+			Dark2:  darkGradient[2],
+			Dark3:  darkGradient[3],
+			Dark4:  darkGradient[4],
+			Dark5:  darkGradient[5],
+			Gray1:  grayGradient[1],
+			Gray2:  grayGradient[2],
+			Gray3:  grayGradient[3],
+			Gray4:  grayGradient[4],
 		})
 	}
 	return harmonyColors
