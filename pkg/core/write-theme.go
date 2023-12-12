@@ -22,10 +22,11 @@ func WriteTheme(
 	// Build in memory theme
 	rootStart := "\n:root {\n" + TAB + "/* Root Variables */"
 	rootTheme := ""
-	rootTheme += "\n" + writeLine("opacity", strconv.FormatFloat(1.0, 'f', 1, 64), config.Prefix)
+	rootTheme += "\n" + writeLine("opacity", strconv.FormatFloat(1.0, 'f', 0, 64), config.Prefix)
+	rootTheme += "\n" + TAB + "background-color: rgba(var(--" + config.Prefix + "-bkgd), var(--" + config.Prefix + "-opacity));\n"
 	rootEnd := "}\n"
 
-	darkStart := "\n.dark-mode {\n" + TAB + "/* Dark Mode Variables */"
+	darkStart := "\n." + config.Prefix + "-dark {\n" + TAB + "/* Dark Mode Variables */\n"
 	darkTheme := ""
 	darkEnd := "}\n"
 
@@ -61,6 +62,10 @@ func WriteTheme(
 
 func writeFile(output string, content string) error {
 	outputPath, filename := filepath.Split(output)
+	if outputPath == "" {
+		utils.Log.Info("\n%s\n", content)
+		return nil
+	}
 	// Ensure the output path exists
 	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
 		err := os.MkdirAll(outputPath, 0755)
@@ -102,7 +107,7 @@ func writeFile(output string, content string) error {
 // }
 
 func writeGradient(rootTheme *string, palette Palette, config config.Config) {
-	*rootTheme += "\n\n" + TAB + "/* Gradients */\n"
+	*rootTheme += "\n" + TAB + "/* Gradients */\n"
 
 	*rootTheme += writeLine("direction", "to right", config.Prefix)
 
@@ -115,9 +120,9 @@ func writeGradient(rootTheme *string, palette Palette, config config.Config) {
 		if i < colorsLen-1 {
 			for j := 0; j < 2; j++ {
 				if j == 0 {
-					line += "\n" + TAB + TAB + "rgba(var(--" + config.Prefix + "-harmony0-main), var(--at-opacity)), "
+					line += "\n" + TAB + TAB + "rgba(var(--" + config.Prefix + "-color-0), var(--at-opacity)), "
 				} else {
-					line += "\n" + TAB + TAB + "rgba(var(--" + config.Prefix + "-harmony" + strconv.Itoa(i+1) + "-main), var(--at-opacity)"
+					line += "\n" + TAB + TAB + "rgba(var(--" + config.Prefix + "-color-" + strconv.Itoa(i+1) + "), var(--at-opacity)"
 				}
 			}
 
@@ -154,13 +159,13 @@ func writeGradient(rootTheme *string, palette Palette, config config.Config) {
 }
 
 func writeNoise(rootTheme *string, noise string, config config.Config) {
-	*rootTheme += "\n\n" + TAB + "/* Noise */\n"
+	*rootTheme += "\n" + TAB + "/* Noise */\n"
 
 	*rootTheme += writeLine("noise", `url("`+noise+`")`, config.Prefix)
 }
 
 func writeSpacing(rootTheme *string, scale []float64, config config.Config) {
-	*rootTheme += "\n\n" + TAB + "/* Spacing */\n"
+	*rootTheme += "\n" + TAB + "/* Spacing */\n"
 
 	root := .25
 
@@ -177,7 +182,7 @@ func writeSpacing(rootTheme *string, scale []float64, config config.Config) {
 }
 
 func writeTextSize(rootTheme *string, scale []float64, config config.Config) {
-	*rootTheme += "\n\n" + TAB + "/* Text Size */\n"
+	*rootTheme += "\n" + TAB + "/* Text Size */\n"
 
 	for i, cn := range []string{"xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"} {
 		*rootTheme += writeLine("text-"+cn, strconv.FormatFloat(scale[i], 'f', 3, 64)+"rem", config.Prefix)
@@ -195,7 +200,7 @@ func writeRgb(value colorful.Color) string {
 }
 
 func writePalette(rootTheme *string, palette Palette, config config.Config) {
-	*rootTheme += "\n\n" + TAB + "/* Palette */\n"
+	*rootTheme += "\n" + TAB + "/* Palette */\n"
 
 	for i, harm := range palette.HarmonyPalette {
 
@@ -228,14 +233,14 @@ func writePalette(rootTheme *string, palette Palette, config config.Config) {
 }
 
 func writeDarkPalette(rootTheme *string, palette Palette, config config.Config) {
-	*rootTheme += "\n\n" + TAB + "/* Dark Mode Text Colors */\n"
+	*rootTheme += "\n" + TAB + "/* Dark Mode Text Colors */\n"
 	*rootTheme += writeLine("bkgd", writeRgb(palette.OffBlack), config.Prefix) + "\n"
 
 	for i, color := range palette.TextPalette.Dark {
 		keyStart := "text-" + strconv.Itoa(i)
 
-		*rootTheme += writeLine(keyStart+"-light", writeRgb(color[Light]), config.Prefix)
 		*rootTheme += writeLine(keyStart, writeRgb(color[Main]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-light", writeRgb(color[Light]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-dark", writeRgb(color[Dark]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-grey", writeRgb(color[Neutral]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-contrast", writeRgb(color[Contrast]), config.Prefix)
@@ -243,13 +248,13 @@ func writeDarkPalette(rootTheme *string, palette Palette, config config.Config) 
 }
 
 func writeLightPalette(rootTheme *string, palette Palette, config config.Config) {
-	*rootTheme += "\n\n" + TAB + "/* Text Colors */\n"
+	*rootTheme += "\n" + TAB + "/* Text Colors */\n"
 	*rootTheme += writeLine("bkgd", writeRgb(palette.OffWhite), config.Prefix) + "\n"
 	for i, color := range palette.TextPalette.Light {
 		keyStart := "text-" + strconv.Itoa(i)
 
-		*rootTheme += writeLine(keyStart+"-light", writeRgb(color[Light]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"", writeRgb(color[Main]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-light", writeRgb(color[Light]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-dark", writeRgb(color[Dark]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-grey", writeRgb(color[Neutral]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-contrast", writeRgb(color[Contrast]), config.Prefix)
