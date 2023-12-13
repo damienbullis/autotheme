@@ -26,9 +26,16 @@ func WriteTheme(
 	rootTheme += "\n" + TAB + "background-color: rgba(var(--" + config.Prefix + "-bkgd), var(--" + config.Prefix + "-opacity));\n"
 	rootEnd := "}\n"
 
+	// Classes
+	classesStart := "\n/* Classes */\n"
+	classes := ""
+	classesEnd := "\n"
+
 	darkStart := "\n." + config.Prefix + "-dark {\n" + TAB + "/* Dark Mode Variables */\n"
 	darkTheme := ""
 	darkEnd := "}\n"
+
+	indexHtml := ""
 
 	// Add palette vars
 	writeLightPalette(&rootTheme, palette, config)
@@ -36,7 +43,15 @@ func WriteTheme(
 
 	// Add harmony vars
 	writePalette(&rootTheme, palette, config)
-	// writePaletteVars(&rootTheme, palette, config)
+
+	if config.UseClasses {
+		// Add classes
+		writeClasses(&classes, palette, config)
+	}
+	if config.Preview {
+		// Add preview
+		indexHtml = buildIndexHtml(&indexHtml, palette, config)
+	}
 
 	writeTextSize(&rootTheme, scale, config)
 	writeSpacing(&rootTheme, scale, config)
@@ -48,8 +63,13 @@ func WriteTheme(
 	// TODO: Add in json data? for contrast ratios?**** not sure about this one
 
 	fullTheme := rootStart + rootTheme + rootEnd + darkStart + darkTheme + darkEnd
-	// Check theme string
-	// fmt.Println(fullTheme)
+
+	if config.UseClasses {
+		fullTheme += classesStart + classes + classesEnd
+	}
+	if config.Preview {
+		utils.Log.Error("Finish building index.html")
+	}
 
 	// Write theme to file
 	err := writeFile(config.Output, fullTheme)
@@ -58,6 +78,50 @@ func WriteTheme(
 		utils.Log.Error("Error writing theme to file: %s", err)
 		os.Exit(0)
 	}
+}
+func buildIndexHtml(htmlString *string, palette Palette, config config.Config) string {
+	utils.Log.Error("Finish building index.html")
+	return `<!DOCTYPE html>`
+}
+
+func writeClassLine(key, value, prefix, property string) string {
+	return "." + prefix + "-" + key + " {\n" + TAB + property + ": rgba(var(--" + prefix + "-" + value + "), var(--" + prefix + "-opacity));\n" + "}\n"
+}
+
+func writeClasses(classes *string, palette Palette, config config.Config) {
+	for i := range palette.HarmonyPalette {
+		colorStart := "color-" + strconv.Itoa(i)
+		bgStart := "bg-color-" + strconv.Itoa(i)
+		colors := []string{"-main", "-light", "-dark", "-grey", "-contrast"}
+		paletteColors := []string{"-l1", "-l2", "-l3", "-l4", "-l5", "", "-d1", "-d2", "-d3", "-d4", "-d5", "-g1", "-g2", "-g3", "-g4"}
+
+		// text color classes
+		for _, color := range colors {
+			*classes += writeClassLine(colorStart+color, colorStart+color, config.Prefix, "color")
+		}
+
+		// palette color classes
+		for _, color := range paletteColors {
+			*classes += writeClassLine(colorStart+color, colorStart+color, config.Prefix, "color")
+			*classes += writeClassLine(bgStart+color, colorStart+color, config.Prefix, "background-color")
+		}
+	}
+
+	// Opacity Class
+	opacities := []string{"0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"}
+	for i, opacity := range opacities {
+		var op string
+		if i == 0 {
+			op = "0"
+		} else if i == 10 {
+			op = "1"
+		} else {
+			op = "." + opacity[0:1]
+		}
+
+		*classes += "\n." + config.Prefix + "-opacity-" + opacity + " {\n" + TAB + "--" + config.Prefix + "-opacity: " + op + ";\n" + "}\n"
+	}
+
 }
 
 func writeFile(output string, content string) error {
