@@ -15,6 +15,7 @@ type Config struct {
 	Scalar     float64
 	Output     string
 	Entrypoint string
+	UseClasses bool
 	Darkmode   bool
 	Noise      bool
 	Gradients  bool
@@ -46,6 +47,7 @@ func GetConfig() Config {
 		Scalar:     viper.GetFloat64("scalar"),
 		Output:     viper.GetString("output"),
 		Entrypoint: viper.GetString("entrypoint"),
+		UseClasses: viper.GetBool("use-classes"),
 		Darkmode:   viper.GetBool("darkmode"),
 		Noise:      viper.GetBool("noise"),
 		Gradients:  viper.GetBool("gradients"),
