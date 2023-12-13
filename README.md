@@ -54,6 +54,10 @@ Since there are a variety of setups for using dark mode, AutoTheme mostly provid
 
    - or load it as an external file `/darkmode.js` instead
 
+   ```html
+   <script src="/darkmode.js"></script>
+   ```
+
    ```js
    // darkmode.js
 
@@ -83,7 +87,7 @@ Since there are a variety of setups for using dark mode, AutoTheme mostly provid
    initializeDarkMode();
    ```
 
-2. Setup your toggle dark mode handler
+2. Setup your onClick handler
 
    ```js
    /**

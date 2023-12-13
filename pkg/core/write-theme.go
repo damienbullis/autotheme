@@ -237,9 +237,9 @@ func writeDarkPalette(rootTheme *string, palette Palette, config config.Config) 
 	*rootTheme += writeLine("bkgd", writeRgb(palette.OffBlack), config.Prefix) + "\n"
 
 	for i, color := range palette.TextPalette.Dark {
-		keyStart := "text-" + strconv.Itoa(i)
+		keyStart := "color-" + strconv.Itoa(i)
 
-		*rootTheme += writeLine(keyStart, writeRgb(color[Main]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-main", writeRgb(color[Main]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-light", writeRgb(color[Light]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-dark", writeRgb(color[Dark]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-grey", writeRgb(color[Neutral]), config.Prefix)
@@ -251,9 +251,9 @@ func writeLightPalette(rootTheme *string, palette Palette, config config.Config)
 	*rootTheme += "\n" + TAB + "/* Text Colors */\n"
 	*rootTheme += writeLine("bkgd", writeRgb(palette.OffWhite), config.Prefix) + "\n"
 	for i, color := range palette.TextPalette.Light {
-		keyStart := "text-" + strconv.Itoa(i)
+		keyStart := "color-" + strconv.Itoa(i)
 
-		*rootTheme += writeLine(keyStart+"", writeRgb(color[Main]), config.Prefix)
+		*rootTheme += writeLine(keyStart+"-main", writeRgb(color[Main]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-light", writeRgb(color[Light]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-dark", writeRgb(color[Dark]), config.Prefix)
 		*rootTheme += writeLine(keyStart+"-grey", writeRgb(color[Neutral]), config.Prefix)
