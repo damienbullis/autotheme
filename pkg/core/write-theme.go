@@ -1,7 +1,7 @@
 package core
 
 import (
-	"autotheme/pkg/config"
+	c "autotheme/pkg/config"
 	"autotheme/pkg/constants"
 	"autotheme/pkg/utils"
 	"os"
@@ -14,7 +14,7 @@ import (
 var TAB = constants.Tab(2)
 
 func WriteTheme(
-	config config.Config,
+	config c.Config,
 	palette Palette,
 	scale []float64,
 	noise string,
@@ -27,9 +27,8 @@ func WriteTheme(
 	rootEnd := "}\n"
 
 	// Classes
-	classesStart := "\n/* Classes */\n"
+
 	classes := ""
-	classesEnd := "\n"
 
 	darkStart := "\n." + config.Prefix + "-dark {\n" + TAB + "/* Dark Mode Variables */\n"
 	darkTheme := ""
@@ -44,10 +43,8 @@ func WriteTheme(
 	// Add harmony vars
 	writePalette(&rootTheme, palette, config)
 
-	if config.UseClasses {
-		// Add classes
-		writeClasses(&classes, palette, config)
-	}
+	writeClasses(&classes, palette, config)
+
 	if config.Preview {
 		// Add preview
 		indexHtml = buildIndexHtml(&indexHtml, palette, config)
@@ -64,9 +61,6 @@ func WriteTheme(
 
 	fullTheme := rootStart + rootTheme + rootEnd + darkStart + darkTheme + darkEnd
 
-	if config.UseClasses {
-		fullTheme += classesStart + classes + classesEnd
-	}
 	if config.Preview {
 		utils.Log.Error("Finish building index.html")
 	}
@@ -79,7 +73,7 @@ func WriteTheme(
 		os.Exit(0)
 	}
 }
-func buildIndexHtml(htmlString *string, palette Palette, config config.Config) string {
+func buildIndexHtml(htmlString *string, palette Palette, config c.Config) string {
 	utils.Log.Error("Finish building index.html")
 	return `<!DOCTYPE html>`
 }
@@ -88,7 +82,7 @@ func writeClassLine(key, value, prefix, property string) string {
 	return "." + prefix + "-" + key + " {\n" + TAB + property + ": rgba(var(--" + prefix + "-" + value + "), var(--" + prefix + "-opacity));\n" + "}\n"
 }
 
-func writeClasses(classes *string, palette Palette, config config.Config) {
+func writeColorClasses(classes *string, palette Palette, config c.Config, colors ...c.ColorKeys) {
 	for i := range palette.HarmonyPalette {
 		colorStart := "color-" + strconv.Itoa(i)
 		bgStart := "bg-color-" + strconv.Itoa(i)
@@ -121,7 +115,23 @@ func writeClasses(classes *string, palette Palette, config config.Config) {
 
 		*classes += "\n." + config.Prefix + "-opacity-" + opacity + " {\n" + TAB + "--" + config.Prefix + "-opacity: " + op + ";\n" + "}\n"
 	}
+	*classes += "\n"
+}
 
+func writeClasses(classes *string, palette Palette, config c.Config) {
+	*classes += "\n/* Classes */\n"
+	if useBool, ok := config.UseClasses.(c.UseClassesBool); ok {
+		if useBool {
+			var colors []c.ColorKeys
+			for i, _ := range palette.HarmonyPalette {
+				colors = append(colors, c.ColorKeys(i))
+			}
+
+			writeColorClasses(classes, palette, config, colors...)
+		}
+	} else if useStruct, ok := config.UseClasses.(c.UseClassesT); ok {
+		// TODO: Add in use classes struct
+	}
 }
 
 func writeFile(output string, content string) error {
@@ -170,7 +180,7 @@ func writeFile(output string, content string) error {
 // 	}
 // }
 
-func writeGradient(rootTheme *string, palette Palette, config config.Config) {
+func writeGradient(rootTheme *string, palette Palette, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Gradients */\n"
 
 	*rootTheme += writeLine("direction", "to right", config.Prefix)
@@ -222,13 +232,13 @@ func writeGradient(rootTheme *string, palette Palette, config config.Config) {
 
 }
 
-func writeNoise(rootTheme *string, noise string, config config.Config) {
+func writeNoise(rootTheme *string, noise string, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Noise */\n"
 
 	*rootTheme += writeLine("noise", `url("`+noise+`")`, config.Prefix)
 }
 
-func writeSpacing(rootTheme *string, scale []float64, config config.Config) {
+func writeSpacing(rootTheme *string, scale []float64, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Spacing */\n"
 
 	root := .25
@@ -245,7 +255,7 @@ func writeSpacing(rootTheme *string, scale []float64, config config.Config) {
 
 }
 
-func writeTextSize(rootTheme *string, scale []float64, config config.Config) {
+func writeTextSize(rootTheme *string, scale []float64, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Text Size */\n"
 
 	for i, cn := range []string{"xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"} {
@@ -263,7 +273,7 @@ func writeRgb(value colorful.Color) string {
 
 }
 
-func writePalette(rootTheme *string, palette Palette, config config.Config) {
+func writePalette(rootTheme *string, palette Palette, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Palette */\n"
 
 	for i, harm := range palette.HarmonyPalette {
@@ -296,7 +306,7 @@ func writePalette(rootTheme *string, palette Palette, config config.Config) {
 	}
 }
 
-func writeDarkPalette(rootTheme *string, palette Palette, config config.Config) {
+func writeDarkPalette(rootTheme *string, palette Palette, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Dark Mode Text Colors */\n"
 	*rootTheme += writeLine("bkgd", writeRgb(palette.OffBlack), config.Prefix) + "\n"
 
@@ -311,7 +321,7 @@ func writeDarkPalette(rootTheme *string, palette Palette, config config.Config) 
 	}
 }
 
-func writeLightPalette(rootTheme *string, palette Palette, config config.Config) {
+func writeLightPalette(rootTheme *string, palette Palette, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Text Colors */\n"
 	*rootTheme += writeLine("bkgd", writeRgb(palette.OffWhite), config.Prefix) + "\n"
 	for i, color := range palette.TextPalette.Light {
