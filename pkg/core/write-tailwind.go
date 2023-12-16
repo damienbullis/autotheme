@@ -1,9 +1,11 @@
 package core
 
-import "fmt"
+import (
+	"autotheme/pkg/utils"
+)
 
 func WriteTailwind(args ...any) {
-	fmt.Printf("Not implemented yet %T\n", args)
+	utils.Log.Error("Not implemented yet %T", args)
 
 	// TODO: Write tailwind config
 
@@ -14,25 +16,25 @@ func WriteTailwind(args ...any) {
 	// }
 	/*
 
-			Theme
-			theme: {
-				... FEATURE: Add theme
-			},
+				Theme
+				theme: {
+					... FEATURE: Add theme
+				},
 
-			Sizing
-			spacing: {
-				... FEATURE: Add spacing
-			}
+				Sizing
+				spacing: {
+					... FEATURE: Add spacing
+				}
 
-			Darkmode
-			darkMode: ['class', '<config.Prefix>-dark'],
+				Darkmode
+				darkMode: ['class', '<config.Prefix>-dark'],
 
-			Noise? not sure... FEATURE: Add noise to tailwind config
-			Gradients? not sure... FEATURE: Add gradients to tailwind config
+				Noise? not sure... FEATURE: Add noise to tailwind config
+				Gradients? not sure... FEATURE: Add gradients to tailwind config
 
-			module.exports = {
-	  // ...
-	}
+				module.exports = {
+		  // ...
+		}
 
 
 	*/

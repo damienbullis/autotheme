@@ -4,6 +4,7 @@ import (
 	c "autotheme/pkg/config"
 	"autotheme/pkg/constants"
 	"autotheme/pkg/utils"
+	"errors"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -59,7 +60,7 @@ func WriteTheme(
 	// TODO: Add in html file generation
 	// TODO: Add in json data? for contrast ratios?**** not sure about this one
 
-	fullTheme := rootStart + rootTheme + rootEnd + darkStart + darkTheme + darkEnd
+	fullTheme := rootStart + rootTheme + rootEnd + darkStart + darkTheme + darkEnd + classes
 
 	if config.Preview {
 		utils.Log.Error("Finish building index.html")
@@ -87,9 +88,9 @@ func writeColorClasses(
 	config c.Config,
 	colorKeys ...c.ColorKeys,
 ) {
-	for i, cKey := range colorKeys {
-		colorStart := string(cKey) + "-" + strconv.Itoa(i)
-		bgStart := "bg-" + string(cKey) + "-" + strconv.Itoa(i)
+	for _, cKey := range colorKeys {
+		colorStart := string(cKey)
+		bgStart := "bg-" + string(cKey)
 		colors := []string{"-main", "-light", "-dark", "-grey", "-contrast"}
 		paletteColors := []string{"-l1", "-l2", "-l3", "-l4", "-l5", "", "-d1", "-d2", "-d3", "-d4", "-d5", "-g1", "-g2", "-g3", "-g4"}
 
@@ -123,14 +124,31 @@ func writeColorClasses(
 	*classes += "\n"
 }
 
-func getColorKey(i int) c.ColorKeys {
-	return c.ColorKeys(rune(i))
+func getColorKey(i int) (c.ColorKeys, error) {
+	switch i {
+	case 0:
+		return c.Primary, nil
+	case 1:
+		return c.Accent1, nil
+	case 2:
+		return c.Accent2, nil
+	case 3:
+		return c.Accent3, nil
+	case 4:
+		return c.Accent4, nil
+	case 5:
+		return c.Accent5, nil
+	default:
+		return "", errors.New("invalid color key")
+	}
 }
 
 func getColorKeys(p Palette) []c.ColorKeys {
 	var colorKeys []c.ColorKeys
 	for i := range p.HarmonyPalette {
-		colorKeys = append(colorKeys, getColorKey(i))
+		if k, err := getColorKey(i); err == nil {
+			colorKeys = append(colorKeys, k)
+		}
 	}
 	return colorKeys
 }
