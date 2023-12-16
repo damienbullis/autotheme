@@ -9,13 +9,74 @@ import (
 	"github.com/spf13/viper"
 )
 
+type ColorKeys string
+
+const (
+	Primary ColorKeys = "primary"
+	Accent1 ColorKeys = "accent1"
+	Accent2 ColorKeys = "accent2"
+	Accent3 ColorKeys = "accent3"
+	Accent4 ColorKeys = "accent4"
+	Accent5 ColorKeys = "accent5"
+)
+
+// Interface for color types
+type ColorsI interface {
+	// Marker
+	IsColor()
+}
+type ColorsBool bool
+
+func (b ColorsBool) IsColor() {}
+
+type ColorsT map[ColorKeys]bool
+
+func (t ColorsT) IsColor() {}
+
+// Interface for gradient types
+type GradientI interface {
+	// Marker
+	IsGradient()
+}
+type GradientBool bool
+
+func (b GradientBool) IsGradient() {}
+
+type GradientTuple struct {
+	First  ColorKeys
+	Second ColorKeys
+}
+type GradientArray []GradientTuple
+
+func (a GradientArray) IsGradient() {}
+
+type UseClassesI interface {
+	// Marker
+	IsUseClasses()
+}
+
+// Boolean type for use-classes flag
+type UseClassesBool bool
+
+func (b UseClassesBool) IsUseClasses() {}
+
+// Struct for use-classes flag
+type UseClassesT struct {
+	Colors    ColorsI
+	Spacing   bool
+	Noise     bool
+	Gradients GradientI
+}
+
+func (t UseClassesT) IsUseClasses() {}
+
 type Config struct {
 	Primary    string
 	Harmony    string
 	Scalar     float64
 	Output     string
 	Entrypoint string
-	UseClasses bool
+	UseClasses UseClassesI
 	Darkmode   bool
 	Noise      bool
 	Gradients  bool
@@ -23,6 +84,28 @@ type Config struct {
 	RootFont   int
 	Preview    bool
 	// TODO: Add more config options
+}
+
+func checkUseClasses() UseClassesI {
+	useClasses := viper.Get("use-classes")
+	switch v := useClasses.(type) {
+	case bool:
+		return UseClassesBool(v)
+	case UseClassesI:
+		viper.SetDefault("use-classes.colors", true)
+		viper.SetDefault("use-classes.spacing", true)
+		viper.SetDefault("use-classes.noise", true)
+		viper.SetDefault("use-classes.gradients", true)
+
+		var useClassesT UseClassesT
+		if err := viper.UnmarshalKey("use-classes", &useClassesT); err != nil {
+			utils.Log.Error(err.Error())
+			os.Exit(0)
+		}
+		return useClassesT
+	default:
+		return UseClassesBool(true)
+	}
 }
 
 func GetConfig() Config {
@@ -47,7 +130,7 @@ func GetConfig() Config {
 		Scalar:     viper.GetFloat64("scalar"),
 		Output:     viper.GetString("output"),
 		Entrypoint: viper.GetString("entrypoint"),
-		UseClasses: viper.GetBool("use-classes"),
+		UseClasses: checkUseClasses(),
 		Darkmode:   viper.GetBool("darkmode"),
 		Noise:      viper.GetBool("noise"),
 		Gradients:  viper.GetBool("gradients"),
