@@ -82,10 +82,14 @@ func writeClassLine(key, value, prefix, property string) string {
 	return "." + prefix + "-" + key + " {\n" + TAB + property + ": rgba(var(--" + prefix + "-" + value + "), var(--" + prefix + "-opacity));\n" + "}\n"
 }
 
-func writeColorClasses(classes *string, palette Palette, config c.Config, colors ...c.ColorKeys) {
-	for i := range palette.HarmonyPalette {
-		colorStart := "color-" + strconv.Itoa(i)
-		bgStart := "bg-color-" + strconv.Itoa(i)
+func writeColorClasses(
+	classes *string,
+	config c.Config,
+	colorKeys ...c.ColorKeys,
+) {
+	for i, cKey := range colorKeys {
+		colorStart := string(cKey) + "-" + strconv.Itoa(i)
+		bgStart := "bg-" + string(cKey) + "-" + strconv.Itoa(i)
 		colors := []string{"-main", "-light", "-dark", "-grey", "-contrast"}
 		paletteColors := []string{"-l1", "-l2", "-l3", "-l4", "-l5", "", "-d1", "-d2", "-d3", "-d4", "-d5", "-g1", "-g2", "-g3", "-g4"}
 
@@ -99,6 +103,7 @@ func writeColorClasses(classes *string, palette Palette, config c.Config, colors
 			*classes += writeClassLine(colorStart+color, colorStart+color, config.Prefix, "color")
 			*classes += writeClassLine(bgStart+color, colorStart+color, config.Prefix, "background-color")
 		}
+
 	}
 
 	// Opacity Class
@@ -118,19 +123,37 @@ func writeColorClasses(classes *string, palette Palette, config c.Config, colors
 	*classes += "\n"
 }
 
+func getColorKey(i int) c.ColorKeys {
+	return c.ColorKeys(rune(i))
+}
+
+func getColorKeys(p Palette) []c.ColorKeys {
+	var colorKeys []c.ColorKeys
+	for i := range p.HarmonyPalette {
+		colorKeys = append(colorKeys, getColorKey(i))
+	}
+	return colorKeys
+}
+
 func writeClasses(classes *string, palette Palette, config c.Config) {
 	*classes += "\n/* Classes */\n"
 	if useBool, ok := config.UseClasses.(c.UseClassesBool); ok {
 		if useBool {
-			var colors []c.ColorKeys
-			for i, _ := range palette.HarmonyPalette {
-				colors = append(colors, c.ColorKeys(i))
-			}
 
-			writeColorClasses(classes, palette, config, colors...)
+			writeColorClasses(classes, config, getColorKeys(palette)...)
 		}
 	} else if useStruct, ok := config.UseClasses.(c.UseClassesT); ok {
-		// TODO: Add in use classes struct
+		if useColorsBool, ok := useStruct.Colors.(c.ColorsBool); ok {
+			if useColorsBool {
+				writeColorClasses(classes, config, getColorKeys(palette)...)
+			}
+		} else if useColorsT, ok := useStruct.Colors.(c.ColorsT); ok {
+			var colorKeys []c.ColorKeys
+			for colorKey := range useColorsT {
+				colorKeys = append(colorKeys, colorKey)
+			}
+			writeColorClasses(classes, config, colorKeys...)
+		}
 	}
 }
 
