@@ -136,7 +136,6 @@ func init() {
 	rootCmd.Flags().StringP("harmony", "a", "", "Harmony for AutoTheme to use. If not supplied, AutoTheme will pick a random harmony")
 	rootCmd.Flags().StringP("output", "o", "src/index.css", "Output file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file.")
 	rootCmd.Flags().Bool("preview", false, "Generate a preview for your theme in the browser.")
-	rootCmd.Flags().Bool("use-classes", false, "Generate classes for your theme.")
 
 	// Bind cli-only flags to viper
 	viper.BindPFlag("config", rootCmd.Flags().Lookup("config"))
@@ -147,7 +146,6 @@ func init() {
 	viper.BindPFlag("harmony", rootCmd.Flags().Lookup("harmony"))
 	viper.BindPFlag("output", rootCmd.Flags().Lookup("output"))
 	viper.BindPFlag("preview", rootCmd.Flags().Lookup("preview"))
-	viper.BindPFlag("classes", rootCmd.Flags().Lookup("use-classes"))
 
 	// Non-Cli defaults
 	viper.SetDefault("noise", true)
