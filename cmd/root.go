@@ -92,6 +92,10 @@ var rootCmd = &cobra.Command{
 		// Write theme to file
 		core.WriteTheme(config, palette, scale, noise)
 
+		// Write tailwind config
+		// TODO: Add if config.tailwind
+		core.WriteTailwind(config, palette, scale, noise)
+
 		utils.Log.Info(
 			"\n'%s' %s %s",
 			config.Output,
