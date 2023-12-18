@@ -61,3 +61,32 @@ type UseClassesT struct {
 }
 
 func (t UseClassesT) IsUseClasses() {}
+
+type TailwindBool bool
+
+func (b TailwindBool) isTailwind() {}
+
+type TailwindT struct {
+	Colors    ColorsI
+	Noise     bool
+	Gradients GradientI
+	Spacing   bool
+}
+
+func (t TailwindT) isTailwind() {}
+
+type TailwindI interface {
+	// Marker
+	isTailwind()
+}
+
+type OverrideT struct {
+	FontSize  float64
+	Scalar    float64
+	Darkmode  bool
+	Colors    ColorsI
+	Opacity   bool
+	Noise     bool
+	Spacing   bool
+	Gradients GradientI
+}
