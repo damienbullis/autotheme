@@ -61,7 +61,7 @@ func generateRandomNumber(min, max int) int {
 }
 
 func GenerateNoise(config config.Config) string {
-	if !config.Noise {
+	if !config.Override.Noise {
 		return ""
 	}
 

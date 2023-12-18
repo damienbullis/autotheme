@@ -32,7 +32,6 @@ func WriteTailwind(args ...any) {
 				Noise? not sure... FEATURE: Add noise to tailwind config
 				Gradients? not sure... FEATURE: Add gradients to tailwind config
 
-				module.exports = {
 		  // ...
 		}
 
