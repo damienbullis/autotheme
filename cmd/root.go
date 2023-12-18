@@ -14,6 +14,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+func logLine(primary string) {
+	utils.Log.Info(
+		"\n%s %s %s",
+		primary,
+		utils.FgStr("grey", "generated..."),
+		utils.FgStr("green", constants.IconCheck.Str()),
+	)
+}
+
 var rootCmd = &cobra.Command{
 	Use:     "autotheme",
 	Short:   "A zero-config CSS theme generator",
@@ -45,46 +54,21 @@ var rootCmd = &cobra.Command{
 
 		// Generate theme
 		palette := core.GeneratePalette(config)
+		logLine("Accessible colors")
 
-		utils.Log.Info(
-			"\n%s %s %s",
-			"Accessible colors",
-			utils.FgStr("grey", "generated..."),
-			utils.FgStr("green", constants.IconCheck.Str()),
-		)
-
-		if config.Darkmode {
-			utils.Log.Info(
-				"\n%s %s %s",
-				"Dark mode",
-				utils.FgStr("grey", "generated..."),
-				utils.FgStr("green", constants.IconCheck.Str()),
-			)
+		if config.Override.Darkmode {
+			logLine("Dark mode")
 		}
 
-		utils.Log.Info(
-			"\n%s %s %s",
-			"Harmonies",
-			utils.FgStr("grey", "generated..."),
-			utils.FgStr("green", constants.IconCheck.Str()),
-		)
+		logLine("Harmonies")
 
 		scale := core.GenerateScale(config)
-		utils.Log.Info(
-			"\n%s %s %s",
-			"Scale",
-			utils.FgStr("grey", "generated..."),
-			utils.FgStr("green", constants.IconCheck.Str()),
-		)
+		logLine("Scale")
 
-		noise := core.GenerateNoise(config)
-		if config.Noise {
-			utils.Log.Info(
-				"\n%s %s %s",
-				"Noise",
-				utils.FgStr("grey", "generated..."),
-				utils.FgStr("green", constants.IconCheck.Str()),
-			)
+		noise := ""
+		if config.Override.Noise {
+			noise = core.GenerateNoise(config)
+			logLine("Noise")
 		}
 
 		// core.GenerateFilters(&config, &palette) // TODO: finish filters
@@ -93,15 +77,9 @@ var rootCmd = &cobra.Command{
 		core.WriteTheme(config, palette, scale, noise)
 
 		// Write tailwind config
-		// TODO: Add if config.tailwind
 		core.WriteTailwind(config, palette, scale, noise)
 
-		utils.Log.Info(
-			"\n'%s' %s %s",
-			config.Output,
-			utils.FgStr("grey", "generated..."),
-			utils.FgStr("green", constants.IconCheck.Str()),
-		)
+		logLine(config.Output)
 
 		utils.Log.Info(
 			"\n\n%s %s %s",
@@ -148,14 +126,14 @@ func init() {
 	viper.BindPFlag("preview", rootCmd.Flags().Lookup("preview"))
 
 	// Non-Cli defaults
-	viper.SetDefault("noise", true)
-	viper.SetDefault("filters", true)
-	viper.SetDefault("gradients", true)
-	viper.SetDefault("darkmode", true)
 	viper.SetDefault("prefix", "at")
-	viper.SetDefault("scalar", 0.0)
-	viper.SetDefault("fontsize", 16.0)
 	viper.SetDefault("use-classes", true)
+
+	viper.SetDefault("overrides.noise", true)
+	viper.SetDefault("overrides.gradients", true)
+	viper.SetDefault("overrides.darkmode", true)
+	viper.SetDefault("overrides.scalar", 0.0)
+	viper.SetDefault("overrides.fontsize", 16.0)
 
 	// ??? Not sure
 	// viper.SetDefault("entrypoint", "")
