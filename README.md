@@ -36,17 +36,16 @@ Since there are a variety of setups for using dark mode, AutoTheme mostly provid
    ```html
    <script>
      const darkMode = window.matchMedia("(prefers-color-scheme: dark)");
-     const root = document.documentElement;
      if (localStorage.getItem("darkMode") === "true" || darkMode.matches) {
-       root.classList.add("at-dark");
+       document.documentElement.classList.add("at-dark");
      }
 
      // If the user's system changes the preferred color scheme
      darkMode.addEventListener("change", (e) => {
        if (e.matches) {
-         root.classList.add("at-dark");
+         document.documentElement.classList.add("at-dark");
        } else {
-         root.classList.remove("at-dark");
+         document.documentElement.classList.remove("at-dark");
        }
      });
    </script>
@@ -69,17 +68,16 @@ Since there are a variety of setups for using dark mode, AutoTheme mostly provid
     */
    function initializeDarkMode() {
      const darkMode = window.matchMedia("(prefers-color-scheme: dark)");
-     const root = document.documentElement;
      if (localStorage.getItem("darkMode") === "true" || darkMode.matches) {
-       root.classList.add("at-dark");
+       document.documentElement.classList.add("at-dark");
      }
 
      // This wont set the local storage on change, but it will update the class
      darkMode.addEventListener("change", (e) => {
        if (e.matches) {
-         root.classList.add("at-dark");
+         document.documentElement.classList.add("at-dark");
        } else {
-         root.classList.remove("at-dark");
+         document.documentElement.classList.remove("at-dark");
        }
      });
    }
