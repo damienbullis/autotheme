@@ -12,17 +12,14 @@ import (
 type Config struct {
 	Primary    string
 	Harmony    string
-	Scalar     float64
 	Output     string
 	Entrypoint string
-	UseClasses UseClassesI
-	Darkmode   bool
-	Noise      bool
-	Gradients  bool
 	Prefix     string
-	RootFont   int
 	Preview    bool
-	// TODO: Add more config options
+	Override   OverrideT
+	// Interfaces
+	UseClasses UseClassesI
+	Tailwind   TailwindI
 }
 
 func checkUseClasses() UseClassesI {
@@ -31,11 +28,14 @@ func checkUseClasses() UseClassesI {
 	case bool:
 		return UseClassesBool(v)
 	case UseClassesI:
+		// set Defaults if not provided
 		viper.SetDefault("use-classes.colors", true)
+		viper.SetDefault("use-classes.opacity", true)
 		viper.SetDefault("use-classes.spacing", true)
 		viper.SetDefault("use-classes.noise", true)
 		viper.SetDefault("use-classes.gradients", true)
 
+		// Unmarshal the config
 		var useClassesT UseClassesT
 		if err := viper.UnmarshalKey("use-classes", &useClassesT); err != nil {
 			utils.Log.Error(err.Error())
@@ -44,6 +44,31 @@ func checkUseClasses() UseClassesI {
 		return useClassesT
 	default:
 		return UseClassesBool(true)
+	}
+}
+
+func checkTailwind() TailwindI {
+	// TODO: Add if config.tailwind
+	tailwind := viper.Get("tailwind")
+	switch v := tailwind.(type) {
+	case bool:
+		return TailwindBool(v)
+	case TailwindI:
+		// set Defaults if not provided
+		viper.SetDefault("tailwind.colors", true)
+		viper.SetDefault("tailwind.noise", true)
+		viper.SetDefault("tailwind.gradients", true)
+		viper.SetDefault("tailwind.spacing", true)
+
+		// Unmarshal the config
+		var tailwindT TailwindT
+		if err := viper.UnmarshalKey("tailwind", &tailwindT); err != nil {
+			utils.Log.Error(err.Error())
+			os.Exit(0)
+		}
+		return tailwindT
+	default:
+		return TailwindBool(false)
 	}
 }
 
@@ -66,16 +91,22 @@ func GetConfig() Config {
 	return Config{
 		Primary:    viper.GetString("primary"),
 		Harmony:    viper.GetString("harmony"),
-		Scalar:     viper.GetFloat64("scalar"),
 		Output:     viper.GetString("output"),
 		Entrypoint: viper.GetString("entrypoint"),
-		UseClasses: checkUseClasses(),
-		Darkmode:   viper.GetBool("darkmode"),
-		Noise:      viper.GetBool("noise"),
-		Gradients:  viper.GetBool("gradients"),
 		Prefix:     viper.GetString("prefix"),
-		RootFont:   viper.GetInt("fontsize"),
 		Preview:    viper.GetBool("preview"),
+		Override: OverrideT{
+			FontSize:  viper.GetFloat64("overrides.fontsize"),
+			Scalar:    viper.GetFloat64("overrides.scalar"),
+			Darkmode:  viper.GetBool("overrides.darkmode"),
+			Colors:    ColorsBool(true),
+			Opacity:   viper.GetBool("overrides.opacity"),
+			Noise:     viper.GetBool("overrides.noise"),
+			Spacing:   viper.GetBool("overrides.spacing"),
+			Gradients: GradientBool(true),
+		},
+		UseClasses: checkUseClasses(),
+		Tailwind:   checkTailwind(),
 	}
 }
 
