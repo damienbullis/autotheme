@@ -16,28 +16,28 @@ type Config struct {
 	Entrypoint string
 	Prefix     string
 	Preview    bool
-	Override   OverrideT
+	Overrides  OverrideT
 	// Interfaces
 	UseClasses UseClassesI
 	Tailwind   TailwindI
 }
 
 func checkUseClasses() UseClassesI {
-	useClasses := viper.Get("use-classes")
+	useClasses := viper.Get("useClasses")
 	switch v := useClasses.(type) {
 	case bool:
 		return UseClassesBool(v)
 	case UseClassesI:
 		// set Defaults if not provided
-		viper.SetDefault("use-classes.colors", true)
-		viper.SetDefault("use-classes.opacity", true)
-		viper.SetDefault("use-classes.spacing", true)
-		viper.SetDefault("use-classes.noise", true)
-		viper.SetDefault("use-classes.gradients", true)
+		viper.SetDefault("useClasses.colors", true)
+		viper.SetDefault("useClasses.opacity", true)
+		viper.SetDefault("useClasses.spacing", true)
+		viper.SetDefault("useClasses.noise", true)
+		viper.SetDefault("useClasses.gradients", true)
 
 		// Unmarshal the config
 		var useClassesT UseClassesT
-		if err := viper.UnmarshalKey("use-classes", &useClassesT); err != nil {
+		if err := viper.UnmarshalKey("useClasses", &useClassesT); err != nil {
 			utils.Log.Error(err.Error())
 			os.Exit(0)
 		}
@@ -95,10 +95,10 @@ func GetConfig() Config {
 		Entrypoint: viper.GetString("entrypoint"),
 		Prefix:     viper.GetString("prefix"),
 		Preview:    viper.GetBool("preview"),
-		Override: OverrideT{
-			FontSize:  viper.GetFloat64("overrides.fontsize"),
+		Overrides: OverrideT{
+			FontSize:  viper.GetFloat64("overrides.fontSize"),
 			Scalar:    viper.GetFloat64("overrides.scalar"),
-			Darkmode:  viper.GetBool("overrides.darkmode"),
+			DarkMode:  viper.GetBool("overrides.darkMode"),
 			Colors:    ColorsBool(true),
 			Opacity:   viper.GetBool("overrides.opacity"),
 			Noise:     viper.GetBool("overrides.noise"),

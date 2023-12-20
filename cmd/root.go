@@ -56,7 +56,7 @@ var rootCmd = &cobra.Command{
 		palette := core.GeneratePalette(config)
 		logLine("Accessible colors")
 
-		if config.Override.Darkmode {
+		if config.Overrides.DarkMode {
 			logLine("Dark mode")
 		}
 
@@ -66,7 +66,7 @@ var rootCmd = &cobra.Command{
 		logLine("Scale")
 
 		noise := ""
-		if config.Override.Noise {
+		if config.Overrides.Noise {
 			noise = core.GenerateNoise(config)
 			logLine("Noise")
 		}
@@ -127,13 +127,13 @@ func init() {
 
 	// Non-Cli defaults
 	viper.SetDefault("prefix", "at")
-	viper.SetDefault("use-classes", true)
+	viper.SetDefault("useClasses", true)
 
 	viper.SetDefault("overrides.noise", true)
 	viper.SetDefault("overrides.gradients", true)
-	viper.SetDefault("overrides.darkmode", true)
+	viper.SetDefault("overrides.darkMode", true)
 	viper.SetDefault("overrides.scalar", 0.0)
-	viper.SetDefault("overrides.fontsize", 16.0)
+	viper.SetDefault("overrides.fontSize", 16.0)
 
 	// ??? Not sure
 	// viper.SetDefault("entrypoint", "")

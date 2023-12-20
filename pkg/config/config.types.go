@@ -83,7 +83,7 @@ type TailwindI interface {
 type OverrideT struct {
 	FontSize  float64
 	Scalar    float64
-	Darkmode  bool
+	DarkMode  bool
 	Colors    ColorsI
 	Opacity   bool
 	Noise     bool
