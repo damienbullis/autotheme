@@ -71,14 +71,11 @@ var rootCmd = &cobra.Command{
 			logLine("Noise")
 		}
 
-		// core.GenerateFilters(&config, &palette) // TODO: finish filters
+		// core.GenerateFilters(&config, &palette) // TODO: finish filteris
 
-		// Write theme to file
+		// Write files
 		core.WriteTheme(config, palette, scale, noise)
-
-		// Write tailwind config
 		core.WriteTailwind(config, palette, scale, noise)
-
 		logLine(config.Output)
 
 		if config.Preview {

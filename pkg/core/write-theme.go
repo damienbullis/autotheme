@@ -263,18 +263,19 @@ func writeNoise(rootTheme *string, noise string, config c.Config) {
 
 func writeSpacing(rootTheme *string, scale []float64, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Spacing */\n"
-
 	root := .25
 
 	for i, size := range scale {
 		*rootTheme += writeLine("spacing-"+strconv.Itoa(i+1), strconv.FormatFloat(size*root, 'f', 3, 64)+"rem", config.Prefix)
 	}
-	*rootTheme += "\n" + TAB + "/* Mobile Spacing */\n"
 
-	root = 1.0 / 8.0
-	for i, size := range scale {
-		*rootTheme += writeLine("spacing-sm-"+strconv.Itoa(i+1), strconv.FormatFloat(size*root, 'f', 3, 64)+"rem", config.Prefix)
-	}
+	// TODO: keep or remove?
+	// *rootTheme += "\n" + TAB + "/* Mobile Spacing */\n"
+	// root = 1.0 / 8.0
+
+	// for i, size := range scale {
+	// 	*rootTheme += writeLine("spacing-sm-"+strconv.Itoa(i+1), strconv.FormatFloat(size*root, 'f', 3, 64)+"rem", config.Prefix)
+	// }
 
 }
 
