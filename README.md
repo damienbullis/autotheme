@@ -1,21 +1,60 @@
-# AutoTheme
+<div style='text-align:center;'>
+<h1>AutoTheme</h1>
+<h3>Some Badges here</h3>
+</div>
 
 > A _`zero-config`_ build tool for generating accessible CSS themes using color theory.
+
+## Table of Contents
+
+1. [Install](#install)
+2. [Usage](#usage)
+   - Entrypoint
+   - Preview?
+   - Customizing
+   - [Dark Mode](#dark-mode)
+   - Others???
+3. [Configuring](#configuring)
+4. [CLI](#cli)
+5. [Roadmap](#roapmap)
+
+## Install
+
+_finish_
+
+<br>
+
+## Usage
+
+_finish_
+
+<br>
+
+## Configuring
+
+_finish_
+
+<br>
+
+## CLI
+
+_finish_
+
+<br>
 
 ## Roapmap
 
 - [ ] Core
-  - [ ] Finish config file
-    - [ ] Add json schema for the config file
-    - [ ] Add Tests
+  - [ ] Add json schema for the config file
+  - [ ] Add Tests
 - [ ] Installers
   - [ ] bash cli install
   - [ ] go install
   - [ ] npm install
-- [ ] Plugins
-  - [ ] Tailwind
-  - [ ] ~~Rollup/Vite~~ (On hold because of Rolldown announcement)
-- [ ] Darkmode script snippet in README
+- [/] Plugins
+  - [x] Tailwind
+  - [/] ~~Rollup/Vite~~ (On hold because of Rolldown announcement)
+- [x] Darkmode script snippet in README
 - [ ] index.html integration (entrypoint)
   - [ ] include snippet in README
 - [ ] index.css integration (output)
