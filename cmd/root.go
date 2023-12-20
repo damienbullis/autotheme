@@ -81,14 +81,9 @@ var rootCmd = &cobra.Command{
 
 		logLine(config.Output)
 
-		utils.Log.Info(
-			"\n\n%s %s %s",
-			constants.IconParty.Str(),
-			introStyle.Render("AutoTheme has finished generating your theme!"),
-			utils.FgStr("grey", fmt.Sprintf("(%dms)", time.Since(startTime).Milliseconds())),
-		)
-
 		if config.Preview {
+			core.WritePreview(config, palette, scale)
+
 			utils.Log.Info(
 				"\n\n%s %s %s",
 				constants.IconRocket.Str(),
@@ -97,6 +92,14 @@ var rootCmd = &cobra.Command{
 			)
 			// core.LaunchPreview(config)
 		}
+
+		utils.Log.Info(
+			"\n\n%s %s %s",
+			constants.IconParty.Str(),
+			introStyle.Render("AutoTheme has finished generating your theme!"),
+			utils.FgStr("grey", fmt.Sprintf("(%dms)", time.Since(startTime).Milliseconds())),
+		)
+
 		utils.Log.Info("\n") // End with a newline
 	},
 }

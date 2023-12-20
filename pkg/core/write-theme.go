@@ -35,8 +35,6 @@ func WriteTheme(
 	darkTheme := ""
 	darkEnd := "}\n"
 
-	indexHtml := ""
-
 	// Add palette vars
 	writeLightPalette(&rootTheme, palette, config)
 	writeDarkPalette(&darkTheme, palette, config)
@@ -46,25 +44,12 @@ func WriteTheme(
 
 	writeClasses(&classes, palette, config)
 
-	if config.Preview {
-		// Add preview
-		indexHtml = buildIndexHtml(&indexHtml, palette, config)
-	}
-
 	writeTextSize(&rootTheme, scale, config)
 	writeSpacing(&rootTheme, scale, config)
 	writeNoise(&rootTheme, noise, config)
 	writeGradient(&rootTheme, palette, config)
 
-	// TODO: Add in generate classes
-	// TODO: Add in html file generation
-	// TODO: Add in json data? for contrast ratios?**** not sure about this one
-
 	fullTheme := rootStart + rootTheme + rootEnd + darkStart + darkTheme + darkEnd + classes
-
-	if config.Preview {
-		utils.Log.Error("Finish building index.html")
-	}
 
 	// Write theme to file
 	err := writeFile(config.Output, fullTheme)
@@ -73,10 +58,6 @@ func WriteTheme(
 		utils.Log.Error("Error writing theme to file: %s", err)
 		os.Exit(0)
 	}
-}
-func buildIndexHtml(htmlString *string, palette Palette, config c.Config) string {
-	utils.Log.Error("Finish building index.html")
-	return `<!DOCTYPE html>`
 }
 
 func writeClassLine(key, value, prefix, property string) string {
@@ -119,7 +100,7 @@ func writeColorClasses(
 			op = "." + opacity[0:1]
 		}
 
-		*classes += "\n." + config.Prefix + "-opacity-" + opacity + " {\n" + TAB + "--" + config.Prefix + "-opacity: " + op + ";\n" + "}\n"
+		*classes += "." + config.Prefix + "-opacity-" + opacity + " {\n" + TAB + "--" + config.Prefix + "-opacity: " + op + ";\n" + "}\n"
 	}
 	*classes += "\n"
 }
@@ -181,6 +162,7 @@ func writeFile(output string, content string) error {
 		utils.Log.Info("\n%s\n", content)
 		return nil
 	}
+
 	// Ensure the output path exists
 	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
 		err := os.MkdirAll(outputPath, 0755)
