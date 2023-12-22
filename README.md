@@ -3,7 +3,7 @@
 <h3>Some Badges here</h3>
 </div>
 
-> A _`zero-config`_ build tool for generating accessible CSS themes using color theory.
+> A _`zero-config`_ & _`zero-dependency`_ tool for generating accessible CSS themes using color theory.
 
 ## Table of Contents
 
@@ -25,6 +25,35 @@ _finish_
 <br>
 
 ## Usage
+
+Depending on your use case, you may only need to generate a theme once, and not need to change things. In this case, just run AutoTheme through your terminal and call it a day.
+
+In other cases you may want AutoTheme to be apart of a build step.
+
+### No Dependency
+
+After installing, you can just run
+
+```bash
+autotheme
+```
+
+#### Thats it!
+
+Now if you _want_ to go customize further, AutoTheme does provide some cli flags.
+Run `--help` for options.
+
+Additionally you can run
+
+```bash
+autotheme init
+```
+
+to go through an interactive prompt where you can also provide some customization.
+
+<br>
+
+### Dev Dependency
 
 _finish_
 
