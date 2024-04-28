@@ -1,6 +1,6 @@
 # Autotheme Makefile
 
-# Main binary
+# Main binary name
 BINARY := autotheme
 
 # Build the project
@@ -9,7 +9,7 @@ build:
 
 # Run the project
 run:
-	go run main.go $(ARGS)
+	go run . $(ARGS)
 
 # Clean the project
 clean:
