@@ -69,6 +69,9 @@ func writeColorClasses(
 	config c.Config,
 	colorKeys ...c.ColorKeys,
 ) {
+	if uc, ok := config.UseClasses.(c.UseClassesBool); ok && !bool(uc) {
+		return
+	}
 	for _, cKey := range colorKeys {
 		colorStart := string(cKey)
 		bgStart := "bg-" + string(cKey)
@@ -88,6 +91,7 @@ func writeColorClasses(
 
 	}
 
+	// TODO: Move to seperate function
 	// Opacity Class
 	opacities := []string{"0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"}
 	for i, opacity := range opacities {
@@ -136,23 +140,17 @@ func getColorKeys(p Palette) []c.ColorKeys {
 
 func writeClasses(classes *string, palette Palette, config c.Config) {
 	*classes += "\n/* Classes */\n"
-	if useBool, ok := config.UseClasses.(c.UseClassesBool); ok {
-		if useBool {
-
-			writeColorClasses(classes, config, getColorKeys(palette)...)
-		}
-	} else if useStruct, ok := config.UseClasses.(c.UseClassesT); ok {
-		if useColorsBool, ok := useStruct.Colors.(c.ColorsBool); ok {
-			if useColorsBool {
-				writeColorClasses(classes, config, getColorKeys(palette)...)
-			}
-		} else if useColorsT, ok := useStruct.Colors.(c.ColorsT); ok {
-			var colorKeys []c.ColorKeys
-			for colorKey := range useColorsT {
+	var colorKeys []c.ColorKeys
+	if uc, ok := config.UseClasses.(c.UseClassesT); ok {
+		for colorKey, colorValue := range uc.Colors {
+			if colorValue {
 				colorKeys = append(colorKeys, colorKey)
 			}
-			writeColorClasses(classes, config, colorKeys...)
 		}
+		if len(colorKeys) == 0 {
+			colorKeys = getColorKeys(palette)
+		}
+		writeColorClasses(classes, config, colorKeys...)
 	}
 }
 
@@ -261,6 +259,7 @@ func writeNoise(rootTheme *string, noise string, config c.Config) {
 	*rootTheme += writeLine("noise", `url("`+noise+`")`, config.Prefix)
 }
 
+// TODO: SOMEETHING IS WRONG WITH THIS
 func writeSpacing(rootTheme *string, scale []float64, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Spacing */\n"
 	root := .25

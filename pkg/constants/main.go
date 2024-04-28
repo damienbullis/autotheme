@@ -22,7 +22,9 @@ func supportsEmoji() bool {
 		termProgram == "vscode" ||
 		termEmulator == "tmux" ||
 		termEmulator == "alacritty" ||
-		termEmulator == "iterm"
+		termEmulator == "iterm" ||
+		termProgram == "WarpTerminal"
+
 }
 
 type Icons string

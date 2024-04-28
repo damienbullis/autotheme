@@ -43,9 +43,9 @@ var rootCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		startTime := time.Now()
-		config := config.GetConfig()
-
-		var introStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(config.Primary))
+		cfg := config.GetConfig()
+		utils.Log.Info("cfg here: %+v\n", cfg.UseClasses)
+		var introStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(cfg.Primary))
 		utils.Log.Info(
 			"\n%s %s\n\n",
 			introStyle.Render("AutoTheme"),
@@ -53,33 +53,35 @@ var rootCmd = &cobra.Command{
 		)
 
 		// Generate theme
-		palette := core.GeneratePalette(config)
+		palette := core.GeneratePalette(cfg)
 		logLine("Accessible colors")
 
-		if config.Overrides.DarkMode {
+		if cfg.Overrides.DarkMode {
 			logLine("Dark mode")
 		}
 
 		logLine("Harmonies")
 
-		scale := core.GenerateScale(config)
+		scale := core.GenerateScale(cfg)
 		logLine("Scale")
 
 		noise := ""
-		if config.Overrides.Noise {
-			noise = core.GenerateNoise(config)
+		if cfg.Overrides.Noise {
+			noise = core.GenerateNoise(cfg)
 			logLine("Noise")
 		}
 
-		// core.GenerateFilters(&config, &palette) // TODO: finish filteris
+		// core.GenerateFilters(&cfg, &palette) // TODO: finish filters
 
 		// Write files
-		core.WriteTheme(config, palette, scale, noise)
-		core.WriteTailwind(config, palette, scale, noise)
-		logLine(config.Output)
+		core.WriteTheme(cfg, palette, scale, noise)
 
-		if config.Preview {
-			core.WritePreview(config, palette, scale)
+		if cfg.Output != "" {
+			logLine(cfg.Output)
+		}
+
+		if cfg.Preview {
+			core.WritePreview(cfg, palette, scale)
 
 			utils.Log.Info(
 				"\n\n%s %s %s",
@@ -87,9 +89,13 @@ var rootCmd = &cobra.Command{
 				"Launching preview in your browser...",
 				utils.FgStr("grey", "(This may take a few seconds)"),
 			)
-			// core.LaunchPreview(config)
+			// core.LaunchPreview(cfg)
 		}
 
+		// If cfg.Tailwind not fals
+		if cfg.Tailwind {
+			core.WriteTailwind(cfg, palette, scale, noise)
+		}
 		utils.Log.Info(
 			"\n\n%s %s %s",
 			constants.IconParty.Str(),
@@ -112,7 +118,7 @@ func init() {
 	// Root command flags
 	rootCmd.Flags().StringP("color", "c", "", "Primary color (hex) for AutoTheme to use. If not supplied, AutoTheme will pick a random color.")
 	rootCmd.Flags().StringP("harmony", "a", "", "Harmony for AutoTheme to use. If not supplied, AutoTheme will pick a random harmony")
-	rootCmd.Flags().StringP("output", "o", "src/index.css", "Output file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file.")
+	rootCmd.Flags().StringP("output", "o", "src/index.css", "Output file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file. If you pass an empty string. AutoTheme will instead print the generated CSS to standard out.")
 	rootCmd.Flags().Bool("preview", false, "Generate a preview for your theme in the browser.")
 
 	// Bind cli-only flags to viper
@@ -127,7 +133,8 @@ func init() {
 
 	// Non-Cli defaults
 	viper.SetDefault("prefix", "at")
-	viper.SetDefault("useClasses", true)
+	viper.SetDefault("useClasses", false)
+	viper.SetDefault("tailwind", false)
 
 	viper.SetDefault("overrides.noise", true)
 	viper.SetDefault("overrides.gradients", true)
@@ -135,7 +142,8 @@ func init() {
 	viper.SetDefault("overrides.scalar", 0.0)
 	viper.SetDefault("overrides.fontSize", 16.0)
 
-	// ??? Not sure
+	// FEATURE: Add entrypoint config option to allow for integrating with an existing index.html
+	// file to inject the generated css file into the head of the document
 	// viper.SetDefault("entrypoint", "")
 }
 

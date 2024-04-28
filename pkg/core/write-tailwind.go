@@ -1,14 +1,21 @@
 package core
 
 import (
+	c "autotheme/pkg/config"
 	"autotheme/pkg/utils"
 )
 
-func WriteTailwind(args ...any) {
-	utils.Log.Error("Not implemented yet %T", args)
-
-	// TODO: Write tailwind config
-
+func WriteTailwind(
+	config c.Config,
+	palette Palette,
+	scale []float64,
+	noise string,
+) {
+	utils.Log.Info("Writing tailwind config...\n")
+	utils.Log.Info("%+v\n", config)
+	utils.Log.Info("%+v\n", palette)
+	utils.Log.Info("%+v\n", scale)
+	utils.Log.Info("%+v\n", noise)
 	// Wrapper
 	// /** @type {import('tailwindcss').Config} */
 	// module.exports = {
@@ -16,21 +23,21 @@ func WriteTailwind(args ...any) {
 	// }
 	/*
 
-				Theme
+				// Theme
 				theme: {
 					... FEATURE: Add theme
 				},
 
-				Sizing
+				// Sizing
 				spacing: {
 					... FEATURE: Add spacing
-				}
+				},
 
-				Darkmode
+				// Darkmode
 				darkMode: ['class', '<config.Prefix>-dark'],
 
-				Noise? not sure... FEATURE: Add noise to tailwind config
-				Gradients? not sure... FEATURE: Add gradients to tailwind config
+				// Noise? not sure... FEATURE: Add noise to tailwind config
+				// Gradients? not sure... FEATURE: Add gradients to tailwind config
 
 		  // ...
 		}

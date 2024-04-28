@@ -53,7 +53,7 @@ func (b UseClassesBool) IsUseClasses() {}
 
 // Struct for use-classes flag
 type UseClassesT struct {
-	Colors    ColorsI
+	Colors    ColorsT
 	Opacity   bool
 	Spacing   bool
 	Noise     bool

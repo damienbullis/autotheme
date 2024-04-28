@@ -16,60 +16,41 @@ type Config struct {
 	Entrypoint string
 	Prefix     string
 	Preview    bool
+	Tailwind   bool
 	Overrides  OverrideT
-	// Interfaces
 	UseClasses UseClassesI
-	Tailwind   TailwindI
 }
 
-func checkUseClasses() UseClassesI {
-	useClasses := viper.Get("useClasses")
-	switch v := useClasses.(type) {
+func getUseClasses() UseClassesI {
+	uc := viper.Get("useClasses")
+	switch v := uc.(type) {
 	case bool:
 		return UseClassesBool(v)
-	case UseClassesI:
-		// set Defaults if not provided
-		viper.SetDefault("useClasses.colors", true)
-		viper.SetDefault("useClasses.opacity", true)
-		viper.SetDefault("useClasses.spacing", true)
-		viper.SetDefault("useClasses.noise", true)
-		viper.SetDefault("useClasses.gradients", true)
-
-		// Unmarshal the config
-		var useClassesT UseClassesT
-		if err := viper.UnmarshalKey("useClasses", &useClassesT); err != nil {
-			utils.Log.Error(err.Error())
-			os.Exit(0)
+	case map[string]interface{}:
+		return UseClassesT{
+			Colors: ColorsT{
+				Primary: viper.GetBool("useClasses.colors.primary"),
+				Accent1: viper.GetBool("useClasses.colors.accent1"),
+				Accent2: viper.GetBool("useClasses.colors.accent2"),
+				Accent3: viper.GetBool("useClasses.colors.accent3"),
+				Accent4: viper.GetBool("useClasses.colors.accent4"),
+				Accent5: viper.GetBool("useClasses.colors.accent5"),
+			},
+			Gradients: GradientArray{
+				GradientTuple{
+					First:  Primary,
+					Second: Accent1,
+				},
+			},
+			Opacity: viper.GetBool("useClasses.opacity"),
+			Spacing: viper.GetBool("useClasses.spacing"),
+			Noise:   viper.GetBool("useClasses.noise"),
 		}
-		return useClassesT
 	default:
-		return UseClassesBool(true)
-	}
-}
+		return UseClassesBool(false)
 
-func checkTailwind() TailwindI {
-	// TODO: Add if config.tailwind
-	tailwind := viper.Get("tailwind")
-	switch v := tailwind.(type) {
-	case bool:
-		return TailwindBool(v)
-	case TailwindI:
-		// set Defaults if not provided
-		viper.SetDefault("tailwind.colors", true)
-		viper.SetDefault("tailwind.noise", true)
-		viper.SetDefault("tailwind.gradients", true)
-		viper.SetDefault("tailwind.spacing", true)
-
-		// Unmarshal the config
-		var tailwindT TailwindT
-		if err := viper.UnmarshalKey("tailwind", &tailwindT); err != nil {
-			utils.Log.Error(err.Error())
-			os.Exit(0)
-		}
-		return tailwindT
-	default:
-		return TailwindBool(false)
 	}
+
 }
 
 func GetConfig() Config {
@@ -105,8 +86,8 @@ func GetConfig() Config {
 			Spacing:   viper.GetBool("overrides.spacing"),
 			Gradients: GradientBool(true),
 		},
-		UseClasses: checkUseClasses(),
-		Tailwind:   checkTailwind(),
+		UseClasses: getUseClasses(),
+		Tailwind:   viper.GetBool("tailwind"),
 	}
 }
 
@@ -132,11 +113,12 @@ func LoadConfig() {
 		// Handle errors reading the config file
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found
-			// utils.Log.Debug("[ %s ] Using zero-config...", stage)
+			utils.Log.Warn("Using zero-config...")
 		} else {
 			utils.Log.Error("\nError found in config file at: %s", viper.ConfigFileUsed())
 			utils.Log.Error(err.Error())
 			os.Exit(0)
 		}
 	}
+	utils.Log.Info("Using config file: %s\n", viper.ConfigFileUsed())
 }
