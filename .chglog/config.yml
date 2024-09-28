@@ -6,12 +6,14 @@ info:
 options:
   commit_groups:
     title_maps:
-      sparkles: ✨ Features
-      bug: 🐛 Bugs
-      zap: ⚡ Performance 
-      recycle: ♻️ Improvements
+      feat: ✨ Features
+      fix: 🐛 Fixes
+      perf: ⚡ Performance 
+      main: 🛠️ Maintainance
+      bug: 🐛 Fixes
+    
   header:
-    pattern: "^:(\\w*)\\:\\s(.*)$"
+    pattern: "^(\\w*)\\ - \\s(.*)$"
     pattern_maps:
       - Type
       - Subject
