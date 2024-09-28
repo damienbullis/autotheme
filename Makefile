@@ -1,11 +1,12 @@
 # Autotheme Makefile
 
-# Main binary name
-BINARY := autotheme
+.PHONY: help build build-all run clean install test vet fmt
 
 # Build the project
 build:
-	go build -o $(BINARY) -v
+	go build -o autotheme
+build-all:
+	./build.sh
 
 # Run the project
 run:
@@ -14,7 +15,7 @@ run:
 # Clean the project
 clean:
 	go clean
-	rm -f $(BINARY)
+	rm -rf bin
 
 # Install the project
 install:
@@ -31,6 +32,3 @@ vet:
 # Format the project
 fmt:
 	go fmt ./...
-
-# Run the project
-all: clean build ./$(BINARY)
