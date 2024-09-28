@@ -4,9 +4,7 @@ import (
 	c "autotheme/pkg/config"
 	"autotheme/pkg/constants"
 	"autotheme/pkg/utils"
-	"errors"
 	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/lucasb-eyer/go-colorful"
@@ -42,7 +40,7 @@ func WriteTheme(
 	// Add harmony vars
 	writePalette(&rootTheme, palette, config)
 
-	writeClasses(&classes, palette, config)
+	// writeClasses(&classes, palette, config)
 
 	writeTextSize(&rootTheme, scale, config)
 	writeSpacing(&rootTheme, scale, config)
@@ -52,7 +50,7 @@ func WriteTheme(
 	fullTheme := rootStart + rootTheme + rootEnd + darkStart + darkTheme + darkEnd + classes
 
 	// Write theme to file
-	err := writeFile(config.Output, fullTheme)
+	err := utils.WriteFile(config.Output, fullTheme)
 
 	if err != nil {
 		utils.Log.Error("Error writing theme to file: %s", err)
@@ -60,136 +58,99 @@ func WriteTheme(
 	}
 }
 
-func writeClassLine(key, value, prefix, property string) string {
-	return "." + prefix + "-" + key + " {\n" + TAB + property + ": rgba(var(--" + prefix + "-" + value + "), var(--" + prefix + "-opacity));\n" + "}\n"
-}
+// func writeClassLine(key, value, prefix, property string) string {
+// 	return "." + prefix + "-" + key + " {\n" + TAB + property + ": rgba(var(--" + prefix + "-" + value + "), var(--" + prefix + "-opacity));\n" + "}\n"
+// }
 
-func writeColorClasses(
-	classes *string,
-	config c.Config,
-	colorKeys ...c.ColorKeys,
-) {
-	if uc, ok := config.UseClasses.(c.UseClassesBool); ok && !bool(uc) {
-		return
-	}
-	for _, cKey := range colorKeys {
-		colorStart := string(cKey)
-		bgStart := "bg-" + string(cKey)
-		colors := []string{"-main", "-light", "-dark", "-grey", "-contrast"}
-		paletteColors := []string{"-l1", "-l2", "-l3", "-l4", "-l5", "", "-d1", "-d2", "-d3", "-d4", "-d5", "-g1", "-g2", "-g3", "-g4"}
+// func writeColorClasses(
+// 	classes *string,
+// 	config c.Config,
+// 	colorKeys ...c.ColorKeys,
+// ) {
+// 	// if uc, ok := config.UseClasses.(c.UseClassesBool); ok && !bool(uc) {
+// 	// 	return
+// 	// }
+// 	for _, cKey := range colorKeys {
+// 		colorStart := string(cKey)
+// 		bgStart := "bg-" + string(cKey)
+// 		colors := []string{"-main", "-light", "-dark", "-grey", "-contrast"}
+// 		paletteColors := []string{"-l1", "-l2", "-l3", "-l4", "-l5", "", "-d1", "-d2", "-d3", "-d4", "-d5", "-g1", "-g2", "-g3", "-g4"}
 
-		// text color classes
-		for _, color := range colors {
-			*classes += writeClassLine(colorStart+color, colorStart+color, config.Prefix, "color")
-		}
+// 		// text color classes
+// 		for _, color := range colors {
+// 			*classes += writeClassLine(colorStart+color, colorStart+color, config.Prefix, "color")
+// 		}
 
-		// palette color classes
-		for _, color := range paletteColors {
-			*classes += writeClassLine(colorStart+color, colorStart+color, config.Prefix, "color")
-			*classes += writeClassLine(bgStart+color, colorStart+color, config.Prefix, "background-color")
-		}
+// 		// palette color classes
+// 		for _, color := range paletteColors {
+// 			*classes += writeClassLine(colorStart+color, colorStart+color, config.Prefix, "color")
+// 			*classes += writeClassLine(bgStart+color, colorStart+color, config.Prefix, "background-color")
+// 		}
 
-	}
+// 	}
 
-	// TODO: Move to seperate function
-	// Opacity Class
-	opacities := []string{"0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"}
-	for i, opacity := range opacities {
-		var op string
-		if i == 0 {
-			op = "0"
-		} else if i == 10 {
-			op = "1"
-		} else {
-			op = "." + opacity[0:1]
-		}
+// 	// TODO: Move to seperate function
+// 	// Opacity Class
+// 	opacities := []string{"0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"}
+// 	for i, opacity := range opacities {
+// 		var op string
+// 		if i == 0 {
+// 			op = "0"
+// 		} else if i == 10 {
+// 			op = "1"
+// 		} else {
+// 			op = "." + opacity[0:1]
+// 		}
 
-		*classes += "." + config.Prefix + "-opacity-" + opacity + " {\n" + TAB + "--" + config.Prefix + "-opacity: " + op + ";\n" + "}\n"
-	}
-	*classes += "\n"
-}
+// 		*classes += "." + config.Prefix + "-opacity-" + opacity + " {\n" + TAB + "--" + config.Prefix + "-opacity: " + op + ";\n" + "}\n"
+// 	}
+// 	*classes += "\n"
+// }
 
-func getColorKey(i int) (c.ColorKeys, error) {
-	switch i {
-	case 0:
-		return c.Primary, nil
-	case 1:
-		return c.Accent1, nil
-	case 2:
-		return c.Accent2, nil
-	case 3:
-		return c.Accent3, nil
-	case 4:
-		return c.Accent4, nil
-	case 5:
-		return c.Accent5, nil
-	default:
-		return "", errors.New("invalid color key")
-	}
-}
+// func getColorKey(i int) (c.ColorKeys, error) {
+// 	switch i {
+// 	case 0:
+// 		return c.Primary, nil
+// 	case 1:
+// 		return c.Accent1, nil
+// 	case 2:
+// 		return c.Accent2, nil
+// 	case 3:
+// 		return c.Accent3, nil
+// 	case 4:
+// 		return c.Accent4, nil
+// 	case 5:
+// 		return c.Accent5, nil
+// 	default:
+// 		return "", errors.New("invalid color key")
+// 	}
+// }
 
-func getColorKeys(p Palette) []c.ColorKeys {
-	var colorKeys []c.ColorKeys
-	for i := range p.HarmonyPalette {
-		if k, err := getColorKey(i); err == nil {
-			colorKeys = append(colorKeys, k)
-		}
-	}
-	return colorKeys
-}
+// func getColorKeys(p Palette) []c.ColorKeys {
+// 	var colorKeys []c.ColorKeys
+// 	for i := range p.HarmonyPalette {
+// 		if k, err := getColorKey(i); err == nil {
+// 			colorKeys = append(colorKeys, k)
+// 		}
+// 	}
+// 	return colorKeys
+// }
 
-func writeClasses(classes *string, palette Palette, config c.Config) {
-	*classes += "\n/* Classes */\n"
-	var colorKeys []c.ColorKeys
-	if uc, ok := config.UseClasses.(c.UseClassesT); ok {
-		for colorKey, colorValue := range uc.Colors {
-			if colorValue {
-				colorKeys = append(colorKeys, colorKey)
-			}
-		}
-		if len(colorKeys) == 0 {
-			colorKeys = getColorKeys(palette)
-		}
-		writeColorClasses(classes, config, colorKeys...)
-	}
-}
-
-func writeFile(output string, content string) error {
-	outputPath, filename := filepath.Split(output)
-	if outputPath == "" {
-		utils.Log.Info("\n%s\n", content)
-		return nil
-	}
-
-	// Ensure the output path exists
-	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
-		err := os.MkdirAll(outputPath, 0755)
-		if err != nil {
-			return err
-		}
-	}
-
-	// Check if the file already exists
-	filePath := filepath.Join(outputPath, filename)
-	if _, err := os.Stat(filePath); err == nil {
-		utils.Log.Warn(utils.FgStr("grey", "Overwriting your previous %s..."), filename)
-	}
-
-	// Create or open the file
-	file, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	// Write the content to the file
-	_, err = file.WriteString(content)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
+// func writeClasses(classes *string, palette Palette, config c.Config) {
+// 	*classes += "\n/* Classes */\n"
+// 	var colorKeys []c.ColorKeys
+// 	if uc, ok := config.UseClasses.(c.UseClassesT); ok {
+// 		for colorKey, colorValue := range uc.Colors {
+// 			if colorValue {
+// 				colorKeys = append(colorKeys, colorKey)
+// 			}
+// 		}
+// 		if len(colorKeys) == 0 {
+// 			colorKeys = getColorKeys(palette)
+// 		}
+// 		writeColorClasses(classes, config, colorKeys...)
+// 	}
+// }
 
 // func writePaletteVars(rootTheme *string, palette Palette, config config.Config) {
 // 	*rootTheme += "\n\n" + TAB + "/* Palette Vars */\n"

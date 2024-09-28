@@ -170,3 +170,17 @@ Since there are a variety of setups for using dark mode, AutoTheme mostly provid
 <br>
 
 ### Now your site is ready to support both `light` & `dark` color schemes based on user preferences.
+
+---
+---
+---
+
+# Development
+
+## Setup
+
+```bash
+git clone
+cd autotheme
+```
+

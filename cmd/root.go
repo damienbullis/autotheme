@@ -44,7 +44,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		startTime := time.Now()
 		cfg := config.GetConfig()
-		utils.Log.Info("cfg here: %+v\n", cfg.UseClasses)
+
 		var introStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(cfg.Primary))
 		utils.Log.Info(
 			"\n%s %s\n\n",
@@ -56,7 +56,7 @@ var rootCmd = &cobra.Command{
 		palette := core.GeneratePalette(cfg)
 		logLine("Accessible colors")
 
-		if cfg.Overrides.DarkMode {
+		if cfg.DarkMode {
 			logLine("Dark mode")
 		}
 
@@ -66,7 +66,7 @@ var rootCmd = &cobra.Command{
 		logLine("Scale")
 
 		noise := ""
-		if cfg.Overrides.Noise {
+		if cfg.Noise {
 			noise = core.GenerateNoise(cfg)
 			logLine("Noise")
 		}
@@ -90,9 +90,11 @@ var rootCmd = &cobra.Command{
 				utils.FgStr("grey", "(This may take a few seconds)"),
 			)
 			// core.LaunchPreview(cfg)
+		} else {
+			// Remove the preview if it exists
+			core.RemovePreview(cfg)
 		}
 
-		// If cfg.Tailwind not fals
 		if cfg.Tailwind {
 			core.WriteTailwind(cfg, palette, scale, noise)
 		}
@@ -111,19 +113,19 @@ func init() {
 
 	cobra.OnInitialize(config.LoadConfig)
 
-	// CLI ONLY
+	// Cli only flags
 	rootCmd.Flags().BoolP("silent", "s", false, "Silence all output from AutoTheme.")
 	rootCmd.Flags().String("config", "", "Config file (default is ./.autotheme)")
+
+	// Bind cli-only flags to viper
+	viper.BindPFlag("config", rootCmd.Flags().Lookup("config"))
+	viper.BindPFlag("silent", rootCmd.Flags().Lookup("silent"))
 
 	// Root command flags
 	rootCmd.Flags().StringP("color", "c", "", "Primary color (hex) for AutoTheme to use. If not supplied, AutoTheme will pick a random color.")
 	rootCmd.Flags().StringP("harmony", "a", "", "Harmony for AutoTheme to use. If not supplied, AutoTheme will pick a random harmony")
 	rootCmd.Flags().StringP("output", "o", "src/index.css", "Output file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file. If you pass an empty string. AutoTheme will instead print the generated CSS to standard out.")
 	rootCmd.Flags().Bool("preview", false, "Generate a preview for your theme in the browser.")
-
-	// Bind cli-only flags to viper
-	viper.BindPFlag("config", rootCmd.Flags().Lookup("config"))
-	viper.BindPFlag("silent", rootCmd.Flags().Lookup("silent"))
 
 	// Bind root command flags to viper
 	viper.BindPFlag("color", rootCmd.Flags().Lookup("color"))
@@ -133,18 +135,19 @@ func init() {
 
 	// Non-Cli defaults
 	viper.SetDefault("prefix", "at")
-	viper.SetDefault("useClasses", false)
 	viper.SetDefault("tailwind", false)
 
-	viper.SetDefault("overrides.noise", true)
-	viper.SetDefault("overrides.gradients", true)
-	viper.SetDefault("overrides.darkMode", true)
-	viper.SetDefault("overrides.scalar", 0.0)
-	viper.SetDefault("overrides.fontSize", 16.0)
+	// viper.SetDefault("useClasses", false)
+	viper.SetDefault("noise", true)
+	viper.SetDefault("gradients", true)
+	viper.SetDefault("darkMode", true)
+	viper.SetDefault("scalar", 0.0)
+	viper.SetDefault("fontSize", 16.0)
 
 	// FEATURE: Add entrypoint config option to allow for integrating with an existing index.html
 	// file to inject the generated css file into the head of the document
-	// viper.SetDefault("entrypoint", "")
+	viper.SetDefault("entrypoint", "")
+
 }
 
 func Execute() {

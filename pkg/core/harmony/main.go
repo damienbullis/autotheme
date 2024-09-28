@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	// Main Harmony
+	// Main Harmonies
 	Complementary      = "complementary"
 	SplitComplementary = "split-complementary"
 	Analogous          = "analogous"

@@ -7,7 +7,7 @@ import (
 
 // GenerateScale generates the spacing for the theme
 func GenerateScale(config config.Config) []float64 {
-	scalar := config.Overrides.Scalar
+	scalar := config.Scalar
 	root := 1.0
 	spacing := [10]float64{
 		(root / scalar),

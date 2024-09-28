@@ -44,6 +44,7 @@ const (
 	IconRainbow  Icons = "🌈"
 	IconPalette  Icons = "🎨"
 	IconDevil    Icons = "😈"
+	IconTrash    Icons = "🗑️"
 
 	IconPackage Icons = "📦"
 )
