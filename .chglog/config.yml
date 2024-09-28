@@ -1,24 +1,14 @@
 style: github
 template: CHANGELOG.tpl.md
-categories: 
-  - title : "✨ Features"
-    labels:
-      - "feat"
-  - title : "🛠️ Maintainance"
-    labels:
-      - "chore"
-  - title : "🐛 Fixes"
-    labels:
-      - "bug"
 info:
   title: CHANGELOG
   repository_url: https://github.com/damienbullis/autotheme
 options:
   commit_groups:
     title_maps:
-      feat: Feature
-      chore: Chore
-      bug: Bug Fix
+      feat:  "✨ Features"
+      chore: "🛠️ Maintainance"
+      bug:   "🐛 Bug Fixes"
     
   header:
     pattern: ^([a-zA-Z]+)\s*-\s*(.+)$
