@@ -15,12 +15,44 @@
 {{ range .Versions }}
 <a name="{{ .Tag.Name }}"></a>
 ## {{ if .Tag.Previous }}[{{ .Tag.Name }}]{{ else }}{{ .Tag.Name }}{{ end }} - {{ datetime "2006-01-02" .Tag.Date }}
+
+### ✨ Features
 {{ range .CommitGroups -}}
-### {{ .Title }}
-{{ range .Commits -}}
-- [[{{ .Hash.Short }}]({{ $.Info.RepositoryURL }}/commit/{{ .Hash.Short }})] {{ .Subject }}
+  {{ if eq .Title "feat" }}
+    {{ range .Commits -}}
+    - {{ .Subject }} ([{{ .Hash.Short }}]({{ $.Info.RepositoryURL }}/commit/{{ .Hash.Short }}))
+    {{ end }}
+  {{ end }}
 {{ end }}
-{{ end -}}
+
+### 🛠  Improvements
+{{ range .CommitGroups -}}
+  {{ if eq .Title "chore" }}
+    {{ range .Commits -}}
+    - {{ .Subject }} ([{{ .Hash.Short }}]({{ $.Info.RepositoryURL }}/commit/{{ .Hash }}))
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+### 🐛  Bug Fixes
+{{ range .CommitGroups -}}
+  {{ if eq .Title "bug" }}
+    {{ range .Commits -}}
+    - {{ .Subject }} ([{{ .Hash.Short }}]({{ $.Info.RepositoryURL }}/commit/{{ .Hash }}))
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ range .CommitGroups -}}
+  {{ if or (not (eq .Title "feat")) (not (eq .Title "chore")) (not (eq .Title "bug")) }}
+
+### 🚧 Other Changes
+
+    {{ range .Commits -}}
+    - {{ .Subject }} ([{{ .Hash.Short }}]({{ $.Info.RepositoryURL }}/commit/{{ .Hash }}))
+    {{ end }}
+  {{ end }}
+{{ end }}
 
 {{- if .RevertCommits -}}
 ### Reverts
