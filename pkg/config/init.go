@@ -10,60 +10,74 @@ import (
 )
 
 type Config struct {
+	// Cli options
 	Primary    string
 	Harmony    string
 	Output     string
 	Entrypoint string
 	Prefix     string
 	Preview    bool
-	Tailwind   bool
-	Overrides  OverrideT
-	UseClasses UseClassesI
+
+	// Config only options
+	Tailwind  bool
+	FontSize  float64
+	Scalar    float64
+	DarkMode  bool
+	Opacity   bool
+	Noise     bool
+	Spacing   bool
+	Gradients bool
+
+	// TODO: Classes in the future maybe
+	// UseClasses UseClassesI
 }
 
-func getUseClasses() UseClassesI {
-	uc := viper.Get("useClasses")
-	switch v := uc.(type) {
-	case bool:
-		return UseClassesBool(v)
-	case map[string]interface{}:
-		return UseClassesT{
-			Colors: ColorsT{
-				Primary: viper.GetBool("useClasses.colors.primary"),
-				Accent1: viper.GetBool("useClasses.colors.accent1"),
-				Accent2: viper.GetBool("useClasses.colors.accent2"),
-				Accent3: viper.GetBool("useClasses.colors.accent3"),
-				Accent4: viper.GetBool("useClasses.colors.accent4"),
-				Accent5: viper.GetBool("useClasses.colors.accent5"),
-			},
-			Gradients: GradientArray{
-				GradientTuple{
-					First:  Primary,
-					Second: Accent1,
-				},
-			},
-			Opacity: viper.GetBool("useClasses.opacity"),
-			Spacing: viper.GetBool("useClasses.spacing"),
-			Noise:   viper.GetBool("useClasses.noise"),
-		}
-	default:
-		return UseClassesBool(false)
+// func getUseClasses() UseClassesI {
+// 	uc := viper.Get("useClasses")
+// 	switch v := uc.(type) {
+// 	case bool:
+// 		return UseClassesBool(v)
+// 	case map[string]interface{}:
+// 		return UseClassesT{
+// 			Colors: ColorsT{
+// 				Primary: viper.GetBool("useClasses.colors.primary"),
+// 				Accent1: viper.GetBool("useClasses.colors.accent1"),
+// 				Accent2: viper.GetBool("useClasses.colors.accent2"),
+// 				Accent3: viper.GetBool("useClasses.colors.accent3"),
+// 				Accent4: viper.GetBool("useClasses.colors.accent4"),
+// 				Accent5: viper.GetBool("useClasses.colors.accent5"),
+// 			},
+// 			Gradients: GradientArray{
+// 				GradientTuple{
+// 					First:  Primary,
+// 					Second: Accent1,
+// 				},
+// 			},
+// 			Opacity: viper.GetBool("useClasses.opacity"),
+// 			Spacing: viper.GetBool("useClasses.spacing"),
+// 			Noise:   viper.GetBool("useClasses.noise"),
+// 		}
+// 	default:
+// 		return UseClassesBool(false)
 
-	}
+// 	}
 
-}
+// }
 
 func GetConfig() Config {
 	// check some values and set defaults if not provided
 	if viper.GetString("primary") == "" {
+		utils.Log.Info("Choosing a random primary color...")
 		c := utils.GetRandomColor()
 		viper.Set("primary", c)
 	}
 	if viper.GetString("harmony") == "" {
+		utils.Log.Info("Choosing a random harmony...")
 		h := harmony.GetRandomHarmony()
 		viper.Set("harmony", h)
 	}
 	if viper.GetFloat64("scalar") == 0 {
+		utils.Log.Info("Setting scalar to golden ratio...")
 		s := (1 + math.Sqrt(5)) / 2
 		viper.Set("scalar", s)
 	}
@@ -76,18 +90,17 @@ func GetConfig() Config {
 		Entrypoint: viper.GetString("entrypoint"),
 		Prefix:     viper.GetString("prefix"),
 		Preview:    viper.GetBool("preview"),
-		Overrides: OverrideT{
-			FontSize:  viper.GetFloat64("overrides.fontSize"),
-			Scalar:    viper.GetFloat64("overrides.scalar"),
-			DarkMode:  viper.GetBool("overrides.darkMode"),
-			Colors:    ColorsBool(true),
-			Opacity:   viper.GetBool("overrides.opacity"),
-			Noise:     viper.GetBool("overrides.noise"),
-			Spacing:   viper.GetBool("overrides.spacing"),
-			Gradients: GradientBool(true),
-		},
-		UseClasses: getUseClasses(),
-		Tailwind:   viper.GetBool("tailwind"),
+
+		// Config only options
+		FontSize:  viper.GetFloat64("fontSize"),
+		Scalar:    viper.GetFloat64("scalar"),
+		DarkMode:  viper.GetBool("darkMode"),
+		Noise:     viper.GetBool("noise"),
+		Spacing:   viper.GetBool("spacing"),
+		Gradients: viper.GetBool("gradiets"),
+
+		Tailwind: viper.GetBool("tailwind"),
+		// UseClasses: getUseClasses(),
 	}
 }
 
