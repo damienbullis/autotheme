@@ -4,19 +4,12 @@ info:
   title: CHANGELOG
   repository_url: https://github.com/damienbullis/autotheme
 options:
-  commits:
-    # filters:
-    #   Type:
-    #     - sparkles
-    #     - bug
-    #     - zap
-    #     - recycle
   commit_groups:
-    # title_maps:
-    #   sparkles: Features
-    #   bug: Bug Fixes
-    #   zap: Performance Improvements
-    #   recycle: Code Refactoring
+    title_maps:
+      sparkles: ✨ Features
+      bug: 🐛 Bugs
+      zap: ⚡ Performance 
+      recycle: ♻️ Improvements
   header:
     pattern: "^:(\\w*)\\:\\s(.*)$"
     pattern_maps:
