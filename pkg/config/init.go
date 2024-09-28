@@ -67,17 +67,17 @@ type Config struct {
 func GetConfig() Config {
 	// check some values and set defaults if not provided
 	if viper.GetString("primary") == "" {
-		utils.Log.Info("Choosing a random primary color...")
+		utils.Log.Info("Choosing a random primary color...\n")
 		c := utils.GetRandomColor()
 		viper.Set("primary", c)
 	}
 	if viper.GetString("harmony") == "" {
-		utils.Log.Info("Choosing a random harmony...")
+		utils.Log.Info("Choosing a random harmony...\n")
 		h := harmony.GetRandomHarmony()
 		viper.Set("harmony", h)
 	}
 	if viper.GetFloat64("scalar") == 0 {
-		utils.Log.Info("Setting scalar to golden ratio...")
+		utils.Log.Info("Setting scalar to golden ratio...\n")
 		s := (1 + math.Sqrt(5)) / 2
 		viper.Set("scalar", s)
 	}

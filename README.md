@@ -8,19 +8,55 @@
 ## Table of Contents
 
 1. [Install](#install)
-2. [Usage](#usage)
+2. [Quick Start](#quick-start)
+3. [Usage](#usage)
    - Entrypoint
-   - Preview?
-   - Customizing
+   - Preview
    - [Dark Mode](#dark-mode)
-   - Others???
-3. [Configuring](#configuring)
-4. [CLI](#cli)
-5. [Roadmap](#roapmap)
+   - Noise
+   - Plugins
+     - Rollup/Vite
+   - Gradient
+4. [Configuring](#configuring)
+5. [CLI](#cli)
+6. [Roadmap](#roapmap)
 
 ## Install
 
-_finish_
+To install AutoTheme, you can use the following methods:
+
+#### Manual Installation
+
+For Linux/macOS (or Windows using Git Bash/WSL):
+
+```base
+curl -sL https://raw.githubusercontent.com/username/repo/main/install.sh | bash
+```
+
+For Windows (PowerShell):
+
+```powershell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/username/repo/main/install.ps1" -OutFile "install.ps1"; ./install.ps1
+```
+
+#### Go
+
+```bash
+```
+
+#### NPM
+
+```bash
+```
+
+<br>
+
+## Quick Start
+
+To get started with AutoTheme, you can run the following command in your terminal:
+
+TODO: Add a quick start guide
+
 
 <br>
 
@@ -81,7 +117,7 @@ _finish_
   - [ ] go install
   - [ ] npm install
 - [/] Plugins
-  - [x] Tailwind
+  - [ ] ~~Tailwind~~ I think this is just going to be integrated
   - [/] ~~Rollup/Vite~~ (On hold because of Rolldown announcement)
 - [x] Darkmode script snippet in README
 - [ ] index.html integration (entrypoint)

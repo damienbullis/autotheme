@@ -26,7 +26,7 @@ func logLine(primary string) {
 var rootCmd = &cobra.Command{
 	Use:     "autotheme",
 	Short:   "A zero-config CSS theme generator",
-	Long:    `AutoTheme is a zero-config theme generator using color theory, sensible options & defaults, and modern HTML and CSS features.`,
+	Long:    `AutoTheme is a zero-config zero-dependency theme generator using color theory, sensible options & defaults, and modern HTML and CSS features.`,
 	Aliases: []string{"auto"},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if viper.IsSet("color") && viper.GetString("color") != "" {
@@ -49,7 +49,7 @@ var rootCmd = &cobra.Command{
 		utils.Log.Info(
 			"\n%s %s\n\n",
 			introStyle.Render("AutoTheme"),
-			utils.FgStr("grey", "(v"+utils.GetVersion()+")"),
+			utils.FgStr("grey", "("+cmd.Version+")"),
 		)
 
 		// Generate theme
@@ -114,6 +114,7 @@ func init() {
 	cobra.OnInitialize(config.LoadConfig)
 
 	// Cli only flags
+	rootCmd.SetVersionTemplate("AutoTheme {{.Version}}\n")
 	rootCmd.Flags().BoolP("silent", "s", false, "Silence all output from AutoTheme.")
 	rootCmd.Flags().String("config", "", "Config file (default is ./.autotheme)")
 
@@ -150,7 +151,11 @@ func init() {
 
 }
 
-func Execute() {
+func Execute(version string) {
+
+	// Assign the version to the root command
+	rootCmd.Version = version
+
 	if err := rootCmd.Execute(); err != nil {
 		// Handle errors here
 		fmt.Println(err)
