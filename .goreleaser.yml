@@ -55,10 +55,10 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    builds_info:
-      group: root
-      owner: root
-      mtime: "{{ .CommitDate }}"
+    # builds_info:
+    #   group: root
+    #   owner: root
+    #   mtime: "{{ .CommitDate }}"
     # files:
     #   - src: README.md
     #     info:
