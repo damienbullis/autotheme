@@ -63,17 +63,14 @@ archives:
         info:
           owner: root
           group: root
-          mtime: "{{ .CommitDate }}"
       - src: LICENSE
         info:
           owner: root
           group: root
-          mtime: "{{ .CommitDate }}"
       - src: CHANGELOG.md
         info:
           owner: root
           group: root
-          mtime: "{{ .CommitDate }}"
 
 release:
   draft: true
