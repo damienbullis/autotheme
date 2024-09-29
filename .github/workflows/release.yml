@@ -19,7 +19,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
-      - run: git checkout ${{ github.ref }}
+        with:
+          fetch-depth: 0  # Ensure tags are fetched
 
       - name: Set VERSION environment variable
         # id: get_version
@@ -27,8 +28,15 @@ jobs:
 
       - name: Install git-chglog
         run: |
-          curl -sL https://github.com/git-chglog/git-chglog/releases/download/v0.15.0/git-chglog_0.15.0_linux_amd64.tar.gz | tar xz
+          curl -sL https://github.com/git-chglog/git-chglog/releases/download/v0.15.4/git-chglog_0.15.4_linux_amd64.tar.gz | tar xz && \
           sudo mv git-chglog /usr/local/bin/git-chglog
+
+      - name: Ensure tags exist
+        run: |
+          if [ -z "$(git tag)" ]; then
+            echo "No Git tags found. Creating a tag for changelog generation."
+            exit 1
+          fi
 
       - name: Generate Changelog
         run: git-chglog -o CHANGELOG.md
