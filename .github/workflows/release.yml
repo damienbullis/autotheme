@@ -35,23 +35,23 @@ jobs:
           curl -sL https://github.com/git-chglog/git-chglog/releases/download/v0.15.4/git-chglog_0.15.4_linux_amd64.tar.gz | tar xz && \
           sudo mv git-chglog /usr/local/bin/git-chglog
 
-      - name: Ensure tags exist
-        run: |
-          if [ -z "$(git tag)" ]; then
-            echo "No Git tags found. Creating a tag for changelog generation."
-            exit 1
-          fi
+      # - name: Ensure tags exist
+      #   run: |
+      #     if [ -z "$(git tag)" ]; then
+      #       echo "No Git tags found. Creating a tag for changelog generation."
+      #       exit 1
+      #     fi
 
-      - name: Generate Changelog
-        run: git-chglog -o CHANGELOG.md
+      # - name: Generate Changelog
+      #   run: git-chglog -o CHANGELOG.md
 
-      - name: Commit Changelog
-        run: |
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
-          git add CHANGELOG.md
-          git commit -m "Update changelog for ${{ github.ref }}"
-          git push
+      # - name: Commit Changelog
+      #   run: |
+      #     git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      #     git config user.name "github-actions[bot]"
+      #     git add CHANGELOG.md
+      #     git commit -m "Update changelog for ${{ github.ref }}"
+      #     git push
 
       - name: Install GoReleaser
         run: |
