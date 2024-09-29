@@ -16,11 +16,11 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '^1.17'  # Set your desired Go version here
+          go-version: '^1.21' 
 
       - name: Set VERSION environment variable
-        id: get_version
-        run: echo "VERSION=$(git describe --tags)" >> $GITHUB_ENV
+        # id: get_version
+        run: echo "VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Install git-chglog
         run: |

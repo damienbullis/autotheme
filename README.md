@@ -220,3 +220,27 @@ git clone
 cd autotheme
 ```
 
+TODO: Finish setup instructions
+
+## Tagging Commits
+
+Start your commit message with one of the following prefixes if you want to tag your commits in the changelog:
+
+- `feat - <YOUR_MESSAGE>` for new features
+- `fix - <YOUR_MESSAGE>` for bug fixes
+- `chore - <YOUR_MESSAGE>` for basically everything else
+
+## Releasing
+
+This is handled by CI/CD. To trigger a release you can create a new tag and push it to the repo.
+
+```bash
+git tag -a v0.1.0 -m "Initial Release"
+git push origin v0.1.0
+```
+
+This will trigger the release workflow, which will trigger the build, and then release the new version to github.
+
+## Testing
+
+TODO: Add testing instructions
