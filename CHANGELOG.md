@@ -2,6 +2,7 @@
 ## [Unreleased]
 
 ### 🐛 Bug Fixes
+- [[fa76fd3](https://github.com/damienbullis/autotheme/commit/fa76fd3)] Update version in .goreleaser.yml
 - [[650275a](https://github.com/damienbullis/autotheme/commit/650275a)] againnnnn
 - [[433a7b3](https://github.com/damienbullis/autotheme/commit/433a7b3)] even closerrrrrrr
 - [[772c148](https://github.com/damienbullis/autotheme/commit/772c148)] :monkeys:
