@@ -7,7 +7,7 @@ env:
 before:
   hooks:
     - go mod tidy
-    - git-chglog -o CHANGELOG.md
+    # - git-chglog -o CHANGELOG.md
 
 builds:
   - env:
@@ -58,19 +58,19 @@ archives:
       group: root
       owner: root
       mtime: "{{ .CommitDate }}"
-    files:
-      - src: README.md
-        info:
-          owner: root
-          group: root
-      - src: LICENSE
-        info:
-          owner: root
-          group: root
-      - src: CHANGELOG.md
-        info:
-          owner: root
-          group: root
+    # files:
+    #   - src: README.md
+    #     info:
+    #       owner: root
+    #       group: root
+    #   - src: LICENSE
+    #     info:
+    #       owner: root
+    #       group: root
+    #   - src: CHANGELOG.md
+    #     info:
+    #       owner: root
+    #       group: root
 
 release:
   draft: true
