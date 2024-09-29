@@ -1,12 +1,10 @@
 # Autotheme Makefile
 
-.PHONY: help build build-all run clean install test vet fmt
+.PHONY: build run clean install test vet fmt
 
-# Build the project
+# Build the project locally
 build:
 	go build -o autotheme
-build-all:
-	./build.sh
 
 # Run the project
 run:
