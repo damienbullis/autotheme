@@ -75,7 +75,7 @@ jobs:
           tar -xzf goreleaser.tar.gz -C /usr/local/bin
 
       - name: Run GoReleaser
-        run: goreleaser release
+        run: goreleaser release --release-notes=CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ github.event.inputs.version }}

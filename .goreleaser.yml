@@ -55,23 +55,6 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    # builds_info:
-    #   group: root
-    #   owner: root
-    #   mtime: "{{ .CommitDate }}"
-    # files:
-    #   - src: README.md
-    #     info:
-    #       owner: root
-    #       group: root
-    #   - src: LICENSE
-    #     info:
-    #       owner: root
-    #       group: root
-    #   - src: CHANGELOG.md
-    #     info:
-    #       owner: root
-    #       group: root
 
 release:
   draft: true
