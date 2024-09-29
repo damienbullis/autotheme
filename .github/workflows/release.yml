@@ -59,7 +59,7 @@ jobs:
           tar -xzf goreleaser.tar.gz -C /usr/local/bin
 
       - name: Run GoReleaser
-        run: goreleaser release --rm-dist
+        run: goreleaser release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ env.VERSION }}
