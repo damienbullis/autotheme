@@ -2,6 +2,7 @@
 ## [Unreleased]
 
 ### 🐛 Bug Fixes
+- [[50bf4bf](https://github.com/damienbullis/autotheme/commit/50bf4bf)] even closer
 - [[df85be7](https://github.com/damienbullis/autotheme/commit/df85be7)] add permissions
 - [[c009c9f](https://github.com/damienbullis/autotheme/commit/c009c9f)] closer
 - [[2ef983c](https://github.com/damienbullis/autotheme/commit/2ef983c)] :monkey:
