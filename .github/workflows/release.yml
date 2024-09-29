@@ -12,10 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-      - run: get checkout HEAD^
-
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
