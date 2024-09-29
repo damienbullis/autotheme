@@ -2,6 +2,8 @@
 ## [Unreleased]
 
 ### 🐛 Bug Fixes
+- [[d1c1f27](https://github.com/damienbullis/autotheme/commit/d1c1f27)] tweaking releaser & release
+- [[915d1eb](https://github.com/damienbullis/autotheme/commit/915d1eb)] undo git add . and fix license & readme
 - [[127a983](https://github.com/damienbullis/autotheme/commit/127a983)] release change to git add .
 - [[fa76fd3](https://github.com/damienbullis/autotheme/commit/fa76fd3)] Update version in .goreleaser.yml
 - [[650275a](https://github.com/damienbullis/autotheme/commit/650275a)] againnnnn

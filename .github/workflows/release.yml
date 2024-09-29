@@ -1,10 +1,15 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'  # Trigger workflow for semantic version tags like v1.2.3
+  # push:
+  #   tags:
+  #     - 'v*.*.*'  # Trigger workflow for semantic version tags like v1.2.3
   workflow_dispatch: # Allow manual triggering of workflow
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+        default: 'v0.0.0'
       
 
 jobs:
@@ -24,11 +29,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Ensure tags are fetched
-
-      - name: Set VERSION environment variable
-        # id: get_version
-        run: echo "VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+          fetch-depth: 0  # Ensure tags are fetched 
 
       - name: Install git-chglog
         run: |
@@ -42,16 +43,31 @@ jobs:
       #       exit 1
       #     fi
 
-      # - name: Generate Changelog
-      #   run: git-chglog -o CHANGELOG.md
+      - name: Generate Changelog
+        run: git-chglog -o CHANGELOG.md
 
-      # - name: Commit Changelog
-      #   run: |
-      #     git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      #     git config user.name "github-actions[bot]"
-      #     git add CHANGELOG.md
-      #     git commit -m "Update changelog for ${{ github.ref }}"
-      #     git push
+      - name: Commit Changelog
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          
+          # Discard changes to LICENSE and README.md if they were modified
+          git checkout -- LICENSE README.md
+          
+          # Stage and commit only CHANGELOG.md
+          git add CHANGELOG.md
+          
+          # Commit if there are changes
+          git diff --cached --quiet || git commit -m "Update changelog for ${{ github.ref }}"
+          
+          # Push changes
+          git push
+      
+      - name: Create Git Tag from Input
+        run: |
+          echo "Creating tag: ${{ github.event.inputs.version }}"
+          git tag -a "${{ github.event.inputs.version }}" -m "Release ${{ github.event.inputs.version }}"
+          git push origin "${{ github.event.inputs.version }}"
 
       - name: Install GoReleaser
         run: |
@@ -62,4 +78,4 @@ jobs:
         run: goreleaser release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ env.VERSION }}
+          VERSION: ${{ github.event.inputs.version }}
