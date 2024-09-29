@@ -14,6 +14,9 @@
 - [[ac6459c](https://github.com/damienbullis/autotheme/commit/ac6459c)] manual trigger to workflow
 - [[c27502b](https://github.com/damienbullis/autotheme/commit/c27502b)] release workflow
 
+### 🛠️ Maintainance
+- [[48a1105](https://github.com/damienbullis/autotheme/commit/48a1105)] go mod tidy
+
 
 <a name="v0.1.0"></a>
 ## [v0.1.0] - 2024-09-29
