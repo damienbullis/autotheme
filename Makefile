@@ -4,7 +4,7 @@
 
 # Build the project locally
 build:
-	go build -o autotheme
+	go build -o dist/autotheme
 
 # Run the project
 run:
@@ -13,7 +13,7 @@ run:
 # Clean the project
 clean:
 	go clean
-	rm -rf bin
+	rm -rf dist
 
 # Install the project
 install:

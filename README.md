@@ -113,7 +113,7 @@ _finish_
   - [ ] Add json schema for the config file
   - [ ] Add Tests
 - [ ] Installers
-  - [ ] bash cli install
+  - [X] bash cli install
   - [ ] go install
   - [ ] npm install
 - [/] Plugins
