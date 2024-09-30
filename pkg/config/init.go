@@ -111,7 +111,6 @@ func LoadConfig() {
 
 	if cfgfile := viper.GetString("config"); cfgfile != "" {
 		// Use config file from the flag.
-		utils.Log.Info("Config file provided %s", cfgfile)
 		viper.SetConfigFile(cfgfile)
 	} else {
 		// Use default config file name and directory
@@ -128,8 +127,8 @@ func LoadConfig() {
 			// Config file not found
 			utils.Log.Warn("Using zero-config...")
 		} else {
-			utils.Log.Error("\nError found in config file at: %s", viper.ConfigFileUsed())
-			utils.Log.Error(err.Error())
+			utils.Log.Error("Error found in config file at: %s\n", viper.ConfigFileUsed())
+			utils.Log.Error(err.Error() + "\n")
 			os.Exit(0)
 		}
 	}

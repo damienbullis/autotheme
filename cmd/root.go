@@ -116,10 +116,10 @@ func init() {
 	// Cli only flags
 	rootCmd.SetVersionTemplate("AutoTheme {{.Version}}\n")
 	rootCmd.Flags().BoolP("silent", "s", false, "Silence all output from AutoTheme.")
-	rootCmd.Flags().String("config", "", "Config file (default is ./.autotheme)")
+	rootCmd.PersistentFlags().String("config", "", "Config file (default is ./autotheme.*)")
 
 	// Bind cli-only flags to viper
-	viper.BindPFlag("config", rootCmd.Flags().Lookup("config"))
+	viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config"))
 	viper.BindPFlag("silent", rootCmd.Flags().Lookup("silent"))
 
 	// Root command flags
@@ -148,7 +148,6 @@ func init() {
 	// FEATURE: Add entrypoint config option to allow for integrating with an existing index.html
 	// file to inject the generated css file into the head of the document
 	viper.SetDefault("entrypoint", "")
-
 }
 
 func Execute(version string) {
