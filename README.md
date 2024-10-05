@@ -8,7 +8,9 @@
 
 > A _`zero-config`_ & _`zero-dependency`_ tool for generating accessible CSS themes using color theory.
 
-## Contents
+<details>
+
+<summary><b>Contents</b></summary>
 
 -   [Install](#install)
 -   [Usage](#usage)
@@ -16,39 +18,71 @@
 -   [CLI](#cli)
 -   [Roadmap](#roapmap)
 
-## Install
+</details>
+
+<br>
+
+# Install
 
 To install AutoTheme, you can use the following methods:
 
-### Manual
+<details>
 
-For Linux/macOS (or Windows using Git Bash/WSL):
+<summary style="font-size:1.1em; font-weight:bold;">Manual</summary>
 
-```base
+#### Automatic Install (Recommended)
+
+> `install.sh` will detect your system and download the appropriate binary.
+
+<details>
+
+<summary>For Linux/macOS (or Windows using Git Bash/WSL):</summary>
+
+```bash
 curl -sL https://raw.githubusercontent.com/username/repo/main/install.sh | bash
 ```
 
-For Windows (PowerShell):
+</details>
+
+<details>
+
+<summary>For Windows (PowerShell):</summary>
 
 ```powershell
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/username/repo/main/install.ps1" -OutFile "install.ps1"; ./install.ps1
 ```
 
-### Go
+</details>
+
+#### Manual Install
+
+> Download the appropriate binary for your system from the [releases page](https://github.com/damienbullis/autotheme/releases).
+
+</details>
+
+<details>
+
+<summary style="font-size:1.1em; font-weight:bold;">GO</summary>
 
 ```bash
 
 ```
 
-### NPM
+</details>
+
+<details>
+
+<summary style="font-size:1.1em; font-weight:bold;">NPM</summary>
 
 ```bash
 
 ```
+
+</details>
 
 <br>
 
-## Usage
+# Usage
 
 Depending on your use case, you may only need to generate a theme once, and not need to change things. In this case, just run AutoTheme through your terminal and call it a day.
 
