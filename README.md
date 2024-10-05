@@ -175,9 +175,15 @@ See [AutoTheme Vite Plugin]() for more information.
 autotheme --help
 ```
 
+The `--help` flag will display all available options.
+
+Use the `--config` flag to specify a configuration file.
+
+> By default, AutoTheme will look for a `autotheme.yml` file in the current directory.
+
 <details>
 
-<summary style="font-weight:bold;">Initializing with <code>init</code> command</summary>
+<summary style="font-weight:bold;">Using the <code>init</code> command</summary>
 
 <br>
 
