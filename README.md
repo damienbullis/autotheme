@@ -10,22 +10,15 @@
 -   [Install](#install)
 -   [Quick Start](#quick-start)
 -   [Usage](#usage)
-    -   Entrypoint
-    -   Preview
-    -   [Dark Mode](#dark-mode)
-    -   Noise
-    -   Plugins
-        -   Rollup/Vite
-    -   Gradient
 -   [Configuring](#configuring)
 -   [CLI](#cli)
 -   [Roadmap](#roapmap)
 
-## Install
+# Install
 
 To install AutoTheme, you can use the following methods:
 
-#### Manual Installation
+## Manual Installation
 
 For Linux/macOS (or Windows using Git Bash/WSL):
 
@@ -39,13 +32,13 @@ For Windows (PowerShell):
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/username/repo/main/install.ps1" -OutFile "install.ps1"; ./install.ps1
 ```
 
-#### Go
+### Go
 
 ```bash
 
 ```
 
-#### NPM
+### NPM
 
 ```bash
 
@@ -53,7 +46,7 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/username/repo/main/ins
 
 <br>
 
-## Quick Start
+# Quick Start
 
 To get started with AutoTheme, you can run the following command in your terminal:
 
@@ -61,13 +54,13 @@ TODO: Add a quick start guide
 
 <br>
 
-## Usage
+# Usage
 
 Depending on your use case, you may only need to generate a theme once, and not need to change things. In this case, just run AutoTheme through your terminal and call it a day.
 
 In other cases you may want AutoTheme to be apart of a build step.
 
-### No Dependency
+## No Dependency Usage
 
 After installing, you can just run
 
@@ -80,55 +73,49 @@ autotheme
 Now if you _want_ to go customize further, AutoTheme does provide some cli flags.
 Run `--help` for options.
 
-Additionally you can run
+to go through an interactive prompt where you can also provide some customization.
+
+<br>
+
+## Dev Dependency Usage
+
+_finish_
+
+<br>
+
+# Initializing a new project
+
+Run AutoTheme's interactive prompt
 
 ```bash
 autotheme init
 ```
 
-to go through an interactive prompt where you can also provide some customization.
+This will create a autotheme.yml file in the root of your project.
+
+#### `-y`
+
+To skip the interactive prompt and use the default values, you can use the `-y` flag.
+
+```bash
+autotheme init -y
+```
 
 <br>
 
-### Dev Dependency
-
-_finish_
+# Configuration
 
 <br>
 
-## Configuring
+## Config
 
-_finish_
+## Output
 
-<br>
-
-## CLI
-
-_finish_
+## Entry Point
 
 <br>
 
-## Roapmap
-
--   [ ] Core
-    -   [ ] Add json schema for the config file
-    -   [ ] Add Tests
--   [ ] Installers
-    -   [x] bash cli install
-    -   [ ] go install
-    -   [ ] npm install
--   [/] Plugins
-    -   [ ] ~~Tailwind~~ I think this is just going to be integrated
-    -   [/] ~~Rollup/Vite~~ (On hold because of Rolldown announcement)
--   [x] Darkmode script snippet in README
--   [ ] index.html integration (entrypoint)
-    -   [ ] include snippet in README
--   [ ] index.css integration (output)
-
-<br>
-<br>
-
-# Dark Mode
+## Dark Mode
 
 Since there are a variety of setups for using dark mode, AutoTheme mostly provides the CSS variable framework. To finish integrating support for `prefers-color-scheme: dark`, there are a couple more steps.
 
@@ -208,6 +195,25 @@ Since there are a variety of setups for using dark mode, AutoTheme mostly provid
 
 ### Now your site is ready to support both `light` & `dark` color schemes based on user preferences.
 
+# Roapmap
+
+-   [ ] Core
+    -   [ ] Add json schema for the config file
+    -   [ ] Add Tests
+-   [ ] Installers
+    -   [x] bash cli install
+    -   [ ] go install
+    -   [ ] npm install
+-   [/] Plugins
+    -   [ ] ~~Tailwind~~ I think this is just going to be integrated
+    -   [/] ~~Rollup/Vite~~ (On hold because of Rolldown announcement)
+-   [x] Darkmode script snippet in README
+-   [ ] index.html integration (entrypoint)
+    -   [ ] include snippet in README
+-   [ ] index.css integration (output)
+
+<br>
+
 ---
 
 ---
@@ -238,10 +244,6 @@ make install
 ## Local Dev
 
 > See makefile for all available commands.
-
-##### Discovery
-
-Look into justfile
 
 ### Basic usage
 
@@ -275,7 +277,9 @@ make test-watch
 
 # Releasing
 
-Releases are created via the `Release` workflow. To create a new release, manually trigger the release workflow by going to the actions tab in the repo and selecting the `Release` workflow.
+Releases are created via the `Release` workflow.
+
+To create a new release, manually trigger the release workflow by going to the actions tab in the repo and selecting the `Release` workflow.
 
 Enter the new version number when prompted and the workflow will take care of the rest.
 
