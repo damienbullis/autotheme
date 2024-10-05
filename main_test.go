@@ -78,31 +78,10 @@ var _ = Describe("AutoTheme", Ordered, func() {
 		Describe("flags", func() {})
 	})
 
-	Describe("Init", func() {})
-
-	// It("should run successfully", func() {
-	// 	// Run the CLI command
-	// 	_, err := suite.RunCommand()
-
-	// 	Expect(err).ShouldNot(HaveOccurred(), "CLI execution failed")
-	// })
-
-	// Describe("help flag", func() {
-	// 	cmd := exec.Command("go", "run", ".", "-h")
-	// 	output, err := cmd.CombinedOutput()
-
-	// 	It("should run successfully", func() {
-	// 		// Run the CLI command
-	// 		Expect(err).ShouldNot(HaveOccurred(), "CLI execution failed")
-	// 	})
-
-	// 	It("should contain name of cli", func() {
-	// 		// Run the CLI command
-	// 		Expect(string(output)).Should(ContainSubstring("AutoTheme"), "AutoTheme is missing from help output")
-	// 	})
-
-	// })
-	// It("should run successfully with version flag", func() {})
+	Describe("Init", func() {
+		Describe("command", func() {})
+		Describe("flags", func() {})
+	})
 })
 
 func TestMain(m *testing.T) {
