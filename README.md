@@ -9,7 +9,6 @@
 > A _`zero-config`_ & _`zero-dependency`_ tool for generating accessible CSS themes using color theory.
 
 <details>
-
 <summary><b>Contents</b></summary>
 
 -   [Install](#install)
@@ -27,7 +26,6 @@
 To install AutoTheme, you can use the following methods:
 
 <details>
-
 <summary style="font-size:1.1em; font-weight:bold;">Manual</summary>
 
 #### Automatic Install (Recommended)
@@ -35,7 +33,6 @@ To install AutoTheme, you can use the following methods:
 > `install.sh` will detect your system and download the appropriate binary.
 
 <details>
-
 <summary>For Linux/macOS (or Windows using Git Bash/WSL):</summary>
 
 ```bash
@@ -45,7 +42,6 @@ curl -sL https://raw.githubusercontent.com/username/repo/main/install.sh | bash
 </details>
 
 <details>
-
 <summary>For Windows (PowerShell):</summary>
 
 ```powershell
@@ -61,7 +57,6 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/username/repo/main/ins
 </details>
 
 <details>
-
 <summary style="font-size:1.1em; font-weight:bold;">GO</summary>
 
 ```bash
@@ -71,7 +66,6 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/username/repo/main/ins
 </details>
 
 <details>
-
 <summary style="font-size:1.1em; font-weight:bold;">NPM</summary>
 
 ```bash
@@ -84,87 +78,155 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/username/repo/main/ins
 
 # Usage
 
-Depending on your use case, you may only need to generate a theme once, and not need to change things. In this case, just run AutoTheme through your terminal and call it a day.
-
-In other cases you may want AutoTheme to be apart of a build step.
-
-<br>
-
-### No Dependency Usage
-
-After installing, you can just run
-
 ```bash
 autotheme
 ```
 
-#### Thats it!
+By default AutoTheme will add a `src/index.css` to the current directory.
 
-### Dev Dependency Usage
+**AutoTheme will choose a random color and harmony for if none is provided.**
 
-_finish_
+<details>
+<summary style="font-weight:bold;">Harmonies</summary>
+
+#### Harmonies are based on the theme's primary color. AutoTheme includes the following harmonies:
+
+<ul>
+  <li>
+    <h4>Analogous</h4>
+    <img src= />
+  </li>
+  <li>
+    <h4>Complementary</h4>
+    <img src= />
+  </li>
+  <li>
+    <h4>Split Complementary</h4>
+    <img src= />
+  </li>
+  <li>
+    <h4>Triadic</h4>
+    <img src= />
+  </li>
+  <li>
+    <h4>Tetradic</h4>
+    <img src= />
+  </li>
+  <li>
+    <h4>Square</h4>
+    <img src= />
+  </li>
+  <li>
+    <h4>Rectangle</h4>
+    <img src= />
+  </li>
+  <li>
+    <h4>Lunar Eclipse</h4>
+    <img src= />
+  </li>
+  <li>
+    <h4>Aurelian</h4>
+    <img src= />
+  </li>
+  <li>
+    <h4>Bi Polar</h4>
+    <img src= />
+  </li>
+  <li>
+    <h4>Retrograde</h4>
+    <img src= />
+  </li>
+</ul>
+
+</details>
+
+<br>
+
+If you are planning on changing your theme often, or just want to make sure your theme stays consistent with any changes you make, you can add AutoTheme to your build process.
+
+<details>
+<summary style="font-weight:bold;">Manually add step to your build process.</summary>
+
+#### Could be as simple as adding
+
+```bash
+&& autotheme <ARGS>
+```
+
+</details>
+
+<details>
+
+<summary style="font-weight:bold;">If you are using Vite.</summary>
+
+See [AutoTheme Vite Plugin]() for more information.
+
+##### TODO: Command to generate the plugin
+
+</details>
+
+</details>
 
 <br>
 
 ## Configuration
 
-You can either use a config file or pass in flags to the CLI.
-
-### Flags
-
-For more information on the available flags, run:
-
 ```bash
 autotheme --help
 ```
 
-Or see the [Config](#config) section for more information.
+<details>
+
+<summary style="font-weight:bold;">Initializing with <code>init</code> command</summary>
 
 <br>
-
-### Config File
-
-Create a `autotheme.yml` file in the root of your project.
 
 ```bash
 autotheme init
 ```
 
-Skip the interactive prompt and use the default values.
+_TODO: ADD GIF_
 
-```bash
-autotheme init -y
+**_Or_**
+skip the interactive prompt by using the `-y` flag
+
+</details>
+
+<details>
+
+<summary style="font-weight:bold;">Default config</summary>
+
+```yml
+# Default AutoTheme Config
+color: "#FF0000"
+harmony: "analogous"
+scalar: 1.618
+# Finish this section
 ```
 
-<br>
+</details>
 
-#### `config`
+## Options
 
-TODO
-
-<br>
-
-#### `output`
+### `config`
 
 TODO
 
-<br>
-
-#### `entrypoint`
+### `output`
 
 TODO
 
-<br>
+### `entrypoint`
 
-#### `darkmode`
+TODO
+
+### `darkmode`
 
 TODO
 
 See the [Darkmode](#dark-mode) section for more information.
 
-<br>
-
-# TODO: Finish config section
+### TODO: `Finish config section`
 
 <br>
 
