@@ -51,26 +51,34 @@ var _ = AfterSuite(func() {
 	suite.cleanup()
 })
 
-var _ = Describe("AutoTheme CLI", Ordered, func() {
-	var suite *CLITestSuite
+var _ = Describe("AutoTheme", Ordered, func() {
+	Describe("Root ", func() {
+		Describe("command", func() {
+			var output string
+			var err error
+			var content string
+			BeforeAll(func() {
+				output, err = suite.RunCommand("-o", "test/index.css")
 
-	Describe("Root command", func() {
-		var output string
-		var err error
-		BeforeAll(func() {
-			output, err = suite.RunCommand("-o", "test/index.css")
+				// Read the content of the file
+				file, _ := os.ReadFile("test/index.css")
+				content = string(file)
+			})
+			It("should run successfully", func() {
+				Expect(err).ShouldNot(HaveOccurred(), "CLI execution failed")
+			})
+			It("should output to the terminal", func() {
+				Expect(output).Should(ContainSubstring("AutoTheme"), "AutoTheme is missing from output")
+			})
+			It("generate a index.css file", func() {
+				Expect(content).ShouldNot(BeEmpty(), "index.css should exist")
+			})
 		})
-		It("should run successfully", func() {
-			Expect(err).ShouldNot(HaveOccurred(), "CLI execution failed")
-		})
-		It("should output to the terminal", func() {
-			Expect(output).Should(ContainSubstring("AutoTheme"), "AutoTheme is missing from output")
-		})
-		It("generate a index.css file", func() {
-			_, fileErr := os.Stat("./test/index.css")
-			Expect(os.IsNotExist(fileErr)).Should(BeFalse(), "index.css should exist")
-		})
+
+		Describe("flags", func() {})
 	})
+
+	Describe("Init", func() {})
 
 	// It("should run successfully", func() {
 	// 	// Run the CLI command
