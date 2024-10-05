@@ -19,9 +19,13 @@ clean:
 install:
 	go install
 
-# Test the project
+# Run all tests
 test:
-	go test -v ./...
+	ginkgo -v
+
+# Watch mode for tests
+test-watch:
+	ginkgo watch -v
 
 # Vet the project
 vet:
