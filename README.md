@@ -83,19 +83,33 @@ _finish_
 
 <br>
 
-# Initializing a new project
+<br>
 
-Run AutoTheme's interactive prompt
+# Configuration
+
+You can either use a config file or pass in flags to the CLI.
+
+## Flags
+
+For more information on the available flags, run:
+
+```bash
+autotheme --help
+```
+
+Or see the [Config](#config) section for more information.
+
+<br>
+
+## Config File
+
+Create a `autotheme.yml` file in the root of your project.
 
 ```bash
 autotheme init
 ```
 
-This will create a autotheme.yml file in the root of your project.
-
-#### `-y`
-
-To skip the interactive prompt and use the default values, you can use the `-y` flag.
+Skip the interactive prompt and use the default values.
 
 ```bash
 autotheme init -y
@@ -103,15 +117,21 @@ autotheme init -y
 
 <br>
 
-# Configuration
+## Config
+
+TODO
 
 <br>
 
-## Config
-
 ## Output
 
+TODO
+
+<br>
+
 ## Entry Point
+
+TODO
 
 <br>
 
