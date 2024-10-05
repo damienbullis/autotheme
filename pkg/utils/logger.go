@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+
+	"github.com/spf13/viper"
 )
 
 type Logger struct {
@@ -12,8 +14,19 @@ type Logger struct {
 
 var Log *Logger
 
+func SetLogger() {
+	isSilent := viper.GetBool("silent")
+
+	if isSilent {
+		Log = &Logger{
+			Info:  func(format string, v ...any) {},
+			Warn:  func(format string, v ...any) {},
+			Error: func(format string, v ...any) {},
+		}
+	}
+}
+
 func init() {
-	// TODO: add support for silent mode
 	Log = &Logger{
 		Info: func(format string, v ...any) {
 			fmt.Printf(format, v...)
@@ -22,6 +35,7 @@ func init() {
 			fmt.Printf(FgStr("yellow", "\n[WARN] ")+format, v...)
 		},
 		Error: func(format string, v ...any) {
+			// Not sure if I should allow silent mode here to suppress errors
 			fmt.Printf(FgStr("red", "\n[ERROR] ")+format+"\n", v...)
 		},
 	}
