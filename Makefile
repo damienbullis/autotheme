@@ -1,6 +1,6 @@
 # Autotheme Makefile
 
-.PHONY: build run clean install test vet fmt
+.PHONY: build run clean install test test-watch vet fmt
 
 # Build the project locally
 build:
