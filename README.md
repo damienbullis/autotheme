@@ -11,13 +11,12 @@
 ## Contents
 
 -   [Install](#install)
--   [Quick Start](#quick-start)
 -   [Usage](#usage)
 -   [Configuring](#configuring)
 -   [CLI](#cli)
 -   [Roadmap](#roapmap)
 
-# Install
+## Install
 
 To install AutoTheme, you can use the following methods:
 
@@ -49,21 +48,13 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/username/repo/main/ins
 
 <br>
 
-# Quick Start
-
-To get started with AutoTheme, you can run the following command in your terminal:
-
-TODO: Add a quick start guide
-
-<br>
-
-# Usage
+## Usage
 
 Depending on your use case, you may only need to generate a theme once, and not need to change things. In this case, just run AutoTheme through your terminal and call it a day.
 
 In other cases you may want AutoTheme to be apart of a build step.
 
-## No Dependency Usage
+### No Dependency Usage
 
 After installing, you can just run
 
@@ -80,19 +71,17 @@ to go through an interactive prompt where you can also provide some customizatio
 
 <br>
 
-## Dev Dependency Usage
+### Dev Dependency Usage
 
 _finish_
 
 <br>
 
-<br>
-
-# Configuration
+## Configuration
 
 You can either use a config file or pass in flags to the CLI.
 
-## Flags
+### Flags
 
 For more information on the available flags, run:
 
@@ -104,7 +93,7 @@ Or see the [Config](#config) section for more information.
 
 <br>
 
-## Config File
+### Config File
 
 Create a `autotheme.yml` file in the root of your project.
 
@@ -120,21 +109,33 @@ autotheme init -y
 
 <br>
 
-## Config
+#### `config`
 
 TODO
 
 <br>
 
-## Output
+#### `output`
 
 TODO
 
 <br>
 
-## Entry Point
+#### `entrypoint`
 
 TODO
+
+<br>
+
+#### `darkmode`
+
+TODO
+
+See the [Darkmode](#dark-mode) section for more information.
+
+<br>
+
+# TODO: Finish config section
 
 <br>
 
@@ -227,9 +228,9 @@ Since there are a variety of setups for using dark mode, AutoTheme mostly provid
     -   [x] bash cli install
     -   [ ] go install
     -   [ ] npm install
--   [/] Plugins
+-   [ ] Plugins
     -   [ ] ~~Tailwind~~ I think this is just going to be integrated
-    -   [/] ~~Rollup/Vite~~ (On hold because of Rolldown announcement)
+    -   [ ] ~~Rollup/Vite~~ (On hold because of Rolldown announcement)
 -   [x] Darkmode script snippet in README
 -   [ ] index.html integration (entrypoint)
     -   [ ] include snippet in README
