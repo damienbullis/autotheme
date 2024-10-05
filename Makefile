@@ -21,11 +21,11 @@ install:
 
 # Run all tests
 test:
-	ginkgo -v
+	ginkgo -v ./...
 
 # Watch mode for tests
 test-watch:
-	ginkgo watch -v
+	ginkgo watch -v ./...
 
 # Vet the project
 vet:

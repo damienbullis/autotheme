@@ -125,13 +125,13 @@ func init() {
 	// Root command flags
 	rootCmd.Flags().StringP("color", "c", "", "Primary color (hex) for AutoTheme to use. If not supplied, AutoTheme will pick a random color.")
 	rootCmd.Flags().StringP("harmony", "a", "", "Harmony for AutoTheme to use. If not supplied, AutoTheme will pick a random harmony")
-	rootCmd.Flags().StringP("output", "o", "src/index.css", "Output file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file. If you pass an empty string. AutoTheme will instead print the generated CSS to standard out.")
+	rootCmd.PersistentFlags().StringP("output", "o", "src/index.css", "Output file for AutoTheme to use. This will create the file if it doesn't exist or update an existing file. If you pass an empty string. AutoTheme will instead print the generated CSS to standard out.")
 	rootCmd.Flags().Bool("preview", false, "Generate a preview for your theme in the browser.")
 
 	// Bind root command flags to viper
 	viper.BindPFlag("color", rootCmd.Flags().Lookup("color"))
 	viper.BindPFlag("harmony", rootCmd.Flags().Lookup("harmony"))
-	viper.BindPFlag("output", rootCmd.Flags().Lookup("output"))
+	viper.BindPFlag("output", rootCmd.PersistentFlags().Lookup("output"))
 	viper.BindPFlag("preview", rootCmd.Flags().Lookup("preview"))
 
 	// Non-Cli defaults

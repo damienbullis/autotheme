@@ -4,6 +4,7 @@ import (
 	"autotheme/pkg/core"
 	"autotheme/pkg/interactive"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -29,8 +30,10 @@ var initCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if yes {
-			configPath := viper.GetString("config")
-			core.WriteConfig(configPath)
+			// Since the output flag by default is index.css, we need to replace it with autotheme.yml
+			outputPath := strings.Replace(viper.GetString("output"), "index.css", "autotheme.yml", 1)
+
+			core.WriteConfig(outputPath)
 			os.Exit(1)
 		} else {
 			interactive.Prompt()
