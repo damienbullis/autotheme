@@ -106,8 +106,8 @@ func GetConfig() Config {
 
 func LoadConfig() {
 	// Load the config from the config file
-
 	viper.AutomaticEnv()
+	utils.InitLogger()
 
 	if cfgfile := viper.GetString("config"); cfgfile != "" {
 		// Use config file from the flag.

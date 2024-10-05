@@ -14,7 +14,7 @@ type Logger struct {
 
 var Log *Logger
 
-func SetLogger() {
+func InitLogger() {
 	isSilent := viper.GetBool("silent")
 
 	if isSilent {

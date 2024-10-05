@@ -151,7 +151,6 @@ func init() {
 }
 
 func Execute(version string) {
-
 	// Assign the version to the root command
 	rootCmd.Version = version
 
