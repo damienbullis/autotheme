@@ -54,6 +54,8 @@ Depending on your use case, you may only need to generate a theme once, and not 
 
 In other cases you may want AutoTheme to be apart of a build step.
 
+<br>
+
 ### No Dependency Usage
 
 After installing, you can just run
@@ -63,13 +65,6 @@ autotheme
 ```
 
 #### Thats it!
-
-Now if you _want_ to go customize further, AutoTheme does provide some cli flags.
-Run `--help` for options.
-
-to go through an interactive prompt where you can also provide some customization.
-
-<br>
 
 ### Dev Dependency Usage
 
