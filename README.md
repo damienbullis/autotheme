@@ -217,9 +217,11 @@ Since there are a variety of setups for using dark mode, AutoTheme mostly provid
 
 <br>
 
-### Now your site is ready to support both `light` & `dark` color schemes based on user preferences.
+Now your site is ready to support both `light` & `dark` color schemes based on user preferences! :tada:
 
-# Roapmap
+<br>
+
+## Roapmap
 
 -   [ ] Core
     -   [ ] Add json schema for the config file
@@ -246,18 +248,18 @@ Since there are a variety of setups for using dark mode, AutoTheme mostly provid
 
 <br>
 
-# Development
+## Development
 
-## Setup
+### Setup
 
-### Clone repo
+#### Clone repo
 
 ```bash
 git clone https://github.com/damienbullis/autotheme.git
 cd autotheme
 ```
 
-### Install dependencies
+#### Install dependencies
 
 ```bash
 make install
@@ -265,17 +267,17 @@ make install
 
 <br>
 
-## Local Dev
+### Local Dev
 
 > See makefile for all available commands.
 
-### Basic usage
+#### Basic usage
 
 ```bash
 make run
 ```
 
-### Passing arguments
+#### Passing arguments
 
 ```bash
 make run ARGS="--help"
@@ -283,15 +285,15 @@ make run ARGS="--help"
 
 <br>
 
-## Testing
+### Testing
 
-### All tests
+#### All tests
 
 ```bash
 make test
 ```
 
-### Watch mode
+#### Watch mode
 
 ```bash
 make test-watch
@@ -299,7 +301,7 @@ make test-watch
 
 <br>
 
-# Releasing
+## Releasing
 
 Releases are created via the `Release` workflow.
 
@@ -309,7 +311,7 @@ Enter the new version number when prompted and the workflow will take care of th
 
 -   [ ] Add on tag push trigger to the release workflow.
 
-## Tagging Commits
+### Tagging Commits
 
 Start your commit message with one of the following prefixes if you want to tag your commits in the changelog:
 
