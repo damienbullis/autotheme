@@ -1,7 +1,10 @@
-<div style='text-align:center;'>
-<h1>AutoTheme</h1>
-<h3>Some Badges here</h3>
-</div>
+# AutoTheme
+
+![License]()
+![Version]()
+![Build]()
+![Coverage]()
+![Release]()
 
 > A _`zero-config`_ & _`zero-dependency`_ tool for generating accessible CSS themes using color theory.
 
@@ -18,7 +21,7 @@
 
 To install AutoTheme, you can use the following methods:
 
-## Manual Installation
+### Manual
 
 For Linux/macOS (or Windows using Git Bash/WSL):
 
