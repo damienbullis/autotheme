@@ -8,8 +8,8 @@ import (
 
 // Calculates the contrast ratio between two colors
 func ContrastRatio(color1 colorful.Color, color2 colorful.Color) float64 {
-	luminance1 := relativeLuminance(color1)
-	luminance2 := relativeLuminance(color2)
+	luminance1 := RelativeLuminance(color1)
+	luminance2 := RelativeLuminance(color2)
 
 	if luminance1 > luminance2 {
 		return (luminance1 + 0.05) / (luminance2 + 0.05)
@@ -19,7 +19,7 @@ func ContrastRatio(color1 colorful.Color, color2 colorful.Color) float64 {
 }
 
 // Calculates the relative luminance of a given color
-func relativeLuminance(color colorful.Color) float64 {
+func RelativeLuminance(color colorful.Color) float64 {
 	// Extract RGB values
 	r := color.R
 	g := color.G

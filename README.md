@@ -364,21 +364,7 @@ make install
 
 <br>
 
-### Local Dev
-
-> See makefile for all available commands.
-
-#### Basic usage
-
-```bash
-make run
-```
-
-#### Passing arguments
-
-```bash
-make run ARGS="--help"
-```
+See the [Makefile](./Makefile) for more commands.
 
 <br>
 
