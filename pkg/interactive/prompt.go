@@ -74,9 +74,13 @@ func Prompt() {
 
 	// TODO: Prompt the use for Entrypoint?
 
+	clearScreen()
+
+	utils.Log.Error("Tailwind: NOT IMPLEMENTED YET")
+	utils.Log.Error("Entrypoint: NOT IMPLEMENTED YET")
+	utils.Log.Error("WriteConfig: NOT IMPLEMENTED YET")
 	// Finally, generate config file
 	// NEXT: Generate config file
-	clearScreen()
 	output.WriteString(
 		fmt.Sprintf(
 			"\n%s %s %s\n",
@@ -85,6 +89,7 @@ func Prompt() {
 			constants.IconDevil.Str(),
 		),
 	)
+
 	utils.Log.Info(output.String())
 }
 

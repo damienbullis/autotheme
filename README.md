@@ -82,14 +82,96 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/username/repo/main/ins
 autotheme
 ```
 
-By default AutoTheme will add a `src/index.css` to the current directory.
+> By default AutoTheme will add a `src/index.css` to the current directory.
 
 **AutoTheme will choose a random color and harmony for if none is provided.**
 
-<details>
-<summary style="font-weight:bold;">Harmonies</summary>
+<br>
 
-#### Harmonies are based on the theme's primary color. AutoTheme includes the following harmonies:
+If you are planning on changing your theme often, or just want to make sure your theme stays consistent with any changes you make, you can add AutoTheme to your build process.
+
+<details>
+<summary style="font-weight:bold;">Manually add step to your build process.</summary>
+
+#### Could be as simple as adding
+
+```bash
+&& autotheme <ARGS>
+```
+
+</details>
+
+<details>
+
+<summary style="font-weight:bold;">If you are using Vite.</summary>
+
+See [AutoTheme Vite Plugin]() for more information.
+
+##### TODO: Command to generate the plugin
+
+</details>
+
+</details>
+
+<br>
+
+## Configuration
+
+AutoTheme can be configured using:
+
+-   By passing flags to the CLI.
+-   A `autotheme.yml` config file.
+
+### `init` Command
+
+```bash
+# Interactive prompt
+autotheme init
+
+# Skip the interactive prompt
+autotheme init -y
+```
+
+> By default `init` will create a `autotheme.yml` in the current directory.
+
+<details>
+
+<summary style="margin-bottom: 1em;">See Default Config</summary>
+
+```yml
+# autotheme.yml
+
+color: "#FF0000"
+harmony: "analogous"
+scalar: 1.618
+# Finish this section
+```
+
+</details>
+
+<details>
+<summary style="margin-bottom: 1em">CLI Flags</summary>
+
+| Long        | Short | Type      | Description                                   |
+| ----------- | ----- | --------- | --------------------------------------------- |
+| `--color`   | `-c`  | `string`  | The primary color of the theme.               |
+| `--harmony` | `-a`  | `string`  | The harmony of the theme. [See Harmonies](#)  |
+| `--output`  | `-o`  | `string`  | The output file path.                         |
+| `--config`  |       | `string`  | Path to your AutoTheme config file.           |
+| `--preview` |       | `boolean` | Generate a preview.html to preview the theme. |
+| `--silent`  | `-s`  | `boolean` | Suppress all output from AutoTheme.           |
+| `--version` | `-v`  | `boolean` | Display version.                              |
+| `--help`    | `-h`  | `boolean` | Display help.                                 |
+
+</details>
+
+### Harmonies
+
+> Sets of colors, based on color theory.
+
+<details>
+
+<!-- <summary>AutoTheme includes the following harmonies</summary> -->
 
 <ul>
   <li>
@@ -139,102 +221,6 @@ By default AutoTheme will add a `src/index.css` to the current directory.
 </ul>
 
 </details>
-
-<br>
-
-If you are planning on changing your theme often, or just want to make sure your theme stays consistent with any changes you make, you can add AutoTheme to your build process.
-
-<details>
-<summary style="font-weight:bold;">Manually add step to your build process.</summary>
-
-#### Could be as simple as adding
-
-```bash
-&& autotheme <ARGS>
-```
-
-</details>
-
-<details>
-
-<summary style="font-weight:bold;">If you are using Vite.</summary>
-
-See [AutoTheme Vite Plugin]() for more information.
-
-##### TODO: Command to generate the plugin
-
-</details>
-
-</details>
-
-<br>
-
-## Configuration
-
-```bash
-autotheme --help
-```
-
-The `--help` flag will display all available options.
-
-Use the `--config` flag to specify a configuration file.
-
-> By default, AutoTheme will look for a `autotheme.yml` file in the current directory.
-
-<details>
-
-<summary style="font-weight:bold;">Using the <code>init</code> command</summary>
-
-<br>
-
-```bash
-autotheme init
-```
-
-_TODO: ADD GIF_
-
-**_Or_**
-skip the interactive prompt by using the `-y` flag
-
-</details>
-
-<details>
-
-<summary style="font-weight:bold;">Default config</summary>
-
-```yml
-# Default AutoTheme Config
-color: "#FF0000"
-harmony: "analogous"
-scalar: 1.618
-# Finish this section
-```
-
-</details>
-
-## Options
-
-### `config`
-
-TODO
-
-### `output`
-
-TODO
-
-### `entrypoint`
-
-TODO
-
-### `darkmode`
-
-TODO
-
-See the [Darkmode](#dark-mode) section for more information.
-
-### TODO: `Finish config section`
-
-<br>
 
 ## Dark Mode
 
