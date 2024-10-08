@@ -167,59 +167,65 @@ scalar: 1.618
 
 ### Harmonies
 
-> Sets of colors, based on color theory.
+Using color theory to generate a color palette based on the primary color.
+
+#### Examples
+
+> We are using `#6439FF` for our examples to illustrate the differences of the harmonies.
 
 <details>
+<summary>Analogous</summary>
+  <img style="width:100%" src="docs/assets/analogous.png" />
+</details>
 
-<!-- <summary>AutoTheme includes the following harmonies</summary> -->
+<details>
+<summary>Complementary</summary>
+  <img src="docs/assets/complementary.png" />
+</details>
 
-<ul>
-  <li>
-    <h4>Analogous</h4>
-    <img src= />
-  </li>
-  <li>
-    <h4>Complementary</h4>
-    <img src= />
-  </li>
-  <li>
-    <h4>Split Complementary</h4>
-    <img src= />
-  </li>
-  <li>
-    <h4>Triadic</h4>
-    <img src= />
-  </li>
-  <li>
-    <h4>Tetradic</h4>
-    <img src= />
-  </li>
-  <li>
-    <h4>Square</h4>
-    <img src= />
-  </li>
-  <li>
-    <h4>Rectangle</h4>
-    <img src= />
-  </li>
-  <li>
-    <h4>Lunar Eclipse</h4>
-    <img src= />
-  </li>
-  <li>
-    <h4>Aurelian</h4>
-    <img src= />
-  </li>
-  <li>
-    <h4>Bi Polar</h4>
-    <img src= />
-  </li>
-  <li>
-    <h4>Retrograde</h4>
-    <img src= />
-  </li>
-</ul>
+<details>
+<summary>Split Complementary</summary>
+  <img src="docs/assets/split-complementary.png" />
+</details>
 
+<details>
+<summary>Triadic</summary>
+  <img src="docs/assets/triadic.png" />
+</details>
+
+<details>
+<summary>Tetradic</summary>
+  <img src="docs/assets/tetradic.png" />
+</details>
+
+<details>
+<summary>Square</summary>
+  <img src="docs/assets/square.png" />
+</details>
+
+<details>
+<summary>Rectangle</summary>
+  <img src="docs/assets/rectangle.png" />
+</details>
+
+<details>
+<summary>Lunar Eclipse</summary>
+  <img src="docs/assets/lunar-eclipse.png" />
+</details>
+
+<details>
+<summary>Aurelian</summary>
+  <img src="docs/assets/aurelian.png" />
+</details>
+
+<details>
+<summary>Bi Polar</summary>
+  <img src="docs/assets/bi-polar.png" />
+</details>
+
+<details>
+<summary>Retrograde</summary>
+  <img src="docs/assets/retrograde.png" />
 </details>
 
 ## Dark Mode
