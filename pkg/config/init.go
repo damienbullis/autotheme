@@ -66,10 +66,10 @@ type Config struct {
 
 func GetConfig() Config {
 	// check some values and set defaults if not provided
-	if viper.GetString("primary") == "" {
+	if viper.GetString("color") == "" {
 		utils.Log.Info("Choosing a random primary color...\n")
 		c := utils.GetRandomColor()
-		viper.Set("primary", c)
+		viper.Set("color", c)
 	}
 	if viper.GetString("harmony") == "" {
 		utils.Log.Info("Choosing a random harmony...\n")
@@ -84,7 +84,7 @@ func GetConfig() Config {
 
 	// Return the config struct
 	return Config{
-		Primary:    viper.GetString("primary"),
+		Primary:    viper.GetString("color"),
 		Harmony:    viper.GetString("harmony"),
 		Output:     viper.GetString("output"),
 		Entrypoint: viper.GetString("entrypoint"),
@@ -132,5 +132,5 @@ func LoadConfig() {
 			os.Exit(0)
 		}
 	}
-	utils.Log.Info("Using config file: %s\n", viper.ConfigFileUsed())
+	// utils.Log.Info("Using config file: %s\n", viper.ConfigFileUsed())
 }
