@@ -86,14 +86,12 @@ autotheme
 
 **AutoTheme will choose a random color and harmony for if none is provided.**
 
-<br>
-
 If you are planning on changing your theme often, or just want to make sure your theme stays consistent with any changes you make, you can add AutoTheme to your build process.
 
 <details>
-<summary style="font-weight:bold;">Manually add step to your build process.</summary>
+<summary style="font-weight:bold; margin-bottom: .5em;">Manually add step to your build process.</summary>
 
-#### Could be as simple as adding
+Could be as simple as adding
 
 ```bash
 && autotheme <ARGS>
@@ -103,7 +101,7 @@ If you are planning on changing your theme often, or just want to make sure your
 
 <details>
 
-<summary style="font-weight:bold;">If you are using Vite.</summary>
+<summary style="font-weight:bold; margin-bottom: .5em;">If you are using Vite.</summary>
 
 See [AutoTheme Vite Plugin]() for more information.
 
@@ -112,8 +110,6 @@ See [AutoTheme Vite Plugin]() for more information.
 </details>
 
 </details>
-
-<br>
 
 ## Configuration
 
@@ -155,7 +151,7 @@ scalar: 1.618
 | Long        | Short | Type      | Description                                   |
 | ----------- | ----- | --------- | --------------------------------------------- |
 | `--color`   | `-c`  | `string`  | The primary color of the theme.               |
-| `--harmony` | `-a`  | `string`  | The harmony of the theme. [See Harmonies](#)  |
+| `--harmony` | `-a`  | `string`  | The harmony of the theme.                     |
 | `--output`  | `-o`  | `string`  | The output file path.                         |
 | `--config`  |       | `string`  | Path to your AutoTheme config file.           |
 | `--preview` |       | `boolean` | Generate a preview.html to preview the theme. |
@@ -165,17 +161,20 @@ scalar: 1.618
 
 </details>
 
-### Harmonies
+## Harmonies
 
-Using color theory to generate a color palette based on the primary color.
+AutoTheme generates a color palette based on the primary color.
 
-#### Examples
+The harmony of the theme can be configured using the `--harmony` flag or the `harmony` key in the config file.
 
-> We are using `#6439FF` for our examples to illustrate the differences of the harmonies.
+#### Analogous
 
-<details>
+<img src="docs/assets/harmony_analogous.png" />
+
+#### Complementary
+
+<!-- <details>
 <summary>Analogous</summary>
-  <img src="docs/assets/harmony_analogous.png" />
 </details>
 
 <details>
@@ -226,9 +225,13 @@ Using color theory to generate a color palette based on the primary color.
 <details>
 <summary>Retrograde</summary>
   <img src="docs/assets/retrograde.png" />
-</details>
+</details> -->
+
+> All examples are using `#6439FF` to illustrate the differences in harmonies.
 
 ## Dark Mode
+
+<details>
 
 Since there are a variety of setups for using dark mode, AutoTheme mostly provides the CSS variable framework. To finish integrating support for `prefers-color-scheme: dark`, there are a couple more steps.
 
@@ -308,9 +311,11 @@ Since there are a variety of setups for using dark mode, AutoTheme mostly provid
 
 Now your site is ready to support both `light` & `dark` color schemes based on user preferences! :tada:
 
-<br>
+</details>
 
 ## Roapmap
+
+<details>
 
 -   [ ] Core
     -   [ ] Add json schema for the config file
@@ -327,17 +332,11 @@ Now your site is ready to support both `light` & `dark` color schemes based on u
     -   [ ] include snippet in README
 -   [ ] index.css integration (output)
 
-<br>
-
----
-
----
-
----
-
-<br>
+</details>
 
 ## Development
+
+<details>
 
 ### Setup
 
@@ -374,9 +373,11 @@ make test
 make test-watch
 ```
 
-<br>
+</details>
 
 ## Releasing
+
+<details>
 
 Releases are created via the `Release` workflow.
 
@@ -393,3 +394,5 @@ Start your commit message with one of the following prefixes if you want to tag 
 -   `feat - <YOUR_MESSAGE>` for new features
 -   `fix - <YOUR_MESSAGE>` for bug fixes
 -   `chore - <YOUR_MESSAGE>` for basically everything else
+
+</details>
