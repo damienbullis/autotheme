@@ -175,7 +175,7 @@ Using color theory to generate a color palette based on the primary color.
 
 <details>
 <summary>Analogous</summary>
-  <img style="width:100%" src="docs/assets/analogous.png" />
+  <img src="docs/assets/analogous.png?v=2" />
 </details>
 
 <details>
