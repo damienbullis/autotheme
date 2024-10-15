@@ -16,6 +16,7 @@ func WriteTailwind(
 	utils.Log.Info("%+v\n", palette)
 	utils.Log.Info("%+v\n", scale)
 	utils.Log.Info("%+v\n", noise)
+	utils.Log.Error("Not implemented yet")
 	// Wrapper
 	// /** @type {import('tailwindcss').Config} */
 	// module.exports = {

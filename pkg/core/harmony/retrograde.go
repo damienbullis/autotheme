@@ -21,12 +21,13 @@ func RetrogradeHarmony(baseColor colorful.Color) []colorful.Color {
 		analogousColors[i] = colorful.Hsl(analogousHue, s, l)
 	}
 
-	retrogradeColors := make([]colorful.Color, length)
+	// retrogradeColors := make([]colorful.Color, length)
 
 	// Reverse the order of analogous colors
-	for i, j := 0, length-1; i < length; i, j = i+1, j-1 {
-		retrogradeColors[i] = analogousColors[j]
-	}
+	// for i, j := 0, length-1; i < length; i, j = i+1, j-1 {
+	// 	retrogradeColors[i] = analogousColors[j]
+	// }
 
-	return retrogradeColors
+	// return retrogradeColors
+	return analogousColors
 }

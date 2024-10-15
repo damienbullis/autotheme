@@ -13,17 +13,17 @@ func LunarEclipseHarmony(baseColor colorful.Color) []colorful.Color {
 		deepTones[i] = baseColor.BlendLuv(colorful.Luv(l+.3, u, v).Clamped(), t)
 	}
 
-	// Generate subtle, muted grays
-	mutedGrays := make([]colorful.Color, numColors)
+	// Generate subtle, muted greys
+	mutedGreys := make([]colorful.Color, numColors)
 	h, _, _ := baseColor.Hsl()
-	desaturatedGray := colorful.Hsl(h, 0, .5)
+	desaturatedGrey := colorful.Hsl(h, 0, .5)
 	for i := 0; i < numColors; i++ {
 		t := float64(i) / float64(numColors-1)
-		mutedGrays[i] = baseColor.BlendLab(desaturatedGray, t)
+		mutedGreys[i] = baseColor.BlendLab(desaturatedGrey, t)
 	}
 
-	// Combine deep tones and muted grays
-	lunarEclipseColors := append(deepTones, mutedGrays...)
+	// Combine deep tones and muted greys
+	deepTones = append(deepTones, mutedGreys...)
 
-	return lunarEclipseColors
+	return deepTones
 }
