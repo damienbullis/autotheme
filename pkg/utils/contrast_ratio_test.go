@@ -30,12 +30,12 @@ var _ = Describe("ContrastRatio", func() {
 			Expect(ContrastRatio(white, black)).To(Equal(21.0))
 		})
 
-		It("should calculate contrast ratio correctly for white and gray", func() {
+		It("should calculate contrast ratio correctly for white and grey", func() {
 			white := colorful.Color{R: 1, G: 1, B: 1}
-			gray := colorful.Color{R: 0.5, G: 0.5, B: 0.5} // gray color
+			grey := colorful.Color{R: 0.5, G: 0.5, B: 0.5} // grey color
 
 			// Corrected expected contrast ratio
-			Expect(round(ContrastRatio(white, gray))).To(Equal(3.98))
+			Expect(round(ContrastRatio(white, grey))).To(Equal(3.98))
 		})
 
 		It("should calculate contrast ratio correctly for two identical colors", func() {
