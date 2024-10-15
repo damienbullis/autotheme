@@ -34,10 +34,10 @@ const (
 	Dark3  HarmonyColorNames = "dark3"
 	Dark4  HarmonyColorNames = "dark4"
 	Dark5  HarmonyColorNames = "dark5"
-	Gray1  HarmonyColorNames = "gray1"
-	Gray2  HarmonyColorNames = "gray2"
-	Gray3  HarmonyColorNames = "gray3"
-	Gray4  HarmonyColorNames = "gray4"
+	Grey1  HarmonyColorNames = "grey1"
+	Grey2  HarmonyColorNames = "grey2"
+	Grey3  HarmonyColorNames = "grey3"
+	Grey4  HarmonyColorNames = "grey4"
 )
 
 type HarmonyColors map[HarmonyColorNames]colorful.Color
@@ -56,7 +56,7 @@ type TextPalette struct {
 
 func BuildTextColors(harmonyColors []HarmonyColors, offW, offB colorful.Color) TextPalette {
 	var textColors TextPalette
-	var dark, light, gray []colorful.Color
+	var dark, light, grey []colorful.Color
 	lightL, darkL := 0.95, 0.05
 
 	for _, palette := range harmonyColors {
@@ -77,12 +77,12 @@ func BuildTextColors(harmonyColors []HarmonyColors, offW, offB colorful.Color) T
 			palette[Light5],
 		)
 
-		gray = append(
-			gray,
-			palette[Gray1],
-			palette[Gray2],
-			palette[Gray3],
-			palette[Gray4],
+		grey = append(
+			grey,
+			palette[Grey1],
+			palette[Grey2],
+			palette[Grey3],
+			palette[Grey4],
 		)
 
 		// Light Mode Calculations
@@ -92,23 +92,31 @@ func BuildTextColors(harmonyColors []HarmonyColors, offW, offB colorful.Color) T
 			Main:     getTextColor([]colorful.Color{palette[Root]}, offB),
 			Dark:     getTextColor(dark, offB),
 			Light:    getTextColor(light, offB),
-			Neutral:  getTextColor(gray, offB),
+			Neutral:  getTextColor(grey, offB),
 			Contrast: colorful.Hsl(h, s, darkL),
 		})
+
+		// for _, c := range textColors.Light {
+		// 	utils.Log.Info("Main: %v\n", c[Main])
+		// 	utils.Log.Info("Dark: %v\n", c[Dark])
+		// 	utils.Log.Info("Light: %v\n", c[Light])
+		// 	utils.Log.Info("Neutral: %v\n", c[Neutral])
+		// 	utils.Log.Info("Contrast: %v\n", c[Contrast])
+		// }
 
 		// Dark Mode Calculations
 		textColors.Dark = append(textColors.Dark, TextColors{
 			Main:     getTextColor([]colorful.Color{palette[Root]}, offW),
 			Dark:     getTextColor(dark, offW),
 			Light:    getTextColor(light, offW),
-			Neutral:  getTextColor(gray, offW),
+			Neutral:  getTextColor(grey, offW),
 			Contrast: colorful.Hsl(h, s, lightL),
 		})
 
 		// Reset the lists
 		dark = nil
 		light = nil
-		gray = nil
+		grey = nil
 	}
 
 	return textColors
@@ -128,7 +136,7 @@ func BuildHarmonyColors(palette []colorful.Color) []HarmonyColors {
 		h, s, l := color.Hsl()
 		lightGradient := blendColors(color, colorful.Hsl(h, s, 0.92), 6)
 		darkGradient := blendColors(color, colorful.Hsl(h, s, 0.08), 6)
-		grayGradient := blendColors(color, colorful.Hsl(h, 0.0, l), 5)
+		greyGradient := blendColors(color, colorful.Hsl(h, 0.0, l), 5)
 		harmonyColors = append(harmonyColors, HarmonyColors{
 			Light5: lightGradient[5],
 			Light4: lightGradient[4],
@@ -141,10 +149,10 @@ func BuildHarmonyColors(palette []colorful.Color) []HarmonyColors {
 			Dark3:  darkGradient[3],
 			Dark4:  darkGradient[4],
 			Dark5:  darkGradient[5],
-			Gray1:  grayGradient[1],
-			Gray2:  grayGradient[2],
-			Gray3:  grayGradient[3],
-			Gray4:  grayGradient[4],
+			Grey1:  greyGradient[1],
+			Grey2:  greyGradient[2],
+			Grey3:  greyGradient[3],
+			Grey4:  greyGradient[4],
 		})
 	}
 	return harmonyColors
@@ -187,7 +195,7 @@ Text = 7:1 / Large Text = 4.5:1
 */
 func makeAccessible(color, offColor colorful.Color) colorful.Color {
 	// Exit if the contrast ratio is good
-	if cr := utils.ContrastRatio(color, offColor); cr >= 7 {
+	if cr := utils.ContrastRatio(color, offColor); cr >= 7.0 {
 		return color
 	} else {
 		_, _, ol := offColor.Hsl()
@@ -203,23 +211,29 @@ func makeAccessible(color, offColor colorful.Color) colorful.Color {
 	}
 }
 
+// var count = 0
+
 func getTextColor(colors []colorful.Color, offColor colorful.Color) colorful.Color {
+	// count += 1
+	// utils.Log.Info("getTextColor Called %d times\n", count)
 	maxIndex, maxRatio := 0, 0.0
 	for i, color := range colors {
 		cr := utils.ContrastRatio(color, offColor)
+		// utils.Log.Info("Contrast Ratio: %.4f\n", cr)
 		if cr > maxRatio {
+			// utils.Log.Info("New Best Contrast with index %d\n", i)
 			maxIndex = i
 			maxRatio = cr
 		}
 	}
 
-	if maxRatio >= 7 {
-		// fmt.Printf("Contrast Ratio: %.2f\n", maxRatio)
+	if maxRatio >= 7.0 {
+		// utils.Log.Info("Index of %d with ratio of %.4f\n\n", maxIndex, maxRatio)
 		return colors[maxIndex]
 	} else {
 		// Adjust the color manually
 		c := makeAccessible(colors[0], offColor)
-		// fmt.Printf("Adjusted Contrast Ratio: %.2f\n", utils.ContrastRatio(c, offColor))
+		// utils.Log.Info("Manually adjusted %.2f\n\n", utils.ContrastRatio(c, offColor))
 		return c
 	}
 }
