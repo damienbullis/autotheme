@@ -144,8 +144,37 @@ See [AutoTheme Vite Plugin]() for more information.
 
 AutoTheme can be configured using:
 
--   By passing flags to the CLI.
--   A `autotheme.yml` config file.
+<details>
+<summary style="margin-bottom: 1em">CLI Flags</summary>
+
+| Long        | Short | Type      | Description                                                            |
+| ----------- | ----- | --------- | ---------------------------------------------------------------------- |
+| `--color`   | `-c`  | `string`  | The primary color of the theme.                                        |
+| `--harmony` | `-a`  | `string`  | The harmony of the theme. See [Harmonies] for accepted harmony values. |
+| `--output`  | `-o`  | `string`  | The output file path. (default=./src/index.css)                        |
+| `--config`  |       | `string`  | Path to your AutoTheme config file. (default=./autotheme.config.yml)   |
+| `--preview` |       | `boolean` | Generate a preview.html to preview the theme.                          |
+| `--silent`  | `-s`  | `boolean` | Suppress all output from AutoTheme.                                    |
+| `--version` | `-v`  | `boolean` | Display version.                                                       |
+| `--help`    | `-h`  | `boolean` | Display help.                                                          |
+
+</details>
+
+<details>
+<summary style="margin-bottom: 1em;">A config file</summary>
+
+```yml
+# autotheme.yml
+
+color: "#FF0000"
+harmony: "analogous"
+scalar: 1.618
+# Finish this section
+```
+
+> [Full Config](docs/autotheme.config.yml)
+
+</details>
 
 ### `init` Command
 
@@ -159,89 +188,20 @@ autotheme init -y
 
 > By default `init` will create a `autotheme.yml` in the current directory.
 
-<details>
-<summary style="margin-bottom: 1em;">See Default Config</summary>
-
-```yml
-# autotheme.yml
-
-color: "#FF0000"
-harmony: "analogous"
-scalar: 1.618
-# Finish this section
-```
-
-</details>
-
-<details>
-<summary style="margin-bottom: 1em">CLI Flags</summary>
-
-| Long        | Short | Type      | Description                                                            |
-| ----------- | ----- | --------- | ---------------------------------------------------------------------- |
-| `--color`   | `-c`  | `string`  | The primary color of the theme.                                        |
-| `--harmony` | `-a`  | `string`  | The harmony of the theme. See [Harmonies] for accepted harmony values. |
-| `--output`  | `-o`  | `string`  | The output file path.                                                  |
-| `--config`  |       | `string`  | Path to your AutoTheme config file.                                    |
-| `--preview` |       | `boolean` | Generate a preview.html to preview the theme.                          |
-| `--silent`  | `-s`  | `boolean` | Suppress all output from AutoTheme.                                    |
-| `--version` | `-v`  | `boolean` | Display version.                                                       |
-| `--help`    | `-h`  | `boolean` | Display help.                                                          |
-
-</details>
-
-<!-- ### Accessible Colors
-
-`text-accessible-a`
-`text-accessible-a-light`
-`text-accessible-a-dark`
-`text-accessible-a-grey`
-`text-accessible-a-contrast`
-`text-accessible-b`
-`text-accessible-b-light`
-`text-accessible-b-dark`
-`text-accessible-b-grey`
-`text-accessible-b-contrast`
-
-### Regular Colors
-
-> Maybe remove a for Primary colors
-
-`<base>-auto-<color>{modifier ? -<modifier> : ""}-<shade>`
-
-`text-auto-a-50`
-`text-auto-a-100`
-`text-auto-a-200`
-`text-auto-a-300`
-`text-auto-a-400`
-`text-auto-a-500` (default)
-`text-auto-a-600`
-`text-auto-a-700`
-`text-auto-a-800`
-`text-auto-a-900`
-`text-auto-a-950`
-`text-auto-a-grey-100` (grey is a special modifier that is added to each color)
-`text-auto-a-grey-200`
-`text-auto-a-grey-300`
-`text-auto-a-grey-400`
-
-`bg-auto-a` -->
-
 ## Accessible Colors
 
 > AutoTheme aims to be WCAG 2.1 AAA compliant by default. (See [Understanding Contrast (WCAG)](https://www.w3.org/WAI/WCAG21/Understanding/contrast-enhanced.html))
 
-However because AutoTheme doesn't know what your actual background is going to be, it will generate 2 background colors for light & dark modes.
+<!-- However because AutoTheme doesn't know what your actual background is going to be, it will generate 2 background colors for light & dark modes. -->
 
-Then AutoTheme calculates the contrast ratio for each text color against the respective background color. _If the contrast ratio is below 7:1, it will generate a new color that meets the criteria._
+While AutoTheme generates a `--at-bkgd` background color for light & dark modes, it doesn't know what your actual background is going to be.
 
-> **Note to self**: This could be a nice feature enchancement. User could provide a background to the config file to generate the accessible colors against. Add to issues.
+Then it calculates the contrast ratio for each text color against the respective background color. _If the contrast ratio is below 7:1, it will adjust the color until it meets the criteria._
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/text-dark.png">
   <img alt="Light Text Accessiblity" src="./docs/assets/text-light.png">
 </picture>
-
-> The background color here is `--at-bkgd` color, which is the primary background color, and is different for light & dark modes.
 
 ## Harmonies
 
@@ -321,22 +281,97 @@ Each color in the Harmony consists of:
 
 ## Advanced Usage
 
+> In this section we will cover using AutoTheme's advanced features to create modern and unique themes.
+
 ### Gradients
 
 > Gradients are a great way to add depth to your site.
 
-#### Linear Gradient
+<img src="docs/assets/gradients.png">
 
-> AutoTheme generates a linear gradient based on the primary color and each of harmony colors.
+<details>
+<summary style="font-weight:bold; margin-bottom: .5em;">Using TailwindCSS (Recommended)</summary>
+
+AutoTheme intregrates directly with Tailwind's linear gradients, and extends it with radial gradients.
+
+#### Linear Gradients
+
+```html
+<div class="bg-gradient-to-br from-primary to-hamony-b"></div>
+```
+
+#### Radial Gradients
+
+```html
+<div class="bg-radial from-harmony-a"></div>
+```
+
+Tailwind doesn't have built-in support for radial gradients, so AutoTheme adds some utility classes to your tailwind config.
+
+-   `radial-position` - sets the position of the gradient (default: '50% 50%')
+-   `radial-scale` - sets the scale of the gradient (default: '100% 100%')
+
+```html
+<div class="radial-scale-100 radial-position-0-0 bg-radial"></div>
+<!-- Or using arbitrary values -->
+<div class="radial-scale-[10%_90%] radial-position-[0px_150px] bg-radial"></div>
+```
+
+</details>
+
+<details>
+<summary style="font-weight:bold; margin-bottom: .5em;">Basic Usage</summary>
+
+AutoTheme provides a some simple utility css classes for creating gradients.
+
+#### Linear Gradients
+
+Lets take a look a the `at-linear` class.
 
 ```css
-.element {
-	/* Basic Usage */
-	background-image: var(--at-linear-1);
+.at-linear {
+	--at-stops: var(--at-from) var(--at-from-position), var(--at-to) var(
+				--at-to-position
+			);
+	background-image: linear-gradient(var(--at-direction), var(--at-stops));
 }
 ```
 
-<img src="docs/assets/gradients.png" />
+1. Add a new class to pair with the `at-linear` class that defines the gradient properties.
+
+    ```css
+    .your-gradient {
+    	--at-direction: 45deg;
+    	--at-from: var(--at-c1);
+    	--at-from-position: 0%;
+    	--at-to: var(--at-c3);
+    	--at-to-position: 100%;
+    }
+    ```
+
+2. Add both classes to your element.
+
+    ```html
+    <div class="your-gradient at-linear"></div>
+    ```
+
+    > **IMPORTANT:** The `your-gradient` class must be defined before the `at-linear` class.
+
+#### Radial Gradients
+
+```css
+.at-radial {
+	--at-stops: var(--at-from) var(--at-from-position), var(--at-to) var(
+				--at-to-position
+			);
+	background-image: radial-gradient(
+		var(--at-scale) at var(--at-position),
+		var(--at-stops)
+	);
+}
+```
+
+</details>
 
 ### :loud_sound: Noise
 
