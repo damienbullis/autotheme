@@ -8,6 +8,7 @@
 
 > A _`zero-config`_ & _`zero-dependency`_ tool for generating accessible CSS themes using color theory.
 
+<!--
 <details>
 <summary><b>Contents</b></summary>
 
@@ -17,9 +18,7 @@
 -   [CLI](#cli)
 -   [Roadmap](#roapmap)
 
-</details>
-
-<br>
+</details> -->
 
 # Install
 
@@ -279,11 +278,13 @@ Each color in the Harmony consists of:
 
 </details>
 
-## Advanced Usage
+<br>
+
+# Advanced Usage
 
 > In this section we will cover using AutoTheme's advanced features to create modern and unique themes.
 
-### Gradients
+## Gradients
 
 > Gradients are a great way to add depth to your site.
 
@@ -294,13 +295,13 @@ Each color in the Harmony consists of:
 
 > AutoTheme intregrates directly with Tailwind's linear gradients, and extends it with radial gradients.
 
-#### Linear Gradients
+### Linear Gradients
 
 ```html
 <div class="bg-gradient-to-br from-primary to-hamony-b"></div>
 ```
 
-#### Radial Gradients
+### Radial Gradients
 
 ```html
 <div class="bg-radial from-harmony-a"></div>
@@ -324,7 +325,7 @@ Tailwind doesn't have built-in support for radial gradients, so AutoTheme adds s
 
 > AutoTheme provides a some simple utility css classes for creating gradients.
 
-#### Linear Gradients
+### Linear Gradients
 
 > Lets take a look a the `at-linear` class.
 
@@ -348,7 +349,24 @@ Tailwind doesn't have built-in support for radial gradients, so AutoTheme adds s
 }
 ```
 
-#### Customizing Gradients
+<details>
+<summary style="margin-bottom: .5em;">Why are utility classes needed?</summary>
+
+You may have noticed that `.at-linear` and `.at-radial` are the only classes that AutoTheme provides.
+
+That is because if we were to try and use a variable for the gradient (let's say `var(--at-linear)`).
+
+```html
+<div style="--at-from: rgb(var(--at-c4)); background: var(--at-linear);"></div>
+```
+
+##### Notice that the new color is not applied.
+
+> This is because the variable has already been defined _before_ we set the new color.
+
+</details>
+
+### Customizing Gradients
 
 > You can also customize gradients inline using the `style` attribute.
 
@@ -395,13 +413,13 @@ Tailwind doesn't have built-in support for radial gradients, so AutoTheme adds s
 
 </details>
 
-### :loud_sound: Noise
+## Noise
 
 > Noise is a great way to add texture to your site.
 
   <img src="docs/assets/noise.png" />
 
-#### Usage
+### Usage
 
 Include the `--at-noise` variable in your CSS. Or if you are using TailwindCSS, you can use the `at-noise` class.
 
@@ -412,23 +430,29 @@ Include the `--at-noise` variable in your CSS. Or if you are using TailwindCSS, 
 }
 ```
 
-#### Advanced Usage
+### Combining Features
 
 > Combine noise with gradients and blend modes to create unique effects.
 
 ```css
 .element {
 	/* Advanced Usage */
-	background-image: var(--at-noise) var(--at-linear-1);
+	background-image: var(--at-noise) linear-gradient(
+			var(--at-direction),
+			var(--at-c1),
+			var(--at-c2)
+		);
 	background-blend-mode: overlay screen;
 }
 ```
 
+<br>
+
 ## Dark Mode
 
-<details>
+To finish integrating support for `prefers-color-scheme: dark`, there are a couple more steps.
 
-Since there are a variety of setups for using dark mode, AutoTheme mostly provides the CSS variable framework. To finish integrating support for `prefers-color-scheme: dark`, there are a couple more steps.
+<details>
 
 <br>
 
@@ -503,6 +527,8 @@ Since there are a variety of setups for using dark mode, AutoTheme mostly provid
     ```
 
 <br>
+
+-   [ ] Add command to CLI for generating the dark mode script.
 
 Now your site is ready to support both `light` & `dark` color schemes based on user preferences! :tada:
 
