@@ -292,7 +292,7 @@ Each color in the Harmony consists of:
 <details>
 <summary style="font-weight:bold; margin-bottom: .5em;">Using TailwindCSS (Recommended)</summary>
 
-AutoTheme intregrates directly with Tailwind's linear gradients, and extends it with radial gradients.
+> AutoTheme intregrates directly with Tailwind's linear gradients, and extends it with radial gradients.
 
 #### Linear Gradients
 
@@ -322,20 +322,45 @@ Tailwind doesn't have built-in support for radial gradients, so AutoTheme adds s
 <details>
 <summary style="font-weight:bold; margin-bottom: .5em;">Basic Usage</summary>
 
-AutoTheme provides a some simple utility css classes for creating gradients.
+> AutoTheme provides a some simple utility css classes for creating gradients.
 
 #### Linear Gradients
 
-Lets take a look a the `at-linear` class.
+> Lets take a look a the `at-linear` class.
+
+```html
+<div class="at-linear"></div>
+```
 
 ```css
+:root {
+	/* default gradient  */
+	--at-direction: to right;
+	--at-from: rgb(var(--at-c0) / var(--at-opacity));
+	--at-from-position: -20%;
+	--at-to: transparent;
+	--at-to-position: 120%;
+}
+
 .at-linear {
-	--at-stops: var(--at-from) var(--at-from-position), var(--at-to) var(
-				--at-to-position
-			);
+	--at-stops: var(--at-from) var(--at-from-position), var(--at-to) var(--at-to-position);
 	background-image: linear-gradient(var(--at-direction), var(--at-stops));
 }
 ```
+
+#### Customizing Gradients
+
+> You can also customize gradients inline using the `style` attribute.
+
+<!-- prettier-ignore -->
+```html
+<div
+	class="at-linear"
+	style="--at-direction: to bottom; --at-from: var(--at-c1); --at-to: var(--at-c3);"
+></div>
+```
+
+> Or by creating a new class.
 
 1. Add a new class to pair with the `at-linear` class that defines the gradient properties.
 
@@ -359,15 +384,12 @@ Lets take a look a the `at-linear` class.
 
 #### Radial Gradients
 
+> Radial gradients are customized in the same way except for using the `scale` and `position` variables.
+
 ```css
 .at-radial {
-	--at-stops: var(--at-from) var(--at-from-position), var(--at-to) var(
-				--at-to-position
-			);
-	background-image: radial-gradient(
-		var(--at-scale) at var(--at-position),
-		var(--at-stops)
-	);
+	--at-stops: var(--at-from) var(--at-from-position), var(--at-to) var(--at-to-position);
+	background-image: radial-gradient(var(--at-scale) at var(--at-position), var(--at-stops));
 }
 ```
 

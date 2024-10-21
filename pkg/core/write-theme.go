@@ -39,6 +39,10 @@ func WriteTheme(
 	darkTheme := ""
 	darkEnd := "}\n"
 
+	classesStart := "\n" + pre + " {\n" + TAB + "/* Utility Classes */\n"
+	classes := ""
+	classesEnd := "}\n"
+
 	// Add palette vars
 	writeDarkPalette(&darkTheme, palette, config)
 
@@ -50,7 +54,13 @@ func WriteTheme(
 	writeNoise(&rootTheme, noise, config)
 	writeGradient(&rootTheme, palette, config)
 
-	fullTheme := rootStart + rootTheme + rootEnd + darkStart + darkTheme + darkEnd
+	// Utility Classes
+	// only if tailwind === false
+	writeUtilities(&classes, palette, config)
+
+	fullTheme := rootStart + rootTheme + rootEnd +
+		classesStart + classes + classesEnd +
+		darkStart + darkTheme + darkEnd
 
 	// Write theme to file
 	err := utils.WriteFile(config.Output, fullTheme)
@@ -61,59 +71,63 @@ func WriteTheme(
 	}
 }
 
+func v(s string, p *string) string {
+	if p != nil {
+		return "var(--" + *p + "-" + s + ")"
+	}
+	return "var(--" + s + ")"
+}
+
+func lg(s string) string {
+	return "linear-gradient(" + s + ")"
+}
+func rg(s string) string {
+	return "radial-gradient(" + s + ")"
+}
+
+func writeUtilities(classes *string, palette Palette, config c.Config) {
+	pre := config.Prefix
+	toFrom := writeVar(
+		pre+"-stops",
+		v("from", &pre)+" "+
+			v("from-position", &pre)+", "+
+			v("to", &pre)+" "+
+			v("to-position", &pre)+";",
+	)
+
+	// linear
+	*classes += "." + pre + "-linear {\n"
+	*classes += TAB + toFrom
+	*classes += TAB + "background-image: " + lg(
+		v("direction", &pre)+", "+
+			v("stops", &pre)) + ";\n"
+	*classes += "}\n\n"
+
+	// radial
+	*classes += "." + pre + "-radial {\n"
+	*classes += TAB + toFrom
+	*classes += TAB + "background-image: " + rg(
+		v("scale", &pre)+" at "+v("position", &pre)+", "+
+			v("stops", &pre)) + ";\n"
+	*classes += "}\n\n"
+}
+
 // FEATURE: Add blob gradients not just linear.
 func writeGradient(rootTheme *string, palette Palette, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Gradients */\n"
 
-	pre := config.Prefix + "-"
+	pre := config.Prefix
+	*rootTheme += writeVar(pre+"-scale", "100% 100"+"%")
+	*rootTheme += writeVar(pre+"-position", "50% 50"+"%")
 
-	*rootTheme += writeVar(pre+"direction", "to right")
-
-	colors := palette.HarmonyPalette
-	colorsLen := len(colors)
-
-	// Add harmony gradients
-	for i := range colors {
-		line := "linear-gradient(" + "\n" + TAB + TAB + "var(--" + pre + "direction),"
-		if i < colorsLen-1 {
-			for j := 0; j < 2; j++ {
-				if j == 0 {
-					line += "\n" + TAB + TAB + rgbVar(pre, "c0") + ","
-				} else {
-					line += "\n" + TAB + TAB + rgbVar(pre, "c"+strconv.Itoa(i+1))
-				}
-			}
-
-			line += ")\n" + TAB
-			*rootTheme += writeVar(pre+"linear-"+strconv.Itoa(i+1), line)
-
-		}
+	// only if tailwind === false
+	if config.Tailwind == false {
+		*rootTheme += writeVar(pre+"-direction", "to right")
+		*rootTheme += writeVar(pre+"-from", "rgb("+v("c0", &pre)+" / "+v("opacity", &pre)+")")
+		*rootTheme += writeVar(pre+"-from-position", "-20%")
+		*rootTheme += writeVar(pre+"-to", "transparent")
+		*rootTheme += writeVar(pre+"-to-position", "120%")
 	}
-
-	// Add rainbow gradient
-	rainbow := []colorful.Color{
-		{R: 1, G: 0, B: 0},
-		{R: 1, G: 0.5, B: 0},
-		{R: 1, G: 1, B: 0},
-		{R: 0, G: 1, B: 0},
-		{R: 0, G: 0, B: 1},
-		{R: 0.29, G: 0, B: 0.51},
-		{R: 0.55, G: 0, B: 1},
-	}
-	rainbowLen := len(rainbow)
-
-	line := "linear-gradient(" + "\n" + TAB + TAB + "var(--" + pre + "direction),"
-	// Add rainbow gradient last
-	for j, c := range rainbow {
-		line += "\n" + TAB + TAB + "rgb(" + writeRgb(c) + " / var(--" + pre + "opacity))"
-
-		if j < rainbowLen-1 {
-			line += ","
-		}
-	}
-	line += "\n" + TAB + ")"
-	*rootTheme += writeVar(pre+"linear-rainbow", line)
-
 }
 
 func writeNoise(rootTheme *string, noise string, config c.Config) {
@@ -157,8 +171,14 @@ func writePalette(rootTheme *string, palette Palette, config c.Config) {
 	light := palette.TextPalette.Light
 
 	*rootTheme += writeVar(pre+"bkgd", writeRgb(palette.OffWhite))
+
 	for i, harm := range palette.HarmonyPalette {
 		key := "c" + strconv.Itoa(i)
+		if i == 0 {
+			*rootTheme += "\n" + TAB + "/* Primary */\n"
+		} else if i == 1 {
+			*rootTheme += "\n" + TAB + "/* Harmonies */\n"
+		}
 
 		// main
 		*rootTheme += writeVar(pre+key, writeRgb(harm[Root]))
