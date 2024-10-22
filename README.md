@@ -81,29 +81,42 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/username/repo/main/ins
 autotheme
 ```
 
-> Generates a `src/index.css` to the current directory.
+> Generates a `src/autotheme.css` in the current directory.
 
-AutoTheme will choose a random color and harmony for if none is provided.
+<br>
 
 ```bash
 autotheme --color="#FF0000" --harmony="analogous"
 ```
 
-### Add AutoTheme to your project
+> AutoTheme will choose a random color and harmony for if none is provided.
+
+### Including your theme
 
 <details>
-<summary style="font-size:1.1em; font-weight:bold; margin-bottom: .5em;">Using HTML</summary>
+<summary>Using HTML</summary>
 
 > Include the generated CSS file in your HTML.
 
 ```html
-<link rel="stylesheet" href="./src/index.css" />
+<link rel="stylesheet" href="./src/autotheme.css" />
 ```
 
 </details>
 
 <details>
-<summary style="font-size:1.1em; font-weight:bold; margin-bottom: .5em;">Using A Framework</summary>
+<summary>Using CSS</summary>
+
+> Include the generated CSS file in your main.
+
+```css
+@import "./autotheme.css";
+```
+
+</details>
+
+<details>
+<summary>Using A Framework</summary>
 
 > If you are using a framework like React, Vue, or Angular, you can include the CSS file in your main component.
 
@@ -118,9 +131,9 @@ import "./src/index.css";
 If you are planning on changing your theme often, or just want to make sure your theme stays up-to-date with any changes you make, you can add AutoTheme to your build process.
 
 <details>
-<summary style="font-weight:bold; margin-bottom: .5em;">Manually add step to your build process.</summary>
+<summary>Manually add step to your build process.</summary>
 
-Could be as simple as adding
+> Could be as simple as adding
 
 ```bash
 && autotheme <ARGS>
@@ -129,11 +142,11 @@ Could be as simple as adding
 </details>
 
 <details>
-<summary style="font-weight:bold; margin-bottom: .5em;">If you are using Vite.</summary>
+<summary>If you are using Vite.</summary>
 
-See [AutoTheme Vite Plugin]() for more information.
+> See [AutoTheme Vite Plugin]() for more information.
 
-##### TODO: Command to generate the plugin
+-   [ ] Command to generate the plugin
 
 </details>
 
@@ -144,7 +157,9 @@ See [AutoTheme Vite Plugin]() for more information.
 AutoTheme can be configured using:
 
 <details>
-<summary style="margin-bottom: 1em">CLI Flags</summary>
+<summary>CLI Flags</summary>
+
+<br>
 
 | Long        | Short | Type      | Description                                                            |
 | ----------- | ----- | --------- | ---------------------------------------------------------------------- |
@@ -160,7 +175,7 @@ AutoTheme can be configured using:
 </details>
 
 <details>
-<summary style="margin-bottom: 1em;">A config file</summary>
+<summary>A config file</summary>
 
 ```yml
 # autotheme.yml
@@ -208,9 +223,9 @@ Then it calculates the contrast ratio for each text color against the respective
 
 Set your harmony using the `--harmony` or `-a` flag or the `harmony` option in the config file.
 
-#### Complementary
+#### Analogous
 
-<img src="docs/assets/complementary.png" />
+<img src="docs/assets/analogous2.png" />
 
 <details>
 <summary>See rest of available Harmonies</summary>
@@ -219,9 +234,9 @@ Set your harmony using the `--harmony` or `-a` flag or the `harmony` option in t
 
 <img src="docs/assets/split-complementary.png" />
 
-#### Analogous
+#### Complementary
 
-<img src="docs/assets/analogous2.png" />
+<img src="docs/assets/complementary.png" />
 
 #### Triadic
 
@@ -291,7 +306,7 @@ Each color in the Harmony consists of:
 <img src="docs/assets/gradients.png">
 
 <details>
-<summary style="font-weight:bold; margin-bottom: .5em;">Using TailwindCSS (Recommended)</summary>
+<summary>Using TailwindCSS (Recommended)</summary>
 
 > AutoTheme intregrates directly with Tailwind's linear gradients, and extends it with radial gradients.
 
@@ -321,7 +336,7 @@ Tailwind doesn't have built-in support for radial gradients, so AutoTheme adds s
 </details>
 
 <details>
-<summary style="font-weight:bold; margin-bottom: .5em;">Basic Usage</summary>
+<summary>Basic Usage</summary>
 
 > AutoTheme provides a some simple utility css classes for creating gradients.
 
@@ -350,7 +365,7 @@ Tailwind doesn't have built-in support for radial gradients, so AutoTheme adds s
 ```
 
 <details>
-<summary style="margin-bottom: .5em;">Why are utility classes needed?</summary>
+<summary>Why are utility classes needed?</summary>
 
 You may have noticed that `.at-linear` and `.at-radial` are the only classes that AutoTheme provides.
 
