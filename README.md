@@ -77,19 +77,17 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/username/repo/main/ins
 
 # Usage
 
+To generate your theme, run the following command in your terminal.
+
 ```bash
 autotheme
 ```
 
-> Generates a `src/autotheme.css` in the current directory.
-
-<br>
+> By default AutoTheme will output to `src/autotheme.css` using a random color and harmony.
 
 ```bash
 autotheme --color="#FF0000" --harmony="analogous"
 ```
-
-> AutoTheme will choose a random color and harmony for if none is provided.
 
 ### Including your theme
 
@@ -128,7 +126,8 @@ import "./src/index.css";
 
 ### Keeping your theme consistent
 
-If you are planning on changing your theme often, or just want to make sure your theme stays up-to-date with any changes you make, you can add AutoTheme to your build process.
+If you are planning on changing your theme often, or just want to make sure your theme stays up-to-date with any changes you make.
+You can add AutoTheme to your build process.
 
 <details>
 <summary>Manually add step to your build process.</summary>
@@ -295,9 +294,9 @@ Each color in the Harmony consists of:
 
 <br>
 
-# Advanced Usage
+# Features
 
-> In this section we will cover using AutoTheme's advanced features to create modern and unique themes.
+Let's look at some advanced features to create modern and unique themes.
 
 ## Gradients
 
