@@ -24,42 +24,36 @@ func WriteTheme(
 ) {
 	pre := config.Prefix + "-"
 
-	// Build in memory theme
+	// Main strings
 	rootStart := "\n:root {\n" + TAB + "/* Root Variables */"
-	rootTheme := ""
-	rootTheme += "\n" + writeVar(pre+"opacity", strconv.FormatFloat(1.0, 'f', 0, 64))
-	rootTheme += "\n" + TAB + "background-color: " + rgbVar(pre, "bkgd") + ";\n"
+	rootTheme := "\n" + writeVar(pre+"opacity", strconv.FormatFloat(1.0, 'f', 0, 64))
 	rootEnd := "}\n"
 
-	// Dark Mode
-	// TODO: Should this use the prefix as well?
+	// Dark strings
 	darkClassName := "." + pre + "dark"
-
 	darkStart := "\n" + darkClassName + " {\n" + TAB + "/* Dark Mode Variables */\n"
 	darkTheme := ""
 	darkEnd := "}\n"
 
-	classesStart := "\n" + pre + " {\n" + TAB + "/* Utility Classes */\n"
+	// Utility strings
 	classes := ""
-	classesEnd := "}\n"
 
-	// Add palette vars
-	writeDarkPalette(&darkTheme, palette, config)
-
-	// Add harmony vars
+	// Write main theme variables
 	writePalette(&rootTheme, palette, config)
-
+	writeGradient(&rootTheme, config)
 	writeTextSize(&rootTheme, scale, config)
 	writeSpacing(&rootTheme, scale, config)
 	writeNoise(&rootTheme, noise, config)
-	writeGradient(&rootTheme, palette, config)
 
-	// Utility Classes
-	// only if tailwind === false
-	writeUtilities(&classes, palette, config)
+	// Write dark theme variables
+	writeDarkPalette(&darkTheme, palette, config)
 
+	// Write utility classes
+	writeUtilities(&classes, config)
+
+	// Put it all together
 	fullTheme := rootStart + rootTheme + rootEnd +
-		classesStart + classes + classesEnd +
+		classes +
 		darkStart + darkTheme + darkEnd
 
 	// Write theme to file
@@ -69,6 +63,9 @@ func WriteTheme(
 		utils.Log.Error("Error writing theme to file: %s", err)
 		os.Exit(0)
 	}
+
+	// Write tailwind config if needed
+	WriteTailwind(config, palette, scale, noise)
 }
 
 func v(s string, p *string) string {
@@ -85,7 +82,8 @@ func rg(s string) string {
 	return "radial-gradient(" + s + ")"
 }
 
-func writeUtilities(classes *string, palette Palette, config c.Config) {
+func writeUtilities(classes *string, config c.Config) {
+	*classes += "\n/* Utility Classes */\n"
 	pre := config.Prefix
 	toFrom := writeVar(
 		pre+"-stops",
@@ -110,18 +108,28 @@ func writeUtilities(classes *string, palette Palette, config c.Config) {
 		v("scale", &pre)+" at "+v("position", &pre)+", "+
 			v("stops", &pre)) + ";\n"
 	*classes += "}\n\n"
+
+	// text color
+	*classes += "." + pre + "-text {\n"
+	*classes += writeVar(pre+"-text", v("c0", &pre))
+	*classes += TAB + "color: " + rgbVar(pre, "-text") + ";\n"
+	*classes += "}\n\n"
+
+	// background color
+	*classes += "." + pre + "-bg {\n"
+	*classes += writeVar(pre+"-bg", v("c0", &pre))
+	*classes += TAB + "color: " + rgbVar(pre, "-bg") + ";\n"
+	*classes += "}\n\n"
 }
 
-// FEATURE: Add blob gradients not just linear.
-func writeGradient(rootTheme *string, palette Palette, config c.Config) {
+func writeGradient(rootTheme *string, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Gradients */\n"
 
 	pre := config.Prefix
 	*rootTheme += writeVar(pre+"-scale", "100% 100"+"%")
 	*rootTheme += writeVar(pre+"-position", "50% 50"+"%")
 
-	// only if tailwind === false
-	if config.Tailwind == false {
+	if !config.Tailwind {
 		*rootTheme += writeVar(pre+"-direction", "to right")
 		*rootTheme += writeVar(pre+"-from", "rgb("+v("c0", &pre)+" / "+v("opacity", &pre)+")")
 		*rootTheme += writeVar(pre+"-from-position", "-20%")
@@ -165,11 +173,14 @@ func writeRgb(value colorful.Color) string {
 }
 
 func writePalette(rootTheme *string, palette Palette, config c.Config) {
-	*rootTheme += "\n" + TAB + "/* Palette */\n"
-
 	pre := config.Prefix + "-"
 	light := palette.TextPalette.Light
 
+	if !config.Tailwind {
+		*rootTheme += "\n" + TAB + "background-color: " + rgbVar(pre, "bkgd") + ";\n"
+	}
+
+	*rootTheme += "\n" + TAB + "/* Palette */\n"
 	*rootTheme += writeVar(pre+"bkgd", writeRgb(palette.OffWhite))
 
 	for i, harm := range palette.HarmonyPalette {

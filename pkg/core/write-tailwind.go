@@ -3,6 +3,7 @@ package core
 import (
 	c "autotheme/pkg/config"
 	"autotheme/pkg/utils"
+	"os"
 )
 
 func WriteTailwind(
@@ -11,39 +12,34 @@ func WriteTailwind(
 	scale []float64,
 	noise string,
 ) {
-	utils.Log.Info("Writing tailwind config...\n")
-	utils.Log.Info("%+v\n", config)
-	utils.Log.Info("%+v\n", palette)
-	utils.Log.Info("%+v\n", scale)
-	utils.Log.Info("%+v\n", noise)
-	utils.Log.Error("Not implemented yet")
-	// Wrapper
-	// /** @type {import('tailwindcss').Config} */
-	// module.exports = {
-	// 		...
-	// }
-	/*
+	if config.Tailwind {
+		utils.Log.Info("Writing tailwind config...\n")
+		utils.Log.Info("%+v\n", config)
+		utils.Log.Info("%+v\n", palette)
+		utils.Log.Info("%+v\n", scale)
+		utils.Log.Info("%+v\n", noise)
+		utils.Log.Error("Not implemented yet")
 
-				// Theme
-				theme: {
-					... FEATURE: Add theme
-				},
-
-				// Sizing
-				spacing: {
-					... FEATURE: Add spacing
-				},
-
-				// Darkmode
-				darkMode: ['class', '<config.Prefix>-dark'],
-
-				// Noise? not sure... FEATURE: Add noise to tailwind config
-				// Gradients? not sure... FEATURE: Add gradients to tailwind config
-
-		  // ...
+		file := "tailwind.config.js"
+		tailwind, err := readFile(file)
+		if err != nil {
+			utils.Log.Warn("could not find tailwind.config.js")
+			tailwind, err = readFile("tailwind.config.ts")
 		}
 
+		if err != nil {
+			utils.Log.Error("could not find tailwind.config.ts")
+		}
 
-	*/
+		utils.Log.Info("Writing tailwind config...\n", tailwind)
+	}
+}
 
+func readFile(file string) (string, error) {
+	// Read the tailwind file
+	content, err := os.ReadFile(file)
+	if err != nil {
+		return "", err
+	}
+	return string(content), nil
 }

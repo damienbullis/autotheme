@@ -95,9 +95,6 @@ var rootCmd = &cobra.Command{
 			core.RemovePreview(cfg)
 		}
 
-		if cfg.Tailwind {
-			core.WriteTailwind(cfg, palette, scale, noise)
-		}
 		utils.Log.Info(
 			"\n\n%s %s %s",
 			constants.IconParty.Str(),
