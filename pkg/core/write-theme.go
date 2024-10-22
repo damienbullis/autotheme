@@ -16,6 +16,15 @@ func rgbVar(pre, key string) string {
 	return "rgb(var(--" + pre + key + ") / var(--" + pre + "opacity))"
 }
 
+func writeVar(key, value string) string {
+	return TAB + "--" + key + ": " + value + ";\n"
+}
+
+func writeRgb(value colorful.Color) string {
+	r, g, b := value.Clamped().RGB255()
+	return strconv.Itoa(int(r)) + " " + strconv.Itoa(int(g)) + " " + strconv.Itoa(int(b))
+}
+
 func WriteTheme(
 	config c.Config,
 	palette Palette,
@@ -139,12 +148,20 @@ func writeGradient(rootTheme *string, config c.Config) {
 }
 
 func writeNoise(rootTheme *string, noise string, config c.Config) {
-	*rootTheme += "\n" + TAB + "/* Noise */\n"
+	if config.Tailwind {
+		// Tailwind handles noise
+		return
+	}
 
+	*rootTheme += "\n" + TAB + "/* Noise */\n"
 	*rootTheme += writeVar(config.Prefix+"-noise", `url("`+noise+`")`)
 }
 
 func writeSpacing(rootTheme *string, scale []float64, config c.Config) {
+	if config.Tailwind {
+		// Tailwind handles spacing
+		return
+	}
 	*rootTheme += "\n" + TAB + "/* Spacing */\n"
 	root := .25
 
@@ -155,21 +172,17 @@ func writeSpacing(rootTheme *string, scale []float64, config c.Config) {
 }
 
 func writeTextSize(rootTheme *string, scale []float64, config c.Config) {
+	if config.Tailwind {
+		// Tailwind handles text sizes
+		return
+	}
+
 	*rootTheme += "\n" + TAB + "/* Text Size */\n"
 
 	pre := config.Prefix
 	for i, cn := range []string{"xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"} {
 		*rootTheme += writeVar(pre+"text-"+cn, strconv.FormatFloat(scale[i], 'f', 3, 64)+"rem")
 	}
-}
-
-func writeVar(key, value string) string {
-	return TAB + "--" + key + ": " + value + ";\n"
-}
-
-func writeRgb(value colorful.Color) string {
-	r, g, b := value.Clamped().RGB255()
-	return strconv.Itoa(int(r)) + " " + strconv.Itoa(int(g)) + " " + strconv.Itoa(int(b))
 }
 
 func writePalette(rootTheme *string, palette Palette, config c.Config) {
@@ -227,6 +240,11 @@ func writePalette(rootTheme *string, palette Palette, config c.Config) {
 }
 
 func writeDarkPalette(rootTheme *string, palette Palette, config c.Config) {
+	if !config.DarkMode {
+		// Dark mode is off
+		return
+	}
+
 	*rootTheme += "\n" + TAB + "/* Dark Mode Colors */\n"
 	pre := config.Prefix + "-"
 	*rootTheme += writeVar(pre+"bkgd", writeRgb(palette.OffBlack)) + "\n"
