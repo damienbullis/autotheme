@@ -45,9 +45,9 @@ func checkOutput(path string) error {
 
 	// Check if the file already exists
 	_, err = os.Stat(fullfile)
-	if err == nil {
-		return fmt.Errorf("file %s already exists", fullfile)
-	}
+	// if err == nil {
+	// 	return fmt.Errorf("file %s already exists", fullfile)
+	// }
 
 	// If the error is due to the file not existing, it's acceptable
 	if os.IsNotExist(err) {
@@ -68,7 +68,7 @@ func (m outputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case tea.KeyEnter:
 			if m.textInput.Value() == "" {
-				m.textInput.SetValue(".")
+				m.textInput.SetValue("./src")
 			}
 
 			if err := checkOutput(m.textInput.Value()); err != nil {
@@ -93,7 +93,7 @@ func (m outputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m outputModel) View() string {
-	s := fmt.Sprintf("\n  Where should %s put your generated files.\n\n", utils.FgStr("white", "AutoTheme"))
+	s := fmt.Sprintf("\n  Where should %s put your CSS?\n\n", utils.FgStr("white", "AutoTheme"))
 	s += m.textInput.View() + "\n\n"
 	s += utils.FgStr("grey", "  (esc to quit)") + "\n\n"
 
@@ -110,7 +110,7 @@ func (m outputModel) View() string {
 
 func initialOutputModel() outputModel {
 	ti := textinput.New()
-	ti.Placeholder = "(default: ./)"
+	ti.Placeholder = "(default: ./src)"
 	ti.Focus()
 	return outputModel{
 		textInput: ti,

@@ -31,6 +31,13 @@ func createOutputStr(color colorful.Color) func(value, title string) string {
 	}
 }
 
+func next(value string, out strings.Builder, err error) {
+	handleError(err)
+	out.WriteString(value)
+	clearScreen()
+	utils.Log.Info(out.String())
+}
+
 func Prompt() {
 	// Prompt user for color
 	clearScreen()
@@ -50,34 +57,37 @@ func Prompt() {
 
 	// Prompt user for harmony
 	harmony, err := HarmonyPrompt()
-	handleError(err)
-	output.WriteString(outputStr(harmony, "Harmony"))
-
-	clearScreen()
-	utils.Log.Info(output.String())
+	next(
+		outputStr(harmony, "Harmony"),
+		output,
+		err,
+	)
 
 	// Prompt user for darkmode
 	darkmode, err := DarkmodePrompt()
-	handleError(err)
-	output.WriteString(outputStr(strconv.FormatBool(darkmode), "Darkmode"))
-
-	clearScreen()
-	utils.Log.Info(output.String())
-
+	next(
+		outputStr(strconv.FormatBool(darkmode), "Darkmode"),
+		output,
+		err,
+	)
+	// Prompt for tailwind
+	tailwind, err := TailwindPrompt()
+	next(
+		outputStr(strconv.FormatBool(tailwind), "Tailwind"),
+		output,
+		err,
+	)
 	// Prompt user for output
 	outputPath, err := OutputPrompt()
-	handleError(err)
-	output.WriteString(outputStr(outputPath, "Output"))
-
-	clearScreen()
-	utils.Log.Info(output.String())
-
-	// TODO: Prompt the use for Entrypoint?
+	next(
+		outputStr(outputPath, "Output"),
+		output,
+		err,
+	)
 
 	clearScreen()
 
 	utils.Log.Error("Tailwind: NOT IMPLEMENTED YET")
-	utils.Log.Error("Entrypoint: NOT IMPLEMENTED YET")
 	utils.Log.Error("WriteConfig: NOT IMPLEMENTED YET")
 	// Finally, generate config file
 	// NEXT: Generate config file

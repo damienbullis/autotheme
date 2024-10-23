@@ -10,7 +10,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-var choices = []string{"Yes", "No"}
+var booleanOptions = []string{"Yes", "No"}
 
 type darkmodeModel struct {
 	cursor int
@@ -32,19 +32,19 @@ func (m darkmodeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter":
 			// Send the choice on the channel and exit.
-			m.choice = choices[m.cursor]
+			m.choice = booleanOptions[m.cursor]
 			return m, tea.Quit
 
 		case "down", "j":
 			m.cursor++
-			if m.cursor >= len(choices) {
+			if m.cursor >= len(booleanOptions) {
 				m.cursor = 0
 			}
 
 		case "up", "k":
 			m.cursor--
 			if m.cursor < 0 {
-				m.cursor = len(choices) - 1
+				m.cursor = len(booleanOptions) - 1
 			}
 		}
 	}
@@ -54,9 +54,9 @@ func (m darkmodeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m darkmodeModel) View() string {
 	s := strings.Builder{}
-	harmonyStr := rst + "\n  Support darkmode?\n\n" + rst
+	harmonyStr := rst + "\n  Using dark mode?\n\n" + rst
 	s.WriteString(utils.FgStr("grey", harmonyStr))
-	for i, choice := range choices {
+	for i, choice := range booleanOptions {
 
 		if m.cursor == i {
 			if choice == "Yes" {
