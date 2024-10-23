@@ -10,6 +10,8 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
+var css = *utils.Css
+
 var TAB = constants.Tab(2)
 
 func rgbVar(pre, key string) string {
@@ -33,31 +35,24 @@ func WriteTheme(
 ) {
 	pre := config.Prefix + "-"
 
-	// Main strings
 	rootStart := "\n:root {\n" + TAB + "/* Root Variables */"
 	rootTheme := "\n" + writeVar(pre+"opacity", strconv.FormatFloat(1.0, 'f', 0, 64))
 	rootEnd := "}\n"
-
-	// Dark strings
-	darkClassName := "." + pre + "dark"
-	darkStart := "\n" + darkClassName + " {\n" + TAB + "/* Dark Mode Variables */\n"
-	darkTheme := ""
-	darkEnd := "}\n"
-
-	// Utility strings
-	classes := ""
-
-	// Write main theme variables
 	writePalette(&rootTheme, palette, config)
 	writeGradient(&rootTheme, config)
 	writeTextSize(&rootTheme, scale, config)
 	writeSpacing(&rootTheme, scale, config)
 	writeNoise(&rootTheme, noise, config)
 
-	// Write dark theme variables
+	// Dark Mode
+	darkClassName := "." + pre + "dark"
+	darkStart := "\n" + darkClassName + " {\n" + TAB + "/* Dark Mode Variables */\n"
+	darkTheme := ""
+	darkEnd := "}\n"
 	writeDarkPalette(&darkTheme, palette, config)
 
-	// Write utility classes
+	// Utility Classes
+	classes := ""
 	writeUtilities(&classes, config)
 
 	// Put it all together
@@ -72,23 +67,10 @@ func WriteTheme(
 		utils.Log.Error("Error writing theme to file: %s", err)
 		os.Exit(0)
 	}
+	css.Var("opacity", &pre)
 
 	// Write tailwind config if needed
 	WriteTailwind(config, palette, scale, noise)
-}
-
-func v(s string, p *string) string {
-	if p != nil {
-		return "var(--" + *p + "-" + s + ")"
-	}
-	return "var(--" + s + ")"
-}
-
-func lg(s string) string {
-	return "linear-gradient(" + s + ")"
-}
-func rg(s string) string {
-	return "radial-gradient(" + s + ")"
 }
 
 func writeUtilities(classes *string, config c.Config) {
@@ -96,37 +78,47 @@ func writeUtilities(classes *string, config c.Config) {
 	pre := config.Prefix
 	toFrom := writeVar(
 		pre+"-stops",
-		v("from", &pre)+" "+
-			v("from-position", &pre)+", "+
-			v("to", &pre)+" "+
-			v("to-position", &pre)+";",
+		css.Var("from", &pre)+" "+
+			css.Var("from-position", &pre)+", "+
+			css.Var("to", &pre)+" "+
+			css.Var("to-position", &pre)+";",
 	)
+
+	classStart := ""
+	classEnd := ""
+
+	classStart, classEnd = css.Class("linear", &pre, nil)
+	utils.Log.Info("classStart: %s", classStart)
+	utils.Log.Info("classEnd: %s", classEnd)
+	*classes += classStart
+	*classes += TAB + toFrom
 
 	// linear
 	*classes += "." + pre + "-linear {\n"
 	*classes += TAB + toFrom
-	*classes += TAB + "background-image: " + lg(
-		v("direction", &pre)+", "+
-			v("stops", &pre)) + ";\n"
+	*classes += TAB + "background-image: " + css.Linear(
+		css.Var("direction", &pre)+", "+
+			css.Var("stops", &pre)) + ";\n"
 	*classes += "}\n\n"
 
 	// radial
 	*classes += "." + pre + "-radial {\n"
 	*classes += TAB + toFrom
-	*classes += TAB + "background-image: " + rg(
-		v("scale", &pre)+" at "+v("position", &pre)+", "+
-			v("stops", &pre)) + ";\n"
+	*classes += TAB + "background-image: " + css.Radial(
+		css.Var("scale", &pre)+" at "+css.Var("position", &pre)+", "+
+			css.Var("stops", &pre)) + ";\n"
 	*classes += "}\n\n"
 
 	// text color
 	*classes += "." + pre + "-text {\n"
-	*classes += writeVar(pre+"-text", v("c0", &pre))
+	*classes += writeVar(pre+"-text", css.Var("c0", &pre))
 	*classes += TAB + "color: " + rgbVar(pre, "-text") + ";\n"
 	*classes += "}\n\n"
 
 	// background color
+
 	*classes += "." + pre + "-bg {\n"
-	*classes += writeVar(pre+"-bg", v("c0", &pre))
+	*classes += writeVar(pre+"-bg", css.Var("c0", &pre))
 	*classes += TAB + "color: " + rgbVar(pre, "-bg") + ";\n"
 	*classes += "}\n\n"
 }
@@ -140,7 +132,7 @@ func writeGradient(rootTheme *string, config c.Config) {
 
 	if !config.Tailwind {
 		*rootTheme += writeVar(pre+"-direction", "to right")
-		*rootTheme += writeVar(pre+"-from", "rgb("+v("c0", &pre)+" / "+v("opacity", &pre)+")")
+		*rootTheme += writeVar(pre+"-from", "rgb("+css.Var("c0", &pre)+" / "+css.Var("opacity", &pre)+")")
 		*rootTheme += writeVar(pre+"-from-position", "-20%")
 		*rootTheme += writeVar(pre+"-to", "transparent")
 		*rootTheme += writeVar(pre+"-to-position", "120%")

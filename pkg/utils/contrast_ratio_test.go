@@ -3,18 +3,11 @@ package utils_test
 import (
 	. "autotheme/pkg/utils"
 	"math"
-	"testing"
 
 	"github.com/lucasb-eyer/go-colorful"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
-
-// Entry point for the Ginkgo test suite
-func TestContrastRatio(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "ContrastRatio Suite")
-}
 
 var _ = Describe("ContrastRatio", func() {
 	// Helper to round contrast ratio to 2 decimal places (for easier comparison in tests)
