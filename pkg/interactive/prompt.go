@@ -31,7 +31,7 @@ func createOutputStr(color colorful.Color) func(value, title string) string {
 	}
 }
 
-func next(value string, out strings.Builder, err error) {
+func next(value string, out *strings.Builder, err error) {
 	handleError(err)
 	out.WriteString(value)
 	clearScreen()
@@ -59,7 +59,7 @@ func Prompt() {
 	harmony, err := HarmonyPrompt()
 	next(
 		outputStr(harmony, "Harmony"),
-		output,
+		&output,
 		err,
 	)
 
@@ -67,21 +67,21 @@ func Prompt() {
 	darkmode, err := DarkmodePrompt()
 	next(
 		outputStr(strconv.FormatBool(darkmode), "Darkmode"),
-		output,
+		&output,
 		err,
 	)
 	// Prompt for tailwind
 	tailwind, err := TailwindPrompt()
 	next(
 		outputStr(strconv.FormatBool(tailwind), "Tailwind"),
-		output,
+		&output,
 		err,
 	)
 	// Prompt user for output
 	outputPath, err := OutputPrompt()
 	next(
 		outputStr(outputPath, "Output"),
-		output,
+		&output,
 		err,
 	)
 
