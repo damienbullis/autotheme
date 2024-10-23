@@ -164,8 +164,8 @@ AutoTheme can be configured using:
 | ----------- | ----- | --------- | ---------------------------------------------------------------------- |
 | `--color`   | `-c`  | `string`  | The primary color of the theme.                                        |
 | `--harmony` | `-a`  | `string`  | The harmony of the theme. See [Harmonies] for accepted harmony values. |
-| `--output`  | `-o`  | `string`  | The output file path. (default=./src/index.css)                        |
-| `--config`  |       | `string`  | Path to your AutoTheme config file. (default=./autotheme.config.yml)   |
+| `--output`  | `-o`  | `string`  | The output file path. (default=./src/autotheme.css)                    |
+| `--config`  |       | `string`  | Path to your AutoTheme config file. (default=./autotheme.yml)          |
 | `--preview` |       | `boolean` | Generate a preview.html to preview the theme.                          |
 | `--silent`  | `-s`  | `boolean` | Suppress all output from AutoTheme.                                    |
 | `--version` | `-v`  | `boolean` | Display version.                                                       |
@@ -189,7 +189,7 @@ scalar: 1.618
 
 </details>
 
-### `init` Command
+### Using `init`
 
 ```bash
 # Interactive prompt
@@ -205,11 +205,12 @@ autotheme init -y
 
 > AutoTheme aims to be WCAG 2.1 AAA compliant by default. (See [Understanding Contrast (WCAG)](https://www.w3.org/WAI/WCAG21/Understanding/contrast-enhanced.html))
 
-<!-- However because AutoTheme doesn't know what your actual background is going to be, it will generate 2 background colors for light & dark modes. -->
+AutoTheme generates a `--at-bkgd` background color for light & dark modes.
 
-While AutoTheme generates a `--at-bkgd` background color for light & dark modes, it doesn't know what your actual background is going to be.
+Contrast ratios for each text color are calculated against the appropriate background color.
+_If the contrast ratio is below 7:1, it will adjust the color until it meets the criteria._
 
-Then it calculates the contrast ratio for each text color against the respective background color. _If the contrast ratio is below 7:1, it will adjust the color until it meets the criteria._
+#### \*NOTE\* If you are using a different background color, accessibility may vary.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/text-dark.png">
@@ -227,7 +228,7 @@ Set your harmony using the `--harmony` or `-a` flag or the `harmony` option in t
 <img src="docs/assets/analogous2.png" />
 
 <details>
-<summary>See rest of available Harmonies</summary>
+<summary>See All Harmonies</summary>
 
 #### Split-Complementary
 
