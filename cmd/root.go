@@ -133,18 +133,18 @@ func init() {
 	viper.BindPFlag("tailwind", rootCmd.Flags().Lookup("tailwind"))
 	viper.BindPFlag("preview", rootCmd.Flags().Lookup("preview"))
 
-	// Non-Cli defaults
-	viper.SetDefault("prefix", nil)
-	viper.SetDefault("noise", nil)
-	viper.SetDefault("spacing", nil)
-	viper.SetDefault("gradients", nil)
-	viper.SetDefault("dark-mode", nil)
-	viper.SetDefault("scalar", nil)
-	viper.SetDefault("font-size", nil)
+	// // Non-Cli defaults
+	// viper.SetDefault("prefix", nil)
+	// viper.SetDefault("noise", nil)
+	// viper.SetDefault("spacing", nil)
+	// viper.SetDefault("gradients", nil)
+	// viper.SetDefault("dark-mode", nil)
+	// viper.SetDefault("scalar", nil)
+	// viper.SetDefault("font-size", nil)
 
-	// TODO: finish these
-	viper.SetDefault("entrypoint", nil)    // html or css
-	viper.SetDefault("use-harmonies", nil) // []string{}
+	// // TODO: finish these
+	// viper.SetDefault("entrypoint", nil)    // html or css
+	// viper.SetDefault("use-harmonies", nil) // []string{}
 }
 
 func Execute(version string) {

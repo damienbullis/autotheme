@@ -13,12 +13,12 @@ func WriteTailwind(
 	noise string,
 ) {
 	if config.Tailwind {
-		utils.Log.Info("Writing tailwind config...\n")
-		utils.Log.Info("%+v\n", config)
-		utils.Log.Info("%+v\n", palette)
-		utils.Log.Info("%+v\n", scale)
-		utils.Log.Info("%+v\n", noise)
-		utils.Log.Error("Not implemented yet")
+		// utils.Log.Info("Writing tailwind config...\n")
+		// utils.Log.Info("%+v\n", config)
+		// utils.Log.Info("%+v\n", palette)
+		// utils.Log.Info("%+v\n", scale)
+		// utils.Log.Info("%+v\n", noise)
+		// utils.Log.Error("Not implemented yet")
 
 		file := "tailwind.config.js"
 		tailwind, err := readFile(file)
@@ -31,7 +31,7 @@ func WriteTailwind(
 			utils.Log.Error("could not find tailwind.config.ts")
 		}
 
-		utils.Log.Info("Writing tailwind config...\n", tailwind)
+		utils.Log.Info("Writing tailwind config...%s\n", tailwind)
 	}
 }
 

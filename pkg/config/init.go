@@ -49,7 +49,7 @@ func GetConfig() *Config {
 		Harmony:    viper.GetString("harmony"),
 		Output:     viper.GetString("output"),
 		Entrypoint: viper.GetString("entrypoint"),
-		Prefix:     viper.GetString("prefix"),
+		Prefix:     "at",
 		Preview:    viper.GetBool("preview"),
 
 		// Config only options

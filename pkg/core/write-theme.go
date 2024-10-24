@@ -74,7 +74,7 @@ func WriteTheme(
 }
 
 func writeUtilities(classes *string, config c.Config) {
-	*classes += "\n/* Utility Classes */\n"
+	*classes += "\n/* Utility Classes */\n\n"
 	pre := config.Prefix
 	toFrom := writeVar(
 		pre+"-stops",
@@ -84,22 +84,16 @@ func writeUtilities(classes *string, config c.Config) {
 			css.Var("to-position", &pre)+";",
 	)
 
-	classStart := ""
-	classEnd := ""
-
-	classStart, classEnd = css.Class("linear", &pre, nil)
-	utils.Log.Info("classStart: %s", classStart)
-	utils.Log.Info("classEnd: %s", classEnd)
-	*classes += classStart
-	*classes += TAB + toFrom
+	// REFACTOR: change how classes are generated?
+	classStart, classEnd := css.Class("linear", &pre, nil)
 
 	// linear
-	*classes += "." + pre + "-linear {\n"
+	*classes += classStart
 	*classes += TAB + toFrom
 	*classes += TAB + "background-image: " + css.Linear(
 		css.Var("direction", &pre)+", "+
 			css.Var("stops", &pre)) + ";\n"
-	*classes += "}\n\n"
+	*classes += classEnd
 
 	// radial
 	*classes += "." + pre + "-radial {\n"
