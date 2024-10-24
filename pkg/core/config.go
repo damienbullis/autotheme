@@ -1,14 +1,17 @@
 package core
 
-import "autotheme/pkg/utils"
+import (
+	"autotheme/pkg/config"
+	"autotheme/pkg/utils"
 
-// WriteConfig writes the configuration file to the output directory
+	"github.com/spf13/viper"
+)
+
 func WriteConfig() {
+	config := config.GetConfig()
+	utils.Log.Info("%+v\n", config)
 
-	path := "autotheme.yml"
-
-	utils.Log.Info("Writing configuration file to %s", path)
-	utils.Log.Error("Not implemented yet")
-
-	// Check for pre-existing config file
+	if err := viper.WriteConfigAs("./autotheme.yml"); err != nil {
+		utils.Log.Error("Error writing configuration file: %s", err)
+	}
 }

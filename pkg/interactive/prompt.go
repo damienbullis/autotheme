@@ -2,6 +2,7 @@ package interactive
 
 import (
 	"autotheme/pkg/constants"
+	"autotheme/pkg/core"
 	"autotheme/pkg/utils"
 	"fmt"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/lucasb-eyer/go-colorful"
+	"github.com/spf13/viper"
 )
 
 func handleError(err error) {
@@ -50,10 +52,13 @@ func Prompt() {
 	handleError(err)
 
 	result, _ := colorful.Hex(color)
+
+	// Create output string based on the selected color
 	outputStr := createOutputStr(result)
 
 	output.WriteString(outputStr(color, "Primary Color"))
 	utils.Log.Info(output.String())
+	viper.Set("color", color)
 
 	// Prompt user for harmony
 	harmony, err := HarmonyPrompt()
@@ -62,14 +67,16 @@ func Prompt() {
 		&output,
 		err,
 	)
+	viper.Set("harmony", harmony)
 
 	// Prompt user for darkmode
 	darkmode, err := DarkmodePrompt()
 	next(
-		outputStr(strconv.FormatBool(darkmode), "Darkmode"),
+		outputStr(strconv.FormatBool(darkmode), "Dark Mode"),
 		&output,
 		err,
 	)
+	viper.Set("darkmode", darkmode)
 	// Prompt for tailwind
 	tailwind, err := TailwindPrompt()
 	next(
@@ -77,6 +84,7 @@ func Prompt() {
 		&output,
 		err,
 	)
+	viper.Set("tailwind", tailwind)
 	// Prompt user for output
 	outputPath, err := OutputPrompt()
 	next(
@@ -84,13 +92,9 @@ func Prompt() {
 		&output,
 		err,
 	)
+	viper.Set("output", outputPath)
 
 	clearScreen()
-
-	utils.Log.Error("Tailwind: NOT IMPLEMENTED YET")
-	utils.Log.Error("WriteConfig: NOT IMPLEMENTED YET")
-	// Finally, generate config file
-	// NEXT: Generate config file
 	output.WriteString(
 		fmt.Sprintf(
 			"\n%s %s %s\n",
@@ -100,7 +104,10 @@ func Prompt() {
 		),
 	)
 
+	core.WriteConfig()
+
 	utils.Log.Info(output.String())
+
 }
 
 func clearScreen() {

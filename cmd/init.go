@@ -17,9 +17,6 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 	// Init command flags
 	initCmd.Flags().BoolVarP(&yes, "yes", "y", false, "Skip interactive mode and use default values")
-
-	// Bind flags to viper
-	viper.BindPFlag("yes", initCmd.Flags().Lookup("yes"))
 }
 
 var initCmd = &cobra.Command{
@@ -29,8 +26,13 @@ var initCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if yes {
+			viper.Set("tailwind", true)
+			viper.Set("dark-mode", true)
+			viper.Set("noise", true)
+			viper.Set("spacing", true)
+			viper.Set("gradients", true)
 			core.WriteConfig()
-			os.Exit(1)
+			os.Exit(0)
 		} else {
 			interactive.Prompt()
 		}
