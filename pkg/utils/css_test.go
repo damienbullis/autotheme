@@ -107,44 +107,44 @@ var _ = Describe("CssT", func() {
 			It("should return the correctly prefixed class with indentation", func() {
 				prefix := "btn"
 				indent := 2
-				start, end := Css.Class("primary", &prefix, &indent)
-				Expect(start).To(Equal(".btn-primary {\n    "))
-				Expect(end).To(Equal("}\n\n"))
+				class := Css.Class("primary", &prefix, &indent)
+				Expect(class.Make()).To(Equal("    .btn-primary {\n};\n\n"))
 			})
 		})
 
 		Context("When prefix is nil and indent is provided", func() {
 			It("should return the class without prefix and with indentation", func() {
 				indent := 1
-				start, end := Css.Class("secondary", nil, &indent)
-				Expect(start).To(Equal(".secondary {\n  "))
-				Expect(end).To(Equal("}\n\n"))
+
+				class := Css.Class("secondary", nil, &indent)
+				Expect(class.Make()).To(Equal("  .secondary {\n};\n\n"))
 			})
 		})
 
 		Context("When prefix is provided and indent is nil", func() {
 			It("should return the prefixed class without indentation", func() {
 				prefix := "card"
-				start, end := Css.Class("header", &prefix, nil)
-				Expect(start).To(Equal(".card-header {\n"))
-				Expect(end).To(Equal("}\n\n"))
+
+				class := Css.Class("header", &prefix, nil)
+				class.Line(Css.Prop("font-size", "16px"))
+				Expect(class.Make()).To(Equal(".card-header {\n  font-size: 16px;\n};\n\n"))
 			})
 		})
 
 		Context("When both prefix and indent are nil", func() {
 			It("should return the class without prefix and without indentation", func() {
-				start, end := Css.Class("footer", nil, nil)
-				Expect(start).To(Equal(".footer {\n"))
-				Expect(end).To(Equal("}\n\n"))
+				class := Css.Class("footer", nil, nil)
+
+				Expect(class.Make()).To(Equal(".footer {\n};\n\n"))
 			})
 		})
 
 		Context("When indent is zero", func() {
 			It("should return the class without indentation", func() {
 				indent := 0
-				start, end := Css.Class("content", nil, &indent)
-				Expect(start).To(Equal(".content {\n"))
-				Expect(end).To(Equal("}\n\n"))
+				class := Css.Class("content", nil, &indent)
+
+				Expect(class.Make()).To(Equal(".content {\n};\n\n"))
 			})
 		})
 	})
@@ -155,7 +155,7 @@ var _ = Describe("CssT", func() {
 				key := "margin"
 				value := "10px"
 				result := Css.Prop(key, value)
-				Expect(result).To(Equal("margin: 10px;\n"))
+				Expect(result).To(Equal("margin: 10px;"))
 			})
 		})
 
@@ -164,7 +164,7 @@ var _ = Describe("CssT", func() {
 				key := "padding"
 				value := ""
 				result := Css.Prop(key, value)
-				Expect(result).To(Equal("padding: ;\n"))
+				Expect(result).To(Equal("padding: ;"))
 			})
 		})
 
@@ -173,14 +173,14 @@ var _ = Describe("CssT", func() {
 				key := ""
 				value := "auto"
 				result := Css.Prop(key, value)
-				Expect(result).To(Equal(": auto;\n"))
+				Expect(result).To(Equal(": auto;"))
 			})
 		})
 
 		Context("When both key and value are empty", func() {
 			It("should return ': ;'", func() {
 				result := Css.Prop("", "")
-				Expect(result).To(Equal(": ;\n"))
+				Expect(result).To(Equal(": ;"))
 			})
 		})
 
@@ -189,7 +189,7 @@ var _ = Describe("CssT", func() {
 				key := "font-family"
 				value := "Arial, sans-serif"
 				result := Css.Prop(key, value)
-				Expect(result).To(Equal("font-family: Arial, sans-serif;\n"))
+				Expect(result).To(Equal("font-family: Arial, sans-serif;"))
 			})
 		})
 	})
@@ -288,13 +288,12 @@ var _ = Describe("CssT", func() {
 			// Test Class
 			classPrefix := "container"
 			indent := 3
-			classStart, classEnd := Css.Class("main", &classPrefix, &indent)
-			Expect(classStart).To(Equal(".container-main {\n      "))
-			Expect(classEnd).To(Equal("}\n\n"))
+			class := Css.Class("main", &classPrefix, &indent)
+			Expect(class.Make()).To(Equal("      .container-main {\n};\n\n"))
 
 			// Test Prop
 			propResult := Css.Prop("display", "flex")
-			Expect(propResult).To(Equal("display: flex;\n"))
+			Expect(propResult).To(Equal("display: flex;"))
 
 			// Test MakeVar
 			makeVarPrefix := "theme"
