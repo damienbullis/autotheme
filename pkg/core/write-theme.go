@@ -76,47 +76,53 @@ func WriteTheme(
 func writeUtilities(classes *string, config c.Config) {
 	*classes += "\n/* Utility Classes */\n\n"
 	pre := config.Prefix
-	toFrom := writeVar(
-		pre+"-stops",
+	toFrom := css.MakeVar(
+		"stops",
 		css.Var("from", &pre)+" "+
 			css.Var("from-position", &pre)+", "+
 			css.Var("to", &pre)+" "+
-			css.Var("to-position", &pre)+";",
+			css.Var("to-position", &pre),
+		&pre,
 	)
 
-	// REFACTOR: change how classes are generated?
-	classStart, classEnd := css.Class("linear", &pre, nil)
-
 	// linear
-	*classes += classStart
-	*classes += TAB + toFrom
-	*classes += TAB + "background-image: " + css.Linear(
-		css.Var("direction", &pre)+", "+
-			css.Var("stops", &pre)) + ";\n"
-	*classes += classEnd
+	linearClass := css.Class("linear", &pre, nil)
+	linearClass.Line(toFrom)
+	linearClass.Line(css.Prop(
+		"background-image",
+		css.Linear(css.Var("direction", &pre)+", "+css.Var("stops", &pre)),
+	))
+
+	*classes += linearClass.Make()
 
 	// radial
-	*classes += "." + pre + "-radial {\n"
-	*classes += TAB + toFrom
-	*classes += TAB + "background-image: " + css.Radial(
-		css.Var("scale", &pre)+" at "+css.Var("position", &pre)+", "+
-			css.Var("stops", &pre)) + ";\n"
-	*classes += "}\n\n"
+	radialClass := css.Class("radial", &pre, nil)
+	radialClass.Line(toFrom)
+	radialClass.Line(css.Prop(
+		"background-image",
+		css.Radial(css.Var("scale", &pre)+" at "+
+			css.Var("position", &pre)+", "+
+			css.Var("stops", &pre)),
+	))
+	*classes += radialClass.Make()
+
+	opacity := css.Var("opacity", &pre)
 
 	// text color
-	*classes += "." + pre + "-text {\n"
-	*classes += writeVar(pre+"-text", css.Var("c0", &pre))
-	*classes += TAB + "color: " + rgbVar(pre, "-text") + ";\n"
-	*classes += "}\n\n"
+	textClass := css.Class("text", &pre, nil)
+	textClass.Line(css.MakeVar("text", css.Var("c0", &pre), &pre))
+	textClass.Line(css.Prop("color", css.Rgb(css.Var("text", &pre), &opacity)))
+	*classes += textClass.Make()
 
 	// background color
+	bgClass := css.Class("bg", &pre, nil)
+	bgClass.Line(css.MakeVar("bg", css.Var("c0", &pre), &pre))
+	bgClass.Line(css.Prop("color", css.Rgb(css.Var("bg", &pre), &opacity)))
+	*classes += bgClass.Make()
 
-	*classes += "." + pre + "-bg {\n"
-	*classes += writeVar(pre+"-bg", css.Var("c0", &pre))
-	*classes += TAB + "color: " + rgbVar(pre, "-bg") + ";\n"
-	*classes += "}\n\n"
 }
 
+// TODO: leaving off here
 func writeGradient(rootTheme *string, config c.Config) {
 	*rootTheme += "\n" + TAB + "/* Gradients */\n"
 
