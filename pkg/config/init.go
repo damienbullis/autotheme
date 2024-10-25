@@ -154,7 +154,7 @@ func LoadConfig() {
 	} else {
 		// Use default config file name and directory
 		viper.SetConfigName("autotheme")
-		viper.SetConfigType("yaml")
+		// viper.SetConfigType("yaml")
 		viper.AddConfigPath(".")
 		viper.AddConfigPath("./config")
 		viper.AddConfigPath("./.config")
@@ -172,5 +172,4 @@ func LoadConfig() {
 			os.Exit(0)
 		}
 	}
-	// utils.Log.Info("Using config file: %s\n", viper.ConfigFileUsed())
 }

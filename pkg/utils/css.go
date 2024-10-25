@@ -25,7 +25,7 @@ type CssT struct {
 	// radial-gradient()
 	Radial func(s string) string
 	// .class {}
-	Class func(class string, pre *string, indent *int) (string, string)
+	Class func(class string, pre *string, indent *int) ClassT
 	// prop: value;
 	Prop func(key string, value string) string
 	// --key: value;
@@ -62,8 +62,13 @@ func rg(s string) string {
 	return "radial-gradient(" + s + ")"
 }
 
+type ClassT struct {
+	Line func(l string)
+	Make func() string
+}
+
 // Helper for creating a css class
-func class(class string, pre *string, indent *int) (string, string) {
+func class(class string, pre *string, indent *int) ClassT {
 	i := 0
 	if pre != nil {
 		class = *pre + "-" + class
@@ -72,13 +77,22 @@ func class(class string, pre *string, indent *int) (string, string) {
 		i = *indent
 	}
 
-	// start, end
-	return "." + class + " {\n" + constants.Tab(i), "}\n\n"
+	start := constants.Tab(i) + "." + class + " {\n"
+	buf := ""
+	end := "};\n\n"
+	return ClassT{
+		Line: func(line string) {
+			buf += constants.Tab(i+1) + line + "\n"
+		},
+		Make: func() string {
+			return start + buf + end
+		},
+	}
 }
 
 // Helper for creating a css property
 func prop(key string, value string) string {
-	return key + ": " + value + ";\n"
+	return key + ": " + value + ";"
 }
 
 // Helper for creating a css variable
