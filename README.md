@@ -1,253 +1,273 @@
 # AutoTheme
 
+### One color in. Entire design system out.
+
+```bash
+npx autotheme --color "#6439FF" --harmony triadic
+```
+
+<!-- ASSET: hero-output-screenshot.png
+     A single, wide screenshot showing the terminal output of the command above
+     alongside the generated HTML preview — the palette swatches, the CSS variables,
+     and a small themed UI component. Should feel like "one command did all of this." -->
+<img src="docs/assets/hero-output-screenshot.png" width="720" />
+
+---
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![CI](https://github.com/damienbullis/autotheme/actions/workflows/ci.yml/badge.svg)](https://github.com/damienbullis/autotheme/actions/workflows/ci.yml)
 ![WCAG AAA](https://img.shields.io/badge/WCAG-AAA_%E2%9C%93-228B22)
 
-> A zero-config, zero-dependency tool for generating accessible CSS themes using color theory.
-
-AutoTheme generates color palettes from color harmonies and outputs CSS variables in OKLCH format, compatible with Tailwind v4 and Shadcn UI.
-
 ## Install
-
-### npm / bun
 
 ```bash
 npm install autotheme
-# or
-bun add autotheme
 ```
 
-### Standalone Binary
+Or download a [standalone binary](https://github.com/damienbullis/autotheme/releases).
 
-Download from the [releases page](https://github.com/damienbullis/autotheme/releases), or use the install script:
+## What you get
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/damienbullis/autotheme/main/install.sh | bash
-```
+From a single color, AutoTheme generates:
 
-## Quick Start
-
-```bash
-# Generate with defaults (random color, analogous harmony)
-autotheme
-
-# Specify color and harmony
-autotheme --color "#6439FF" --harmony triadic
-
-# Generate with Tailwind output and HTML preview
-autotheme -c "#FF6B35" -a split-complementary --tailwind --preview
-
-# Interactive config setup
-autotheme init
-```
-
-Then include the generated CSS:
-
-```html
-<link rel="stylesheet" href="./src/autotheme.css" />
-```
+- **50–950 color scales** for every harmony color in OKLCH
+- **Accessible text colors** — WCAG AAA (7:1) by default
+- **Light & dark mode** with system preference detection
+- **Tailwind v4** and **Shadcn UI** variables, ready to use
+- Typography, spacing, gradients, and noise textures
 
 ```css
 @import "./autotheme.css";
 ```
 
-## Harmonies
+That's it. Your app is themed.
 
-A harmony is a set of colors related by their position on the color wheel. Each harmony produces a different palette feel.
+---
 
-| Harmony                 | Colors | Description                                          |
-| ----------------------- | ------ | ---------------------------------------------------- |
-| **Analogous**           | 3      | Adjacent colors. Harmonious, serene.                 |
-| **Complementary**       | 2      | Opposite colors. High contrast, vibrant.             |
-| **Triadic**             | 3      | Equally spaced (120°). Balanced, vibrant.            |
-| **Split-Complementary** | 3      | Base + two adjacent to its complement. Less tension. |
-| **Tetradic**            | 4      | Pi-based angular offset. Dynamic, intriguing.        |
-| **Square**              | 4      | Equally spaced (90°). Bold, dynamic.                 |
-| **Rectangle**           | 4      | Two complementary pairs. Versatile, balanced.        |
-| **Aurelian**            | 3      | Golden angle (137.5°). Naturally harmonious.         |
-| **Bi-Polar**            | 2      | Two dominant colors at 90°. Strong, focused.         |
-| **Retrograde**          | 3      | Reverse triadic. Unique perspective.                 |
+<details>
+<summary><strong>I want a theme for my project</strong></summary>
 
-### Analogous
+Run one command. Get a CSS file.
 
-<img src="docs/assets/analogous2.png" width="600" />
+```bash
+autotheme --color "#6439FF" --harmony triadic
+```
 
-### Complementary
+Import it:
 
-<img src="docs/assets/complementary.png" width="600" />
+```css
+@import "./autotheme.css";
+```
 
-### Triadic
+You now have a full color palette with light/dark mode, accessible text colors, typography, spacing, and gradients — all as CSS variables in OKLCH format.
 
-<img src="docs/assets/triadic.png" width="600" />
+</details>
 
-### Split-Complementary
+<details>
+<summary><strong>I want Tailwind v4 colors that just work</strong></summary>
 
-<img src="docs/assets/split-complementary.png" width="600" />
+```bash
+autotheme --color "#FF6B35" --harmony analogous --tailwind
+```
 
-### Tetradic
+This generates Tailwind-compatible CSS with `@theme` directives. Use the colors like any Tailwind color:
 
-<img src="docs/assets/tetradic.png" width="600" />
+```html
+<div class="bg-primary-500 text-primary-foreground">
+  Accessible by default.
+</div>
 
-### Square
+<div class="bg-secondary-200 dark:bg-secondary-800">
+  Dark mode included.
+</div>
+```
 
-<img src="docs/assets/square.png" width="600" />
+Every color gets a 50–950 scale, foreground, contrast, and tone variants.
 
-### Rectangle
+</details>
 
-<img src="docs/assets/rectangle.png" width="600" />
+<details>
+<summary><strong>I want Shadcn UI colors that actually match</strong></summary>
 
-### Aurelian
+AutoTheme generates all Shadcn UI semantic variables by default:
 
-<img src="docs/assets/aurelian.png" width="600" />
+```bash
+autotheme --color "#6439FF" --harmony split-complementary
+```
 
-### Bi-Polar
+The output includes `--background`, `--foreground`, `--primary`, `--secondary`, `--accent`, `--muted`, `--card`, `--destructive`, `--ring`, `--border`, and more — all derived from your harmony, all in OKLCH.
 
-<img src="docs/assets/bi-polar.png" width="600" />
+No manual color picking. No copy-pasting hex values from a design tool. The colors are mathematically related and visually consistent.
 
-### Retrograde
+Don't need them? `--no-shadcn`.
 
-<img src="docs/assets/retrograde.png" width="600" />
+</details>
 
-> All examples use `#6439FF` to illustrate differences between harmonies.
+<details>
+<summary><strong>I want accessible colors without thinking about it</strong></summary>
 
-## CSS Output
+Every color AutoTheme generates comes with a `foreground` variable — a text color that meets **WCAG AAA** (7:1 contrast ratio) against that background.
 
-AutoTheme outputs CSS variables in **OKLCH** color format for perceptual uniformity, using **Tailwind v4** variable namespaces.
+```css
+/* These are guaranteed accessible together */
+background: var(--color-primary-500);
+color: var(--color-primary-foreground);
+```
 
-### Palette Structure
+The default target is 7:1 (AAA). Lower it to 4.5:1 (AA) or anywhere from 3–21:
+
+```json
+{
+  "contrastTarget": 4.5
+}
+```
+
+AutoTheme tests black, white, and intermediate values against each color to find the best accessible foreground.
+
+</details>
+
+<details>
+<summary><strong>I want dark mode that just works</strong></summary>
+
+AutoTheme generates both light and dark schemes. Dark mode activates with `.dark` on your root element.
+
+For automatic handling, add the dark mode script:
+
+```bash
+autotheme --color "#6439FF" --harmony triadic --dark-mode-script
+```
+
+```html
+<head>
+  <script src="/darkmode.js"></script>
+</head>
+```
+
+This gives you:
+- System preference detection (`prefers-color-scheme`)
+- LocalStorage persistence across visits
+- FOUC prevention (no flash of wrong theme)
+- A global `toggleDarkMode()` function
+
+</details>
+
+<details>
+<summary><strong>I want to preview the palette before committing</strong></summary>
+
+```bash
+autotheme --color "#6439FF" --harmony triadic --preview
+```
+
+This generates an HTML file showing every color swatch, the full scale, text contrast validation, and semantic color usage.
 
 <img src="docs/assets/harmony-details.png" width="600" />
 
-Each color in the harmony produces:
+</details>
 
-- **1 base** color (500)
-- **5 tints** (50, 100, 200, 300, 400)
-- **5 shades** (600, 700, 800, 900, 950)
-- **4 tones** (tone-1, tone-2, tone-3, tone-4)
-- **1 foreground** color (accessible text)
-- **1 contrast** color (high contrast text)
+<details>
+<summary><strong>I want to understand why these colors go together</strong></summary>
 
-### Color Scale
+AutoTheme uses **color harmonies** — geometric relationships on the color wheel. Pick a harmony based on the feel you want:
 
-Colors are named by their role in the harmony (`primary`, `secondary`, `tertiary`, `quaternary`):
+| I want something...        | Use                     | Colors |
+| -------------------------- | ----------------------- | ------ |
+| Calm and cohesive          | `analogous`             | 3      |
+| Bold and high contrast     | `complementary`         | 2      |
+| Vibrant but balanced       | `triadic`               | 3      |
+| Contrasty without clashing | `split-complementary`   | 3      |
+| Rich and complex           | `square` or `rectangle` | 4      |
+| Naturally pleasing         | `aurelian`              | 3      |
+| Focused and decisive       | `bi-polar`              | 2      |
+| Unique and unexpected      | `retrograde`            | 3      |
+| Dynamic and mathematical   | `tetradic`              | 4      |
 
-```css
---color-primary-50          /* Lightest tint */
---color-primary-100
---color-primary-200
---color-primary-300
---color-primary-400
---color-primary-500         /* Base color */
---color-primary-600
---color-primary-700
---color-primary-800
---color-primary-900
---color-primary-950         /* Darkest shade */
---color-primary-foreground  /* Accessible text color */
---color-primary-contrast    /* High contrast text */
---color-primary-tone-1..4   /* Desaturated variations */
-```
+> All examples use `#6439FF`.
 
-The variable prefix defaults to `color` but can be changed with `--prefix`. When using Tailwind output with a custom prefix, `--color-*` aliases are automatically generated so utilities like `bg-primary-500` still work.
+<img src="docs/assets/analogous2.png" width="600" />
+<img src="docs/assets/complementary.png" width="600" />
+<img src="docs/assets/triadic.png" width="600" />
+<img src="docs/assets/split-complementary.png" width="600" />
+<img src="docs/assets/tetradic.png" width="600" />
+<img src="docs/assets/square.png" width="600" />
+<img src="docs/assets/rectangle.png" width="600" />
+<img src="docs/assets/aurelian.png" width="600" />
+<img src="docs/assets/bi-polar.png" width="600" />
+<img src="docs/assets/retrograde.png" width="600" />
 
-### Shadcn UI Variables
+</details>
 
-Full Shadcn UI semantic variables are included in OKLCH format: `--background`, `--foreground`, `--primary`, `--card`, `--destructive`, `--muted`, `--accent`, and more. Disable with `--no-shadcn`.
+<details>
+<summary><strong>I want fine-grained control</strong></summary>
 
-### Typography, Spacing, Gradients & Noise
+### Config file
 
-```css
---text-xs..4xl           /* Typography scale (configurable base via fontSize) */
---spacing-1..10          /* Spacing scale */
---gradient-direction     /* Gradient direction */
---gradient-linear-*      /* Linear gradients to each harmony color */
---background-image-noise /* Noise texture SVG */
-```
-
-<img src="docs/assets/noise.png" width="600" />
-
-Each section can be individually disabled with `--no-spacing`, `--no-gradients`, `--no-noise`, or `--no-utilities`.
-
-### Accessible Colors
-
-AutoTheme targets **WCAG AAA** compliance by default with a **7:1 contrast ratio** for text colors. Each color in the palette gets a `foreground` color that meets the target contrast ratio against it. Adjust with the `contrastTarget` option (minimum 3 for WCAG AA, maximum 21).
-
-## Dark Mode
-
-AutoTheme generates both light and dark mode color schemes. Dark mode activates with the `.dark` class on the root element.
-
-Use `--dark-mode-script` to generate a script that handles:
-
-- System preference detection (`prefers-color-scheme: dark`)
-- LocalStorage persistence
-- FOUC prevention (include in `<head>`)
-- Global `toggleDarkMode()` function
-
-```html
-<script src="/darkmode.js"></script>
-```
-
-## Configuration
-
-AutoTheme can be configured with CLI flags, a config file, or both. Priority: CLI flags > config file > defaults.
-
-### CLI Flags
-
-| Flag                 | Short | Type     | Description                                       |
-| -------------------- | ----- | -------- | ------------------------------------------------- |
-| `--color`            | `-c`  | `string` | Primary color (hex, rgb, hsl)                     |
-| `--harmony`          | `-a`  | `string` | Color harmony type                                |
-| `--output`           | `-o`  | `string` | Output file path (default: `./src/autotheme.css`) |
-| `--config`           |       | `string` | Path to config file                               |
-| `--prefix`           |       | `string` | CSS variable prefix (default: `color`)            |
-| `--font-size`        |       | `number` | Base font size in rem (default: `1`)              |
-| `--preview`          |       | flag     | Generate HTML preview                             |
-| `--tailwind`         |       | flag     | Generate Tailwind v4 CSS                          |
-| `--dark-mode-script` |       | flag     | Generate dark mode script                         |
-| `--no-gradients`     |       | flag     | Disable gradient variable generation              |
-| `--no-spacing`       |       | flag     | Disable spacing scale generation                  |
-| `--no-noise`         |       | flag     | Disable noise texture generation                  |
-| `--no-shadcn`        |       | flag     | Disable Shadcn UI variable generation             |
-| `--no-utilities`     |       | flag     | Disable utility class generation                  |
-| `--silent`           | `-s`  | flag     | Suppress output                                   |
-
-### Config File
-
-AutoTheme looks for `autotheme.json`, `.autothemerc.json`, or `.autothemerc` in the current directory. Use `autotheme init` to create one interactively.
+Create `autotheme.json` (or use `autotheme init`):
 
 ```json
 {
   "$schema": "./node_modules/autotheme/schema.json",
   "color": "#6439FF",
-  "harmony": "triadic"
+  "harmony": "triadic",
+  "tailwind": true,
+  "preview": true,
+  "contrastTarget": 7,
+  "scalar": 1.618,
+  "fontSize": 1
 }
 ```
 
-All options and their defaults:
+### CLI flags
 
-| Option           | Type      | Default                 | Description                                    |
-| ---------------- | --------- | ----------------------- | ---------------------------------------------- |
-| `color`          | `string`  | random                  | Primary color (hex, rgb, hsl)                  |
-| `harmony`        | `string`  | `"analogous"`           | Color harmony type                             |
-| `output`         | `string`  | `"./src/autotheme.css"` | Output file path                               |
-| `prefix`         | `string`  | `"color"`               | CSS variable prefix (`--{prefix}-primary-500`) |
-| `fontSize`       | `number`  | `1`                     | Base font size in rem for typography scale     |
-| `preview`        | `boolean` | `false`                 | Generate HTML preview                          |
-| `tailwind`       | `boolean` | `false`                 | Generate Tailwind v4 CSS                       |
-| `darkModeScript` | `boolean` | `false`                 | Generate dark mode init script                 |
-| `scalar`         | `number`  | `1.618`                 | Golden ratio multiplier for spacing/sizing     |
-| `contrastTarget` | `number`  | `7`                     | Target contrast ratio (3-21)                   |
-| `radius`         | `string`  | `"0.625rem"`            | Border radius for Shadcn components            |
-| `gradients`      | `boolean` | `true`                  | Generate gradient CSS variables                |
-| `spacing`        | `boolean` | `true`                  | Generate spacing scale                         |
-| `noise`          | `boolean` | `true`                  | Generate noise texture variable                |
-| `shadcn`         | `boolean` | `true`                  | Generate Shadcn UI compatible variables        |
-| `utilities`      | `boolean` | `true`                  | Generate CSS utility classes                   |
+```bash
+autotheme \
+  --color "#FF6B35" \
+  --harmony split-complementary \
+  --output ./styles/theme.css \
+  --prefix brand \
+  --tailwind \
+  --preview \
+  --dark-mode-script \
+  --no-noise \
+  --no-gradients
+```
 
-## Module API
+### Toggle features
 
-AutoTheme can be used as an importable module for programmatic theme generation:
+| Flag              | Disables                      |
+| ----------------- | ----------------------------- |
+| `--no-shadcn`     | Shadcn UI semantic variables  |
+| `--no-gradients`  | Gradient CSS variables        |
+| `--no-spacing`    | Spacing scale                 |
+| `--no-noise`      | Noise texture                 |
+| `--no-utilities`  | Utility classes               |
+
+Priority: CLI flags > config file > defaults.
+
+### All config options
+
+| Option           | Type      | Default                 | Description                    |
+| ---------------- | --------- | ----------------------- | ------------------------------ |
+| `color`          | `string`  | random                  | Primary color (hex, rgb, hsl)  |
+| `harmony`        | `string`  | `"analogous"`           | Harmony type                   |
+| `output`         | `string`  | `"./src/autotheme.css"` | Output path                    |
+| `prefix`         | `string`  | `"color"`               | CSS variable prefix            |
+| `fontSize`       | `number`  | `1`                     | Base font size (rem)           |
+| `preview`        | `boolean` | `false`                 | HTML preview                   |
+| `tailwind`       | `boolean` | `false`                 | Tailwind v4 CSS                |
+| `darkModeScript` | `boolean` | `false`                 | Dark mode script               |
+| `scalar`         | `number`  | `1.618`                 | Golden ratio multiplier        |
+| `contrastTarget` | `number`  | `7`                     | Contrast ratio (3–21)          |
+| `radius`         | `string`  | `"0.625rem"`            | Shadcn border radius           |
+| `gradients`      | `boolean` | `true`                  | Gradient variables             |
+| `spacing`        | `boolean` | `true`                  | Spacing scale                  |
+| `noise`          | `boolean` | `true`                  | Noise texture                  |
+| `shadcn`         | `boolean` | `true`                  | Shadcn UI variables            |
+| `utilities`      | `boolean` | `true`                  | Utility classes                |
+
+</details>
+
+<details>
+<summary><strong>I want to use it programmatically</strong></summary>
 
 ```typescript
 import { Color, generateFullPalette, generateCSS } from "autotheme";
@@ -280,22 +300,25 @@ const theme = {
 const css = generateCSS(theme); // { filename, content }
 ```
 
-Individual generators are also available: `generateTailwindCSS()`, `generatePreview()`, `generateDarkModeScript()`.
+Individual generators: `generateTailwindCSS()`, `generatePreview()`, `generateDarkModeScript()`.
 
-## Development
+</details>
+
+---
+
+## Learn more
+
+- [How it works](docs/how-it-works.md) — Follow a color through the entire pipeline
+- [Philosophy](docs/philosophy.md) — Why AutoTheme exists and the principles behind it
+- [Architecture](docs/architecture.md) — Internal code structure for contributors
+
+## I want to contribute
 
 ```bash
-git clone https://github.com/damienbullis/autotheme.git
-cd autotheme
-bun install
-```
-
-```bash
-bun run dev           # Watch mode
-bun run dev:web       # Web app dev server
-bun run test          # Tests in watch mode
-bun run test:run      # Tests once
-bun run check         # All checks (typecheck + lint + format + test)
+git clone https://github.com/damienbullis/autotheme.git && cd autotheme && bun install
+bun run dev       # Watch mode
+bun run test      # Tests
+bun run check     # All checks (typecheck + lint + format + test)
 ```
 
 ## License

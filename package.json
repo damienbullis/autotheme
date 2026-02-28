@@ -59,7 +59,8 @@
     "typecheck": "tsc --noEmit",
     "check": "bun run typecheck && bun run lint && bun run format:check && bun run test:run",
     "prepublishOnly": "bun run check && bun run build && bun run build:schema",
-    "release": "bun run scripts/release.ts"
+    "release": "bun run scripts/release.ts",
+    "screenshot": "bun run scripts/screenshot.ts"
   },
   "dependencies": {
     "cac": "^6.7.14",
