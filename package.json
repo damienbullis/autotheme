@@ -1,0 +1,80 @@
+{
+  "name": "autotheme",
+  "version": "0.0.1",
+  "description": "Zero-config CSS theme generator using color theory",
+  "keywords": [
+    "accessibility",
+    "color",
+    "css",
+    "generator",
+    "oklch",
+    "palette",
+    "shadcn",
+    "tailwind",
+    "theme",
+    "wcag"
+  ],
+  "homepage": "https://github.com/damienbullis/autotheme",
+  "bugs": {
+    "url": "https://github.com/damienbullis/autotheme/issues"
+  },
+  "license": "MIT",
+  "author": "Damien Bullis",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/damienbullis/autotheme.git"
+  },
+  "bin": {
+    "autotheme": "./dist/cli/main.js"
+  },
+  "files": [
+    "dist",
+    "schema.json"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema.json": "./schema.json"
+  },
+  "scripts": {
+    "dev": "bun run --watch src/cli/main.ts",
+    "dev:web": "bun run src/web/server.ts",
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
+    "build:cli": "bun build --compile --minify ./src/cli/main.ts --outfile autotheme",
+    "build:binary": "bun build --compile --minify ./src/cli/main.ts --outfile autotheme",
+    "build:schema": "bun run scripts/generate-schema.ts",
+    "build:web": "bun build ./src/web/main.ts --outdir ./dist/web --minify",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "oxlint -c oxlint.json .",
+    "lint:fix": "oxlint -c oxlint.json . --fix",
+    "format": "oxfmt .",
+    "format:check": "oxfmt . --check",
+    "typecheck": "tsc --noEmit",
+    "check": "bun run typecheck && bun run lint && bun run format:check && bun run test:run",
+    "prepublishOnly": "bun run check && bun run build && bun run build:schema",
+    "release": "bun run scripts/release.ts"
+  },
+  "dependencies": {
+    "cac": "^6.7.14",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/prompts": "^2.4.9",
+    "@vitest/coverage-v8": "^4.0.16",
+    "bun-types": "^1.3.4",
+    "oxfmt": "^0.35.0",
+    "oxlint": "^1.50.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

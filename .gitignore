@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+coverage/
+
+# Compiled binaries
+autotheme
+autotheme-*
+
+# Generated at publish time
+schema.json
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude local settings
+.claude/settings.local.json

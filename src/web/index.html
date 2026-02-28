@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AutoTheme - CSS Theme Generator</title>
+    <meta name="description" content="Zero-config CSS theme generator using color theory" />
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Header -->
+      <header class="header">
+        <h1>AutoTheme</h1>
+        <p>Zero-config CSS theme generator using color theory</p>
+        <button id="dark-mode-toggle" class="btn-icon" aria-label="Toggle dark mode">
+          <span class="icon-sun">&#9728;</span>
+          <span class="icon-moon">&#9790;</span>
+        </button>
+      </header>
+
+      <!-- Interactive Previewer -->
+      <main class="main">
+        <section class="controls">
+          <div id="color-picker-container"></div>
+          <div id="harmony-selector-container"></div>
+          <div id="options-container"></div>
+        </section>
+
+        <section class="preview">
+          <div id="palette-display"></div>
+          <div id="typography-preview"></div>
+          <div id="gradient-preview"></div>
+        </section>
+
+        <section class="output">
+          <div id="code-preview"></div>
+          <div id="download-buttons"></div>
+        </section>
+      </main>
+
+      <!-- Documentation -->
+      <aside class="docs">
+        <nav id="docs-nav"></nav>
+        <div id="docs-content"></div>
+      </aside>
+    </div>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
