@@ -31,5 +31,44 @@ export function generateUtilityClasses(prefix: string = "color"): string {
     background-image: var(--background-image-noise);
     opacity: 0.1;
     pointer-events: none;
+}
+
+/* Semantic Surface Utilities */
+
+.surface {
+    background-color: var(--surface);
+    color: var(--surface-foreground);
+}
+
+.surface-container {
+    background-color: var(--surface-container);
+    color: var(--surface-container-foreground);
+}
+
+.primary-surface {
+    background-color: var(--primary-container);
+    color: var(--primary-container-foreground);
+}
+
+.accent-surface {
+    background-color: var(--accent-container);
+    color: var(--accent-container-foreground);
+}
+
+.gradient-surface {
+    background: linear-gradient(var(--gradient-direction, to bottom), var(--surface), var(--surface-dim));
+    color: var(--surface-foreground);
+}
+
+.gradient-accent-surface {
+    background: linear-gradient(135deg, var(--primary-container), var(--accent-container));
+    color: var(--primary-container-foreground);
+}
+
+.surface-noise {
+    background-color: var(--surface);
+    background-image: var(--background-image-noise);
+    background-blend-mode: soft-light;
+    color: var(--surface-foreground);
 }`.trim();
 }

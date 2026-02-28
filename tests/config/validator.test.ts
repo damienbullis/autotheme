@@ -50,7 +50,7 @@ describe("validateConfig", () => {
         "analogous",
         "triadic",
         "split-complementary",
-        "piroku",
+        "tetradic",
         "square",
         "rectangle",
         "aurelian",

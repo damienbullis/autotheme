@@ -74,9 +74,9 @@ describe("Harmony Generation", () => {
       expect(result.colors).toHaveLength(3);
     });
 
-    it("generates piroku harmony (4 colors)", () => {
-      const result = generateHarmony(primary, "piroku");
-      expect(result.type).toBe("piroku");
+    it("generates tetradic harmony (4 colors)", () => {
+      const result = generateHarmony(primary, "tetradic");
+      expect(result.type).toBe("tetradic");
       expect(result.colors).toHaveLength(4);
     });
 
@@ -157,7 +157,7 @@ describe("Harmony Generation", () => {
         "analogous",
         "triadic",
         "split-complementary",
-        "piroku",
+        "tetradic",
         "square",
         "rectangle",
         "aurelian",
@@ -191,11 +191,11 @@ describe("Harmony Generation", () => {
       expect(def.offset(2)).toBe(240);
     });
 
-    it("square and piroku have 4 colors each", () => {
+    it("square and tetradic have 4 colors each", () => {
       const square = HARMONY_DEFINITIONS.square;
-      const piroku = HARMONY_DEFINITIONS.piroku;
+      const tetradic = HARMONY_DEFINITIONS.tetradic;
       expect(square.count).toBe(4);
-      expect(piroku.count).toBe(4);
+      expect(tetradic.count).toBe(4);
     });
 
     it("all definitions have valid count and offset function", () => {

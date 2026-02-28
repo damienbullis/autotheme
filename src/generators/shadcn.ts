@@ -1,6 +1,7 @@
 import { Color } from "../core/color";
 import { findAccessibleTextColor } from "../core/contrast";
 import type { GeneratedTheme } from "./types";
+import { generateSemanticColors, type SemanticColors } from "./semantic";
 
 /**
  * Shadcn semantic color variables
@@ -41,246 +42,122 @@ export interface ShadcnColors {
 }
 
 /**
- * Generate Shadcn-compatible colors from AutoTheme palette
+ * Derive Shadcn colors from semantic tokens for a given mode
+ */
+function deriveShadcnFromSemantic(
+  semantic: SemanticColors,
+  harmonyColors: Color[],
+  mode: "light" | "dark",
+): ShadcnColors {
+  const primary = harmonyColors[0]!;
+
+  // Card and popover: use surface container for subtle elevation
+  const card = mode === "light" ? semantic.surfaceContainer : semantic.surfaceContainerHigh;
+  const popover = mode === "light" ? semantic.surfaceContainer : semantic.surfaceContainerHigh;
+
+  // Sidebar: slightly offset from main surface
+  const sidebar = mode === "light" ? semantic.surfaceContainerLow : semantic.surface;
+
+  // Chart colors: direct from harmony colors
+  const chart1 =
+    mode === "dark" ? (harmonyColors[0] || primary).lighten(5) : harmonyColors[0] || primary;
+  const chart2 =
+    mode === "dark"
+      ? (harmonyColors[1] || primary.rotate(60)).lighten(5)
+      : harmonyColors[1] || primary.rotate(60);
+  const chart3 =
+    mode === "dark"
+      ? (harmonyColors[2] || primary.rotate(120)).lighten(5)
+      : harmonyColors[2] || primary.rotate(120);
+  const chart4 =
+    mode === "dark"
+      ? (harmonyColors[3] || primary.rotate(180)).lighten(5)
+      : harmonyColors[3] || primary.rotate(180);
+  const chart5 =
+    mode === "dark"
+      ? (harmonyColors[4] || primary.rotate(240)).lighten(5)
+      : harmonyColors[4] || primary.rotate(240);
+
+  return {
+    // Background/foreground from semantic surface
+    background: semantic.surface,
+    foreground: semantic.surfaceForeground,
+
+    card,
+    cardForeground: findAccessibleTextColor(card),
+
+    popover,
+    popoverForeground: findAccessibleTextColor(popover),
+
+    // Primary: direct from semantic
+    primary: semantic.primary,
+    primaryForeground: semantic.primaryForeground,
+
+    // Secondary: shadcn "secondary" is a soft background, so use secondaryContainer
+    secondary: semantic.secondaryContainer,
+    secondaryForeground: semantic.secondaryContainerForeground,
+
+    // Muted: from semantic muted container
+    muted: semantic.mutedContainer,
+    mutedForeground: semantic.mutedForeground,
+
+    // Accent: shadcn "accent" is a soft background, so use accentContainer
+    accent: semantic.accentContainer,
+    accentForeground: semantic.accentContainerForeground,
+
+    // Destructive: from semantic error
+    destructive: semantic.error,
+    destructiveForeground: semantic.errorForeground,
+
+    // Border/input from semantic outline
+    border: semantic.outlineVariant,
+    input: semantic.outline,
+    ring: semantic.primary,
+
+    // Charts
+    chart1,
+    chart2,
+    chart3,
+    chart4,
+    chart5,
+
+    // Sidebar
+    sidebar,
+    sidebarForeground: findAccessibleTextColor(sidebar),
+    sidebarPrimary: semantic.primary,
+    sidebarPrimaryForeground: semantic.primaryForeground,
+    sidebarAccent: semantic.accentContainer,
+    sidebarAccentForeground: semantic.accentContainerForeground,
+    sidebarBorder: semantic.outlineVariant,
+    sidebarRing: semantic.primary,
+  };
+}
+
+/**
+ * Generate Shadcn-compatible colors from AutoTheme palette via semantic tokens
  */
 export function generateShadcnColors(theme: GeneratedTheme): {
   light: ShadcnColors;
   dark: ShadcnColors;
 } {
   const { palette } = theme;
-  const primaryPalette = palette.palettes[0];
 
-  if (!primaryPalette) {
+  if (!palette.palettes[0]) {
     throw new Error("No primary palette found");
   }
 
-  const primary = primaryPalette.base;
-  const primaryHsl = primary.hsl;
-
-  // Get harmony colors for accents and charts
   const harmonyColors = palette.palettes.map((p) => p.base);
-
-  // Generate destructive color (red-ish, opposite of green hues)
-  const destructive = generateDestructiveColor(primaryHsl.h);
-
-  // === LIGHT MODE ===
-  const lightBackground = primaryPalette.tints[4] || primary.lighten(45);
-  const lightForeground = new Color({ h: primaryHsl.h, s: 10, l: 10, a: 1 });
-
-  const lightCard = lightBackground;
-  const lightCardForeground = lightForeground;
-
-  const lightPopover = lightBackground;
-  const lightPopoverForeground = lightForeground;
-
-  const lightPrimary = primary;
-  const lightPrimaryForeground = findAccessibleTextColor(lightPrimary);
-
-  const lightSecondary = primaryPalette.tints[2] || primary.lighten(30);
-  const lightSecondaryForeground = findAccessibleTextColor(lightSecondary);
-
-  const lightMuted = primaryPalette.tones[1] || primary.desaturate(60).lighten(20);
-  const lightMutedForeground = new Color({ h: primaryHsl.h, s: 10, l: 45, a: 1 });
-
-  // Accent from first harmony color or lighter tint
-  const accentBase = harmonyColors[1] || primaryPalette.tints[1] || primary;
-  const lightAccent = accentBase.lighten(35).desaturate(30);
-  const lightAccentForeground = findAccessibleTextColor(lightAccent);
-
-  const lightDestructive = destructive;
-  const lightDestructiveForeground = findAccessibleTextColor(lightDestructive);
-
-  const lightBorder = new Color({ h: primaryHsl.h, s: 8, l: 90, a: 1 });
-  const lightInput = lightBorder;
-  const lightRing = new Color({ h: primaryHsl.h, s: 15, l: 65, a: 1 });
-
-  // Sidebar (slightly off from main background)
-  const lightSidebar = new Color({ h: primaryHsl.h, s: 5, l: 97, a: 1 });
-  const lightSidebarForeground = lightForeground;
-  const lightSidebarPrimary = lightPrimary;
-  const lightSidebarPrimaryForeground = lightPrimaryForeground;
-  const lightSidebarAccent = lightAccent;
-  const lightSidebarAccentForeground = lightAccentForeground;
-  const lightSidebarBorder = lightBorder;
-  const lightSidebarRing = lightRing;
-
-  // Chart colors from harmony
-  const lightChart1 = harmonyColors[0] || primary;
-  const lightChart2 = harmonyColors[1] || primary.rotate(60);
-  const lightChart3 = harmonyColors[2] || primary.rotate(120);
-  const lightChart4 = harmonyColors[3] || primary.rotate(180);
-  const lightChart5 = harmonyColors[4] || primary.rotate(240);
-
-  // === DARK MODE ===
-  const darkBackground = new Color({
-    h: primaryHsl.h,
-    s: Math.min(20, primaryHsl.s * 0.3),
-    l: 10,
-    a: 1,
-  });
-  const darkForeground = new Color({ h: primaryHsl.h, s: 5, l: 98, a: 1 });
-
-  const darkCard = new Color({
-    h: primaryHsl.h,
-    s: Math.min(15, primaryHsl.s * 0.25),
-    l: 14,
-    a: 1,
-  });
-  const darkCardForeground = darkForeground;
-
-  const darkPopover = new Color({
-    h: primaryHsl.h,
-    s: Math.min(15, primaryHsl.s * 0.25),
-    l: 18,
-    a: 1,
-  });
-  const darkPopoverForeground = darkForeground;
-
-  const darkPrimary = primary.lighten(10);
-  const darkPrimaryForeground = findAccessibleTextColor(darkPrimary);
-
-  const darkSecondary = new Color({
-    h: primaryHsl.h,
-    s: Math.min(15, primaryHsl.s * 0.3),
-    l: 22,
-    a: 1,
-  });
-  const darkSecondaryForeground = darkForeground;
-
-  const darkMuted = new Color({
-    h: primaryHsl.h,
-    s: Math.min(15, primaryHsl.s * 0.3),
-    l: 22,
-    a: 1,
-  });
-  const darkMutedForeground = new Color({ h: primaryHsl.h, s: 10, l: 65, a: 1 });
-
-  const darkAccent = new Color({
-    h: accentBase.hsl.h,
-    s: Math.min(30, accentBase.hsl.s * 0.5),
-    l: 28,
-    a: 1,
-  });
-  const darkAccentForeground = darkForeground;
-
-  const darkDestructive = destructive.lighten(10).saturate(10);
-  const darkDestructiveForeground = new Color({ h: destructive.hsl.h, s: 80, l: 20, a: 1 });
-
-  const darkBorder = new Color({ h: primaryHsl.h, s: 10, l: 100, a: 0.1 });
-  const darkInput = new Color({ h: primaryHsl.h, s: 10, l: 100, a: 0.15 });
-  const darkRing = new Color({ h: primaryHsl.h, s: 10, l: 50, a: 1 });
-
-  // Dark sidebar
-  const darkSidebar = darkBackground;
-  const darkSidebarForeground = darkForeground;
-  const darkSidebarPrimary = darkPrimary;
-  const darkSidebarPrimaryForeground = darkPrimaryForeground;
-  const darkSidebarAccent = darkAccent;
-  const darkSidebarAccentForeground = darkAccentForeground;
-  const darkSidebarBorder = darkBorder;
-  const darkSidebarRing = darkRing;
-
-  // Dark chart colors (slightly adjusted for dark backgrounds)
-  const darkChart1 = lightChart1.lighten(5);
-  const darkChart2 = lightChart2.lighten(5);
-  const darkChart3 = lightChart3.lighten(5);
-  const darkChart4 = lightChart4.lighten(5);
-  const darkChart5 = lightChart5.lighten(5);
+  const semantic = generateSemanticColors(theme);
 
   return {
-    light: {
-      background: lightBackground,
-      foreground: lightForeground,
-      card: lightCard,
-      cardForeground: lightCardForeground,
-      popover: lightPopover,
-      popoverForeground: lightPopoverForeground,
-      primary: lightPrimary,
-      primaryForeground: lightPrimaryForeground,
-      secondary: lightSecondary,
-      secondaryForeground: lightSecondaryForeground,
-      muted: lightMuted,
-      mutedForeground: lightMutedForeground,
-      accent: lightAccent,
-      accentForeground: lightAccentForeground,
-      destructive: lightDestructive,
-      destructiveForeground: lightDestructiveForeground,
-      border: lightBorder,
-      input: lightInput,
-      ring: lightRing,
-      chart1: lightChart1,
-      chart2: lightChart2,
-      chart3: lightChart3,
-      chart4: lightChart4,
-      chart5: lightChart5,
-      sidebar: lightSidebar,
-      sidebarForeground: lightSidebarForeground,
-      sidebarPrimary: lightSidebarPrimary,
-      sidebarPrimaryForeground: lightSidebarPrimaryForeground,
-      sidebarAccent: lightSidebarAccent,
-      sidebarAccentForeground: lightSidebarAccentForeground,
-      sidebarBorder: lightSidebarBorder,
-      sidebarRing: lightSidebarRing,
-    },
-    dark: {
-      background: darkBackground,
-      foreground: darkForeground,
-      card: darkCard,
-      cardForeground: darkCardForeground,
-      popover: darkPopover,
-      popoverForeground: darkPopoverForeground,
-      primary: darkPrimary,
-      primaryForeground: darkPrimaryForeground,
-      secondary: darkSecondary,
-      secondaryForeground: darkSecondaryForeground,
-      muted: darkMuted,
-      mutedForeground: darkMutedForeground,
-      accent: darkAccent,
-      accentForeground: darkAccentForeground,
-      destructive: darkDestructive,
-      destructiveForeground: darkDestructiveForeground,
-      border: darkBorder,
-      input: darkInput,
-      ring: darkRing,
-      chart1: darkChart1,
-      chart2: darkChart2,
-      chart3: darkChart3,
-      chart4: darkChart4,
-      chart5: darkChart5,
-      sidebar: darkSidebar,
-      sidebarForeground: darkSidebarForeground,
-      sidebarPrimary: darkSidebarPrimary,
-      sidebarPrimaryForeground: darkSidebarPrimaryForeground,
-      sidebarAccent: darkSidebarAccent,
-      sidebarAccentForeground: darkSidebarAccentForeground,
-      sidebarBorder: darkSidebarBorder,
-      sidebarRing: darkSidebarRing,
-    },
+    light: deriveShadcnFromSemantic(semantic.light, harmonyColors, "light"),
+    dark: deriveShadcnFromSemantic(semantic.dark, harmonyColors, "dark"),
   };
 }
 
 /**
- * Generate a destructive (red/danger) color that contrasts with the primary
- */
-function generateDestructiveColor(primaryHue: number): Color {
-  // Default destructive is red (~0-30 hue range)
-  // If primary is already in the red range, shift destructive slightly
-  const redHue = 15; // Orange-red
-
-  // If primary hue is close to red, use a more orange-red
-  const isNearRed = primaryHue < 40 || primaryHue > 340;
-  const destructiveHue = isNearRed ? 0 : redHue;
-
-  return new Color({
-    h: destructiveHue,
-    s: 85,
-    l: 45,
-    a: 1,
-  });
-}
-
-/**
  * Generate Shadcn CSS variables string for light mode
+ * Only emits shadcn-specific variables not already covered by semantic layer
  */
 export function generateShadcnLightCSS(colors: ShadcnColors, radius: string = "0.625rem"): string {
   const lines: string[] = [];
@@ -288,7 +165,7 @@ export function generateShadcnLightCSS(colors: ShadcnColors, radius: string = "0
   lines.push(`:root {`);
   lines.push(`  --radius: ${radius};`);
   lines.push(``);
-  lines.push(`  /* Shadcn UI Compatible Variables */`);
+  lines.push(`  /* Shadcn UI Component Variables */`);
   lines.push(`  --background: ${colors.background.toOKLCH()};`);
   lines.push(`  --foreground: ${colors.foreground.toOKLCH()};`);
   lines.push(``);

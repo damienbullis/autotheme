@@ -21,6 +21,46 @@ export function generateTailwindCSS(theme: GeneratedTheme): GeneratorOutput {
   lines.push("   ======================================== */");
   lines.push("@theme {");
 
+  // Semantic token mappings (always emitted)
+  lines.push("    /* Semantic Design Tokens */");
+  lines.push("    --color-surface: var(--surface);");
+  lines.push("    --color-surface-foreground: var(--surface-foreground);");
+  lines.push("    --color-surface-dim: var(--surface-dim);");
+  lines.push("    --color-surface-bright: var(--surface-bright);");
+  lines.push("    --color-surface-container: var(--surface-container);");
+  lines.push("    --color-surface-container-foreground: var(--surface-container-foreground);");
+  lines.push("    --color-surface-container-high: var(--surface-container-high);");
+  lines.push("    --color-surface-container-low: var(--surface-container-low);");
+  lines.push("");
+  lines.push("    --color-primary-container: var(--primary-container);");
+  lines.push("    --color-primary-container-foreground: var(--primary-container-foreground);");
+  lines.push("");
+  lines.push("    --color-secondary-container: var(--secondary-container);");
+  lines.push("    --color-secondary-container-foreground: var(--secondary-container-foreground);");
+  lines.push("");
+  lines.push("    --color-tertiary: var(--tertiary);");
+  lines.push("    --color-tertiary-foreground: var(--tertiary-foreground);");
+  lines.push("    --color-tertiary-container: var(--tertiary-container);");
+  lines.push("    --color-tertiary-container-foreground: var(--tertiary-container-foreground);");
+  lines.push("");
+  lines.push("    --color-accent-container: var(--accent-container);");
+  lines.push("    --color-accent-container-foreground: var(--accent-container-foreground);");
+  lines.push("");
+  lines.push("    --color-error: var(--error);");
+  lines.push("    --color-error-foreground: var(--error-foreground);");
+  lines.push("    --color-error-container: var(--error-container);");
+  lines.push("    --color-error-container-foreground: var(--error-container-foreground);");
+  lines.push("");
+  lines.push("    --color-outline: var(--outline);");
+  lines.push("    --color-outline-variant: var(--outline-variant);");
+  lines.push("");
+  lines.push("    --color-inverse-surface: var(--inverse-surface);");
+  lines.push("    --color-inverse-surface-foreground: var(--inverse-surface-foreground);");
+  lines.push("    --color-inverse-primary: var(--inverse-primary);");
+  lines.push("");
+  lines.push("    --color-muted-container: var(--muted-container);");
+  lines.push("");
+
   // Shadcn UI semantic color mappings (only when shadcn is enabled)
   if (config.shadcn) {
     lines.push("    /* Shadcn UI Semantic Colors */");

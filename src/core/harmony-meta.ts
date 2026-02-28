@@ -39,8 +39,8 @@ export const HARMONY_META: HarmonyMeta[] = [
     colorCount: 3,
   },
   {
-    type: "piroku",
-    name: "Piroku",
+    type: "tetradic",
+    name: "Tetradic",
     description: "Four colors based on a unique angular offset. Dynamic and intriguing.",
     colorCount: 4,
   },

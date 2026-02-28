@@ -6,7 +6,7 @@ const VALID_HARMONIES = [
   "analogous",
   "triadic",
   "split-complementary",
-  "piroku",
+  "tetradic",
   "square",
   "rectangle",
   "aurelian",

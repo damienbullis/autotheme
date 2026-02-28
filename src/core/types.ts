@@ -33,7 +33,7 @@ export type HarmonyType =
   | "analogous"
   | "triadic"
   | "split-complementary"
-  | "piroku"
+  | "tetradic"
   | "square"
   | "rectangle"
   | "aurelian"

@@ -92,6 +92,15 @@ export function generatePreview(theme: GeneratedTheme): GeneratorOutput {
       padding: 2rem;
       font-size: 1rem;
     }
+    .semantic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+    .semantic-box {
+      padding: 1.25rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+    .semantic-box .label { font-weight: 600; margin-bottom: 0.25rem; }
+    .semantic-box .var-name { opacity: 0.7; font-size: 0.65rem; }
     .gradients { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
     .gradient-box {
       height: 100px;
@@ -126,6 +135,99 @@ export function generatePreview(theme: GeneratedTheme): GeneratorOutput {
   <div class="info">
     <p><strong>Harmony:</strong> ${config.harmony}</p>
     <p><strong>Primary Color:</strong> ${config.color}</p>
+  </div>
+
+  <h2>Semantic Tokens</h2>
+  <h3>Surfaces</h3>
+  <div class="semantic-grid">
+    <div class="semantic-box" style="background: var(--surface); color: var(--surface-foreground); border: 1px solid var(--outline-variant);">
+      <div class="label">Surface</div>
+      <div class="var-name">--surface</div>
+    </div>
+    <div class="semantic-box" style="background: var(--surface-dim); color: var(--surface-foreground); border: 1px solid var(--outline-variant);">
+      <div class="label">Surface Dim</div>
+      <div class="var-name">--surface-dim</div>
+    </div>
+    <div class="semantic-box" style="background: var(--surface-container); color: var(--surface-container-foreground); border: 1px solid var(--outline-variant);">
+      <div class="label">Container</div>
+      <div class="var-name">--surface-container</div>
+    </div>
+    <div class="semantic-box" style="background: var(--surface-container-high); color: var(--surface-foreground); border: 1px solid var(--outline-variant);">
+      <div class="label">Container High</div>
+      <div class="var-name">--surface-container-high</div>
+    </div>
+    <div class="semantic-box" style="background: var(--surface-container-low); color: var(--surface-foreground); border: 1px solid var(--outline-variant);">
+      <div class="label">Container Low</div>
+      <div class="var-name">--surface-container-low</div>
+    </div>
+  </div>
+
+  <h3>Primary / Secondary / Tertiary / Accent</h3>
+  <div class="semantic-grid">
+    <div class="semantic-box" style="background: var(--primary); color: var(--primary-foreground);">
+      <div class="label">Primary</div>
+      <div class="var-name">--primary</div>
+    </div>
+    <div class="semantic-box" style="background: var(--primary-container); color: var(--primary-container-foreground);">
+      <div class="label">Primary Container</div>
+      <div class="var-name">--primary-container</div>
+    </div>
+    <div class="semantic-box" style="background: var(--secondary); color: var(--secondary-foreground);">
+      <div class="label">Secondary</div>
+      <div class="var-name">--secondary</div>
+    </div>
+    <div class="semantic-box" style="background: var(--secondary-container); color: var(--secondary-container-foreground);">
+      <div class="label">Secondary Container</div>
+      <div class="var-name">--secondary-container</div>
+    </div>
+    <div class="semantic-box" style="background: var(--tertiary); color: var(--tertiary-foreground);">
+      <div class="label">Tertiary</div>
+      <div class="var-name">--tertiary</div>
+    </div>
+    <div class="semantic-box" style="background: var(--tertiary-container); color: var(--tertiary-container-foreground);">
+      <div class="label">Tertiary Container</div>
+      <div class="var-name">--tertiary-container</div>
+    </div>
+    <div class="semantic-box" style="background: var(--accent); color: var(--accent-foreground);">
+      <div class="label">Accent</div>
+      <div class="var-name">--accent</div>
+    </div>
+    <div class="semantic-box" style="background: var(--accent-container); color: var(--accent-container-foreground);">
+      <div class="label">Accent Container</div>
+      <div class="var-name">--accent-container</div>
+    </div>
+  </div>
+
+  <h3>Muted / Error / Outline</h3>
+  <div class="semantic-grid">
+    <div class="semantic-box" style="background: var(--muted); color: var(--muted-foreground);">
+      <div class="label">Muted</div>
+      <div class="var-name">--muted</div>
+    </div>
+    <div class="semantic-box" style="background: var(--muted-container); color: var(--muted-foreground);">
+      <div class="label">Muted Container</div>
+      <div class="var-name">--muted-container</div>
+    </div>
+    <div class="semantic-box" style="background: var(--error); color: var(--error-foreground);">
+      <div class="label">Error</div>
+      <div class="var-name">--error</div>
+    </div>
+    <div class="semantic-box" style="background: var(--error-container); color: var(--error-container-foreground);">
+      <div class="label">Error Container</div>
+      <div class="var-name">--error-container</div>
+    </div>
+    <div class="semantic-box" style="background: var(--inverse-surface); color: var(--inverse-surface-foreground);">
+      <div class="label">Inverse Surface</div>
+      <div class="var-name">--inverse-surface</div>
+    </div>
+    <div class="semantic-box" style="border: 2px solid var(--outline); color: var(--surface-foreground); background: var(--surface);">
+      <div class="label">Outline</div>
+      <div class="var-name">--outline</div>
+    </div>
+    <div class="semantic-box" style="border: 2px solid var(--outline-variant); color: var(--surface-foreground); background: var(--surface);">
+      <div class="label">Outline Variant</div>
+      <div class="var-name">--outline-variant</div>
+    </div>
   </div>
 
   <h2>Color Palette</h2>

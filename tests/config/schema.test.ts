@@ -17,7 +17,7 @@ describe("CONFIG_SCHEMA", () => {
     expect(harmonyProp.enum).toContain("analogous");
     expect(harmonyProp.enum).toContain("triadic");
     expect(harmonyProp.enum).toContain("split-complementary");
-    expect(harmonyProp.enum).toContain("piroku");
+    expect(harmonyProp.enum).toContain("tetradic");
     expect(harmonyProp.enum).toContain("square");
     expect(harmonyProp.enum).toContain("rectangle");
     expect(harmonyProp.enum).toContain("aurelian");

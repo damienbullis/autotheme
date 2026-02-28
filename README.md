@@ -62,7 +62,7 @@ A harmony is a set of colors related by their position on the color wheel. Each 
 | **Complementary**       | 2      | Opposite colors. High contrast, vibrant.             |
 | **Triadic**             | 3      | Equally spaced (120°). Balanced, vibrant.            |
 | **Split-Complementary** | 3      | Base + two adjacent to its complement. Less tension. |
-| **Piroku**              | 4      | Pi-based angular offset. Dynamic, intriguing.        |
+| **Tetradic**            | 4      | Pi-based angular offset. Dynamic, intriguing.        |
 | **Square**              | 4      | Equally spaced (90°). Bold, dynamic.                 |
 | **Rectangle**           | 4      | Two complementary pairs. Versatile, balanced.        |
 | **Aurelian**            | 3      | Golden angle (137.5°). Naturally harmonious.         |
@@ -85,9 +85,9 @@ A harmony is a set of colors related by their position on the color wheel. Each 
 
 <img src="docs/assets/split-complementary.png" width="600" />
 
-### Piroku
+### Tetradic
 
-<img src="docs/assets/piroku.png" width="600" />
+<img src="docs/assets/tetradic.png" width="600" />
 
 ### Square
 

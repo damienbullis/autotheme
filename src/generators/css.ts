@@ -4,6 +4,7 @@ import { generateNoiseSVG } from "./noise";
 import { generateDarkModeCSS } from "./dark-mode";
 import { generateUtilityClasses } from "./utilities";
 import { generateShadcnCSS } from "./shadcn";
+import { generateSemanticCSS } from "./semantic";
 
 /**
  * Semantic names for harmony colors by index
@@ -59,6 +60,11 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     lines.push("");
     lines.push("");
   }
+
+  // Semantic design tokens (always emitted)
+  lines.push(generateSemanticCSS(theme));
+  lines.push("");
+  lines.push("");
 
   // AutoTheme extended variables with Tailwind namespaces
   lines.push("/* ========================================");

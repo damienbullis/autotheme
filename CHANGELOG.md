@@ -21,7 +21,7 @@ Complete rewrite from Go to TypeScript/Bun.
 - `radius` config option for Shadcn border radius
 - `contrastTarget` config option (default: 7 for WCAG AAA)
 - Module API — import and use as a Node/Bun library
-- `piroku` harmony (replaces `tetradic`)
+- `tetradic` harmony with pi-based angular offset formula
 - HTML preview generator (`--preview` flag)
 - Dark mode script generator (`--dark-mode-script` flag)
 - `init` command for interactive config setup
@@ -40,5 +40,5 @@ Complete rewrite from Go to TypeScript/Bun.
 ### Removed
 
 - `lunar-eclipse` harmony
-- `tetradic` harmony (replaced by `piroku`)
+- `tetradic` harmony now uses pi-based offsets instead of equal 90° spacing (differs from Go version)
 - YAML config support

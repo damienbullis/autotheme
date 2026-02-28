@@ -23,7 +23,7 @@ export const HARMONY_DEFINITIONS: Record<HarmonyType, HarmonyDefinition> = {
     count: 3,
     offset: (i) => (i === 0 ? 0 : 180 + (i === 1 ? -30 : 30)),
   },
-  piroku: {
+  tetradic: {
     count: 4,
     offset: (i) => ((i * Math.PI) / 6) * 90,
     // offset: (i) => ((i < 2) ? i : -1*i) * 87.5,
