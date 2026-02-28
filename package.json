@@ -44,9 +44,10 @@
   "scripts": {
     "dev": "bun run --watch src/cli/main.ts",
     "dev:web": "bun run src/web/server.ts",
-    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
-    "build:cli": "bun build --compile --minify ./src/cli/main.ts --outfile autotheme",
-    "build:binary": "bun build --compile --minify ./src/cli/main.ts --outfile autotheme",
+    "build": "bun run build:lib && bun run build:cli && bun run build:schema",
+    "build:lib": "bun build ./src/index.ts --outdir ./dist --target node",
+    "build:cli": "bun build ./src/cli/main.ts --outdir ./dist/cli --target node",
+    "build:binary": "bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-darwin-arm64 --target=bun-darwin-arm64 && bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-darwin-x64 --target=bun-darwin-x64 && bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-linux-x64 --target=bun-linux-x64 && bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-linux-arm64 --target=bun-linux-arm64",
     "build:schema": "bun run scripts/generate-schema.ts",
     "build:web": "bun build ./src/web/main.ts --outdir ./dist/web --minify",
     "test": "vitest",
@@ -58,7 +59,7 @@
     "format:check": "oxfmt . --check",
     "typecheck": "tsc --noEmit",
     "check": "bun run typecheck && bun run lint && bun run format:check && bun run test:run",
-    "prepublishOnly": "bun run check && bun run build && bun run build:schema",
+    "prepublishOnly": "bun run check && bun run build",
     "release": "bun run scripts/release.ts",
     "screenshot": "bun run scripts/screenshot.ts"
   },

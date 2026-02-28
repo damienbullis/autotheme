@@ -1,3 +1,5 @@
+import { writeFile, mkdir } from "fs/promises";
+import { dirname } from "path";
 import type { GeneratedTheme, GeneratorOutput } from "./types";
 import type { AutoThemeConfig } from "../config/types";
 import { generateCSS } from "./css";
@@ -8,7 +10,10 @@ import { generateDarkModeScript } from "./script";
 /**
  * Write all generated outputs to files
  */
-export async function writeOutputs(theme: GeneratedTheme, config: AutoThemeConfig): Promise<void> {
+export async function writeOutputs(
+  theme: GeneratedTheme,
+  config: AutoThemeConfig,
+): Promise<GeneratorOutput[]> {
   const outputs: GeneratorOutput[] = [];
 
   // Always generate main CSS
@@ -28,7 +33,14 @@ export async function writeOutputs(theme: GeneratedTheme, config: AutoThemeConfi
   }
 
   // Write all files
-  await Promise.all(outputs.map((output) => Bun.write(output.filename, output.content)));
+  await Promise.all(
+    outputs.map(async (output) => {
+      await mkdir(dirname(output.filename), { recursive: true });
+      await writeFile(output.filename, output.content);
+    }),
+  );
+
+  return outputs;
 }
 
 export * from "./types";

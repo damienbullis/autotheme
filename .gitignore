@@ -6,6 +6,7 @@ dist/
 coverage/
 
 # Compiled binaries
+bin/
 autotheme
 autotheme-*
 

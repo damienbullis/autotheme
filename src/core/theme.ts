@@ -1,6 +1,13 @@
-// Main theme generation API
-// Implementation in later phases
+import type { AutoThemeConfig } from "../config/types";
+import type { GeneratedTheme } from "../generators/types";
+import { Color } from "./color";
+import { generateFullPalette } from "./palette";
 
-export function generateTheme(): void {
-  // Stub - will be implemented in later phases
+/**
+ * Generate a complete theme from a resolved configuration
+ */
+export function generateTheme(config: AutoThemeConfig): GeneratedTheme {
+  const color = new Color(config.color);
+  const palette = generateFullPalette(color, config.harmony);
+  return { palette, config };
 }

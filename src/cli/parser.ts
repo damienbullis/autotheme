@@ -17,6 +17,7 @@ export interface CLIArgs {
   noise?: boolean | undefined;
   shadcn?: boolean | undefined;
   utilities?: boolean | undefined;
+  stdout?: boolean | undefined;
   silent?: boolean | undefined;
   help?: boolean | undefined;
   version?: boolean | undefined;
@@ -40,6 +41,7 @@ export function parseArgs(args: string[]): CLIArgs {
     .option("--noise", "Generate noise texture (use --no-noise to disable)")
     .option("--shadcn", "Generate Shadcn UI variables (use --no-shadcn to disable)")
     .option("--utilities", "Generate utility classes (use --no-utilities to disable)")
+    .option("--stdout", "Output CSS to stdout instead of writing files")
     .option("-s, --silent", "Suppress output")
     .help()
     .version(version as string);
@@ -61,6 +63,7 @@ export function parseArgs(args: string[]): CLIArgs {
     noise: parsed.options.noise as boolean | undefined,
     shadcn: parsed.options.shadcn as boolean | undefined,
     utilities: parsed.options.utilities as boolean | undefined,
+    stdout: parsed.options.stdout as boolean | undefined,
     silent: parsed.options.silent as boolean | undefined,
     help: parsed.options.help as boolean | undefined,
     version: parsed.options.version as boolean | undefined,

@@ -162,6 +162,18 @@ describe("parseArgs", () => {
     });
   });
 
+  describe("stdout flag", () => {
+    it("parses --stdout flag", () => {
+      const args = parseArgs(["--stdout"]);
+      expect(args.stdout).toBe(true);
+    });
+
+    it("returns undefined when not provided", () => {
+      const args = parseArgs([]);
+      expect(args.stdout).toBeUndefined();
+    });
+  });
+
   describe("special flags", () => {
     it("parses --help flag", () => {
       const args = parseArgs(["--help"]);
