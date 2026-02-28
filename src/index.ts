@@ -5,11 +5,16 @@ export type {
   OKLCHColor,
   ColorInput,
   HarmonyType,
+  HarmonyDefinition,
   HarmonyResult,
   PaletteVariations,
   FullPalette,
   BackgroundColors,
+  SwingStrategy,
+  HarmonyOptions,
 } from "./core/types";
+export type { CustomHarmonyDefinition } from "./config/types";
+export type { Preset } from "./config/presets";
 export type { WCAGLevel, WCAGResult } from "./core/contrast";
 export type { HarmonyMeta } from "./core/harmony-meta";
 
@@ -35,6 +40,7 @@ export * from "./config/loader";
 export * from "./config/types";
 export * from "./config/validator";
 export * from "./config/merge";
+export * from "./config/presets";
 
 // Main API
 export { generateTheme } from "./core/theme";

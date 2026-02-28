@@ -37,6 +37,7 @@ WCAG luminance and contrast ratio calculations. Given two colors, computes their
 ### `harmonies.ts`
 
 Defines the 10 harmony types. Each harmony is a `{ count, offset }` pair:
+
 - `count` — how many colors the harmony produces
 - `offset(index)` — the hue rotation in degrees for each color
 
@@ -60,6 +61,7 @@ Metadata for each harmony — display name, description, and color count. Used b
 ### `variations.ts`
 
 Generates tints (lighter), shades (darker), and tones (desaturated) from a base color:
+
 - **Tints**: 5 steps (50, 100, 200, 300, 400) — increase lightness
 - **Shades**: 5 steps (600, 700, 800, 900, 950) — decrease lightness
 - **Tones**: 4 steps (tone-1 through tone-4) — reduce saturation
@@ -191,8 +193,8 @@ bun run test:coverage # With coverage
 
 ## Build targets
 
-| Command              | Output                              | Purpose              |
-| -------------------- | ----------------------------------- | -------------------- |
-| `bun run build`      | `dist/index.js`, `dist/index.d.ts`  | NPM module           |
-| `bun run build:cli`  | `autotheme` binary                  | Standalone CLI       |
-| `bun run build:web`  | `dist/web/`                         | Documentation site   |
+| Command             | Output                             | Purpose            |
+| ------------------- | ---------------------------------- | ------------------ |
+| `bun run build`     | `dist/index.js`, `dist/index.d.ts` | NPM module         |
+| `bun run build:cli` | `autotheme` binary                 | Standalone CLI     |
+| `bun run build:web` | `dist/web/`                        | Documentation site |

@@ -3,9 +3,11 @@ import { Color } from "../../src/core/color";
 import {
   generateHarmony,
   generateCustomHarmony,
+  createHarmonyFromOffsets,
   normalizeHue,
   getHarmonyTypes,
   HARMONY_DEFINITIONS,
+  applySwing,
 } from "../../src/core/harmonies";
 import type { HarmonyType } from "../../src/core/types";
 
@@ -75,8 +77,8 @@ describe("Harmony Generation", () => {
     });
 
     it("generates tetradic harmony (4 colors)", () => {
-      const result = generateHarmony(primary, "tetradic");
-      expect(result.type).toBe("tetradic");
+      const result = generateHarmony(primary, "drift");
+      expect(result.type).toBe("drift");
       expect(result.colors).toHaveLength(4);
     });
 
@@ -157,7 +159,7 @@ describe("Harmony Generation", () => {
         "analogous",
         "triadic",
         "split-complementary",
-        "tetradic",
+        "drift",
         "square",
         "rectangle",
         "aurelian",
@@ -191,11 +193,11 @@ describe("Harmony Generation", () => {
       expect(def.offset(2)).toBe(240);
     });
 
-    it("square and tetradic have 4 colors each", () => {
+    it("square and drift have 4 colors each", () => {
       const square = HARMONY_DEFINITIONS.square;
-      const tetradic = HARMONY_DEFINITIONS.tetradic;
+      const drift = HARMONY_DEFINITIONS.drift;
       expect(square.count).toBe(4);
-      expect(tetradic.count).toBe(4);
+      expect(drift.count).toBe(4);
     });
 
     it("all definitions have valid count and offset function", () => {
@@ -207,6 +209,173 @@ describe("Harmony Generation", () => {
           expect(typeof def.offset(i)).toBe("number");
         }
       }
+    });
+  });
+
+  describe("applySwing", () => {
+    it("returns offset unchanged when swing is 1.0", () => {
+      expect(applySwing(90, 1, 1.0, "linear")).toBe(90);
+      expect(applySwing(120, 2, 1.0, "exponential")).toBe(120);
+      expect(applySwing(45, 3, 1.0, "alternating")).toBe(45);
+    });
+
+    it("linear strategy multiplies offset by swing", () => {
+      expect(applySwing(90, 1, 1.5, "linear")).toBe(135);
+      expect(applySwing(90, 1, 0.5, "linear")).toBe(45);
+    });
+
+    it("exponential strategy applies swing^index", () => {
+      expect(applySwing(90, 0, 2, "exponential")).toBe(90); // 90 * 2^0 = 90
+      expect(applySwing(90, 1, 2, "exponential")).toBe(180); // 90 * 2^1 = 180
+      expect(applySwing(90, 2, 2, "exponential")).toBe(360); // 90 * 2^2 = 360
+    });
+
+    it("alternating strategy divides even indices and multiplies odd", () => {
+      expect(applySwing(90, 0, 2, "alternating")).toBe(45); // even: 90 / 2
+      expect(applySwing(90, 1, 2, "alternating")).toBe(180); // odd: 90 * 2
+      expect(applySwing(90, 2, 2, "alternating")).toBe(45); // even: 90 / 2
+      expect(applySwing(90, 3, 2, "alternating")).toBe(180); // odd: 90 * 2
+    });
+  });
+
+  describe("swing with generateHarmony", () => {
+    it("swing 1.0 produces identical results to no swing", () => {
+      const noSwing = generateHarmony(primary, "triadic");
+      const withSwing = generateHarmony(primary, "triadic", { swing: 1.0 });
+
+      for (let i = 0; i < noSwing.colors.length; i++) {
+        expect(withSwing.colors[i]!.hsl.h).toBeCloseTo(noSwing.colors[i]!.hsl.h, 5);
+      }
+    });
+
+    it("swing < 1 clusters colors closer together", () => {
+      const normal = generateHarmony(primary, "triadic");
+      const clustered = generateHarmony(primary, "triadic", { swing: 0.5 });
+
+      // Second color offset is halved
+      const normalDiff = Math.abs(normal.colors[1]!.hsl.h - normal.colors[0]!.hsl.h);
+      const clusteredDiff = Math.abs(clustered.colors[1]!.hsl.h - clustered.colors[0]!.hsl.h);
+      expect(clusteredDiff).toBeLessThan(normalDiff);
+    });
+
+    it("swing > 1 spreads colors further apart", () => {
+      const normal = generateHarmony(primary, "complementary");
+      const spread = generateHarmony(primary, "complementary", { swing: 1.5 });
+
+      // For complementary: offset(1) = 180, with swing 1.5 = 270
+      const normalHue1 = normal.colors[1]!.hsl.h;
+      const spreadHue1 = spread.colors[1]!.hsl.h;
+      // They should differ
+      expect(spreadHue1).not.toBeCloseTo(normalHue1, 0);
+    });
+
+    it("primary color stays the same regardless of swing", () => {
+      const result = generateHarmony(primary, "triadic", { swing: 2.0 });
+      // Index 0 offset is 0, so swing doesn't change it
+      expect(result.colors[0]!.hsl.h).toBeCloseTo(primary.hsl.h, 0);
+    });
+
+    it("exponential strategy progressively adjusts later colors", () => {
+      const result = generateHarmony(primary, "triadic", {
+        swing: 0.5,
+        swingStrategy: "exponential",
+      });
+      // Index 0: offset * 0.5^0 = offset (unchanged)
+      // Index 1: offset * 0.5^1 = offset * 0.5
+      // Index 2: offset * 0.5^2 = offset * 0.25
+      expect(result.colors[0]!.hsl.h).toBeCloseTo(primary.hsl.h, 0);
+      expect(result.colors).toHaveLength(3);
+    });
+
+    it("alternating strategy applies different swing to even/odd", () => {
+      const result = generateHarmony(primary, "square", {
+        swing: 2.0,
+        swingStrategy: "alternating",
+      });
+      expect(result.colors).toHaveLength(4);
+    });
+  });
+
+  describe("swing with generateCustomHarmony", () => {
+    it("applies swing to custom harmony", () => {
+      const noSwing = generateCustomHarmony(primary, 3, (i) => i * 60);
+      const withSwing = generateCustomHarmony(primary, 3, (i) => i * 60, { swing: 2.0 });
+
+      // Index 1: offset 60 * 2 = 120
+      const noSwingDiff = normalizeHue(noSwing.colors[1]!.hsl.h - noSwing.colors[0]!.hsl.h);
+      const swingDiff = normalizeHue(withSwing.colors[1]!.hsl.h - withSwing.colors[0]!.hsl.h);
+      expect(swingDiff).toBeCloseTo(noSwingDiff * 2, 0);
+    });
+  });
+
+  describe("createHarmonyFromOffsets", () => {
+    it("creates a HarmonyDefinition from offset array", () => {
+      const def = createHarmonyFromOffsets([0, 90, 180, 270]);
+      expect(def.count).toBe(4);
+      expect(def.offset(0)).toBe(0);
+      expect(def.offset(1)).toBe(90);
+      expect(def.offset(2)).toBe(180);
+      expect(def.offset(3)).toBe(270);
+    });
+
+    it("handles 2-element offset array", () => {
+      const def = createHarmonyFromOffsets([0, 180]);
+      expect(def.count).toBe(2);
+      expect(def.offset(0)).toBe(0);
+      expect(def.offset(1)).toBe(180);
+    });
+
+    it("handles out-of-bounds index gracefully", () => {
+      const def = createHarmonyFromOffsets([0, 60]);
+      expect(def.offset(5)).toBe(0); // defaults to 0
+    });
+  });
+
+  describe("generateHarmony with custom definitions", () => {
+    it("uses custom definition when type matches", () => {
+      const customDefs = {
+        "warm-quad": createHarmonyFromOffsets([0, 30, 60, 180]),
+      };
+      const result = generateHarmony(primary, "warm-quad", { customDefinitions: customDefs });
+      expect(result.type).toBe("warm-quad");
+      expect(result.colors).toHaveLength(4);
+    });
+
+    it("built-in takes precedence over custom with same name", () => {
+      const customDefs = {
+        triadic: createHarmonyFromOffsets([0, 45, 90]),
+      };
+      const result = generateHarmony(primary, "triadic", { customDefinitions: customDefs });
+      // Built-in triadic has 120° offsets, not 45°
+      const hues = result.colors.map((c) => c.hsl.h);
+      expect(normalizeHue(hues[1]! - hues[0]!)).toBeCloseTo(120, 0);
+    });
+
+    it("throws for unknown harmony when no custom match", () => {
+      expect(() => generateHarmony(primary, "nonexistent")).toThrow('Unknown harmony type: "nonexistent"');
+    });
+
+    it("throws for unknown harmony even with custom definitions", () => {
+      const customDefs = {
+        "my-harmony": createHarmonyFromOffsets([0, 72, 144]),
+      };
+      expect(() =>
+        generateHarmony(primary, "nonexistent", { customDefinitions: customDefs }),
+      ).toThrow('Unknown harmony type: "nonexistent"');
+    });
+
+    it("applies swing to custom harmony definition", () => {
+      const customDefs = {
+        "wide-tri": createHarmonyFromOffsets([0, 60, 120]),
+      };
+      const noSwing = generateHarmony(primary, "wide-tri", { customDefinitions: customDefs });
+      const withSwing = generateHarmony(primary, "wide-tri", {
+        customDefinitions: customDefs,
+        swing: 2.0,
+      });
+      const noSwingDiff = normalizeHue(noSwing.colors[1]!.hsl.h - noSwing.colors[0]!.hsl.h);
+      const swingDiff = normalizeHue(withSwing.colors[1]!.hsl.h - withSwing.colors[0]!.hsl.h);
+      expect(swingDiff).toBeCloseTo(noSwingDiff * 2, 0);
     });
   });
 

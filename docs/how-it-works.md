@@ -53,18 +53,18 @@ Three colors. Geometrically balanced. Guaranteed to work together.
 
 Each harmony uses different geometry:
 
-| Harmony                 | Rotation                         |
-| ----------------------- | -------------------------------- |
-| Analogous               | -30°, 0°, +30°                   |
-| Complementary           | 0°, 180°                         |
-| Triadic                 | 0°, 120°, 240°                   |
-| Split-Complementary     | 0°, 150°, 210°                   |
-| Square                  | 0°, 90°, 180°, 270°              |
-| Rectangle               | 0°, 60°, 180°, 240°              |
-| Aurelian                | 0°, 137.5°, 275°                 |
-| Tetradic                | 0°, π×57.3°, 2π×57.3°, 3π×57.3° |
-| Bi-Polar                | 0°, 90°                          |
-| Retrograde              | 0°, -120°, -240°                 |
+| Harmony             | Rotation                        |
+| ------------------- | ------------------------------- |
+| Analogous           | -30°, 0°, +30°                  |
+| Complementary       | 0°, 180°                        |
+| Triadic             | 0°, 120°, 240°                  |
+| Split-Complementary | 0°, 150°, 210°                  |
+| Square              | 0°, 90°, 180°, 270°             |
+| Rectangle           | 0°, 60°, 180°, 240°             |
+| Aurelian            | 0°, 137.5°, 275°                |
+| Tetradic            | 0°, π×57.3°, 2π×57.3°, 3π×57.3° |
+| Bi-Polar            | 0°, 90°                         |
+| Retrograde          | 0°, -120°, -240°                |
 
 ---
 
@@ -164,11 +164,11 @@ Primary HSL:   hsl(249°, 100%, 61%)
 Primary OKLCH: oklch(0.49 0.31 270)
 ```
 
-| OKLCH Component    | Value | Meaning                                      |
-| ------------------ | ----- | -------------------------------------------- |
-| **L** (Lightness)  | 0.49  | Perceptual lightness (0 = black, 1 = white)  |
-| **C** (Chroma)     | 0.31  | Color intensity (0 = gray)                   |
-| **H** (Hue)        | 270   | Hue angle on OKLCH wheel                     |
+| OKLCH Component   | Value | Meaning                                     |
+| ----------------- | ----- | ------------------------------------------- |
+| **L** (Lightness) | 0.49  | Perceptual lightness (0 = black, 1 = white) |
+| **C** (Chroma)    | 0.31  | Color intensity (0 = gray)                  |
+| **H** (Hue)       | 270   | Hue angle on OKLCH wheel                    |
 
 Why OKLCH? In HSL, 50% lightness for yellow looks bright while 50% lightness for blue looks dark. OKLCH corrects this — `L=0.5` looks equally bright for any hue.
 
@@ -193,13 +193,13 @@ Everything comes together as CSS custom properties:
   --color-primary-200: oklch(0.83 0.12 270);
   --color-primary-300: oklch(0.75 0.18 270);
   --color-primary-400: oklch(0.67 0.24 270);
-  --color-primary-500: oklch(0.49 0.31 270);   /* Base */
+  --color-primary-500: oklch(0.49 0.31 270); /* Base */
   --color-primary-600: oklch(0.42 0.28 270);
   --color-primary-700: oklch(0.35 0.24 270);
   --color-primary-800: oklch(0.28 0.19 270);
-  --color-primary-900: oklch(0.20 0.13 270);
+  --color-primary-900: oklch(0.2 0.13 270);
   --color-primary-950: oklch(0.14 0.08 270);
-  --color-primary-foreground: oklch(1 0 0);     /* White text */
+  --color-primary-foreground: oklch(1 0 0); /* White text */
   --color-primary-contrast: oklch(1 0 0);
   --color-primary-tone-1: oklch(0.49 0.25 270);
   --color-primary-tone-2: oklch(0.49 0.19 270);
@@ -247,7 +247,7 @@ Dark mode generates a second set under `.dark`:
 
 ```css
 .dark {
-  --color-primary-50: oklch(0.17 0.08 270);  /* Inverted: dark tints */
+  --color-primary-50: oklch(0.17 0.08 270); /* Inverted: dark tints */
   --color-primary-950: oklch(0.93 0.03 270); /* Inverted: light shades */
   /* ... */
 }
@@ -268,9 +268,7 @@ Dark mode generates a second set under `.dark`:
   </header>
 
   <main style="background: var(--color-primary-50);">
-    <p style="color: var(--color-primary-900);">
-      Tints and shades from color theory.
-    </p>
+    <p style="color: var(--color-primary-900);">Tints and shades from color theory.</p>
   </main>
 </body>
 ```
@@ -278,9 +276,7 @@ Dark mode generates a second set under `.dark`:
 With Tailwind:
 
 ```html
-<div class="bg-primary-500 text-primary-foreground">
-  Same thing, utility classes.
-</div>
+<div class="bg-primary-500 text-primary-foreground">Same thing, utility classes.</div>
 ```
 
 <!-- ASSET: anatomy-step7-themed-ui.png

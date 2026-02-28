@@ -39,9 +39,9 @@ export const HARMONY_META: HarmonyMeta[] = [
     colorCount: 3,
   },
   {
-    type: "tetradic",
-    name: "Tetradic",
-    description: "Four colors based on a unique angular offset. Dynamic and intriguing.",
+    type: "drift",
+    name: "Drift",
+    description: "Four colors in a progressively widening spiral. Dynamic and intriguing.",
     colorCount: 4,
   },
   {

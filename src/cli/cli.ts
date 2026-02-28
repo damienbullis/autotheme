@@ -3,6 +3,7 @@ import { resolveConfig } from "../config/merge";
 import { generateSchemaFile } from "../config/schema";
 import { generateTheme } from "../core/theme";
 import { generateCSS, writeOutputs } from "../generators";
+import { PRESETS } from "../config/presets";
 import { runInit } from "./init";
 import { log } from "./logger";
 
@@ -17,6 +18,15 @@ export async function run(args: string[]): Promise<void> {
   // Handle schema command
   if (args[0] === "schema") {
     process.stdout.write(generateSchemaFile() + "\n");
+    return;
+  }
+
+  // Handle presets command
+  if (args[0] === "presets") {
+    log.info("Available presets:\n");
+    for (const [key, preset] of Object.entries(PRESETS)) {
+      log.info(`  ${key.padEnd(12)} ${preset.config.color}  ${preset.config.harmony?.padEnd(22) ?? ""}  ${preset.description}`);
+    }
     return;
   }
 

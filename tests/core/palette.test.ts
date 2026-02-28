@@ -72,7 +72,7 @@ describe("Full Palette Generation", () => {
         "analogous",
         "triadic",
         "split-complementary",
-        "tetradic",
+        "drift",
         "square",
         "rectangle",
         "aurelian",

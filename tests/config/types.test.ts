@@ -36,6 +36,14 @@ describe("DEFAULT_CONFIG", () => {
     expect(DEFAULT_CONFIG.fontSize).toBe(1);
   });
 
+  it("has 1 as default swing", () => {
+    expect(DEFAULT_CONFIG.swing).toBe(1);
+  });
+
+  it("has 'linear' as default swingStrategy", () => {
+    expect(DEFAULT_CONFIG.swingStrategy).toBe("linear");
+  });
+
   it("has all feature toggles default to true", () => {
     expect(DEFAULT_CONFIG.gradients).toBe(true);
     expect(DEFAULT_CONFIG.spacing).toBe(true);

@@ -1,5 +1,5 @@
-import { describe, it, expect, afterEach } from "vitest";
-import { loadConfig } from "../../src/config/loader";
+import { describe, it, expect, afterEach, vi } from "vitest";
+import { loadConfig, isUrl } from "../../src/config/loader";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
 
 describe("loadConfig", () => {
@@ -12,12 +12,6 @@ describe("loadConfig", () => {
     }
     if (existsSync("autotheme.json")) {
       unlinkSync("autotheme.json");
-    }
-    if (existsSync(".autothemerc.json")) {
-      unlinkSync(".autothemerc.json");
-    }
-    if (existsSync(".autothemerc")) {
-      unlinkSync(".autothemerc");
     }
   });
 
@@ -53,26 +47,10 @@ describe("loadConfig", () => {
       expect(config.harmony).toBe("triadic");
     });
 
-    it("discovers .autothemerc.json", async () => {
-      writeFileSync(".autothemerc.json", JSON.stringify({ preview: true }));
-
+    it("does not discover .autothemerc.json or .autothemerc", async () => {
+      // Only autotheme.json is supported
       const config = await loadConfig();
-      expect(config.preview).toBe(true);
-    });
-
-    it("discovers .autothemerc", async () => {
-      writeFileSync(".autothemerc", JSON.stringify({ tailwind: true }));
-
-      const config = await loadConfig();
-      expect(config.tailwind).toBe(true);
-    });
-
-    it("prefers autotheme.json over other files", async () => {
-      writeFileSync("autotheme.json", JSON.stringify({ color: "#111111" }));
-      writeFileSync(".autothemerc.json", JSON.stringify({ color: "#222222" }));
-
-      const config = await loadConfig();
-      expect(config.color).toBe("#111111");
+      expect(config).toEqual({});
     });
   });
 
@@ -88,5 +66,90 @@ describe("loadConfig", () => {
 
       await expect(loadConfig(testConfigPath)).rejects.toThrow("Invalid color format");
     });
+  });
+});
+
+describe("isUrl", () => {
+  it("returns true for http URLs", () => {
+    expect(isUrl("http://example.com/config.json")).toBe(true);
+  });
+
+  it("returns true for https URLs", () => {
+    expect(isUrl("https://example.com/config.json")).toBe(true);
+  });
+
+  it("returns false for file paths", () => {
+    expect(isUrl("./config.json")).toBe(false);
+    expect(isUrl("/absolute/path.json")).toBe(false);
+    expect(isUrl("autotheme.json")).toBe(false);
+  });
+});
+
+describe("loadConfig with URL", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("fetches and validates config from URL", async () => {
+    const mockConfig = { color: "#FF0000", harmony: "triadic" };
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(mockConfig), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+
+    const config = await loadConfig("https://example.com/config.json");
+    expect(config.color).toBe("#FF0000");
+    expect(config.harmony).toBe("triadic");
+  });
+
+  it("throws on HTTP error", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("Not Found", { status: 404 }),
+    );
+
+    await expect(loadConfig("https://example.com/config.json")).rejects.toThrow("HTTP 404");
+  });
+
+  it("throws on invalid JSON from URL", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("not json", {
+        status: 200,
+        headers: { "content-type": "text/plain" },
+      }),
+    );
+
+    await expect(loadConfig("https://example.com/config.json")).rejects.toThrow("Invalid JSON");
+  });
+
+  it("throws on network error", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new TypeError("fetch failed"));
+
+    await expect(loadConfig("https://example.com/config.json")).rejects.toThrow(
+      "Failed to fetch config from URL",
+    );
+  });
+
+  it("throws on timeout", async () => {
+    const timeoutError = new DOMException("The operation was aborted", "TimeoutError");
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(timeoutError);
+
+    await expect(loadConfig("https://example.com/config.json")).rejects.toThrow(
+      "timed out after 10 seconds",
+    );
+  });
+
+  it("accepts text/plain content type (GitHub raw)", async () => {
+    const mockConfig = { color: "#00FF00" };
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(mockConfig), {
+        status: 200,
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      }),
+    );
+
+    const config = await loadConfig("https://raw.githubusercontent.com/user/repo/config.json");
+    expect(config.color).toBe("#00FF00");
   });
 });

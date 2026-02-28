@@ -50,7 +50,7 @@ describe("validateConfig", () => {
         "analogous",
         "triadic",
         "split-complementary",
-        "tetradic",
+        "drift",
         "square",
         "rectangle",
         "aurelian",
@@ -212,6 +212,114 @@ describe("validateConfig", () => {
       expect(() => validateConfig({ noise: "yes" })).toThrow("noise must be a boolean");
       expect(() => validateConfig({ shadcn: 0 })).toThrow("shadcn must be a boolean");
       expect(() => validateConfig({ utilities: "no" })).toThrow("utilities must be a boolean");
+    });
+  });
+
+  describe("swing validation", () => {
+    it("accepts valid positive number", () => {
+      expect(validateConfig({ swing: 1.5 }).swing).toBe(1.5);
+      expect(validateConfig({ swing: 0.5 }).swing).toBe(0.5);
+      expect(validateConfig({ swing: 1 }).swing).toBe(1);
+    });
+
+    it("throws for zero swing", () => {
+      expect(() => validateConfig({ swing: 0 })).toThrow("swing must be a positive number");
+    });
+
+    it("throws for negative swing", () => {
+      expect(() => validateConfig({ swing: -1 })).toThrow("swing must be a positive number");
+    });
+
+    it("throws for non-number swing", () => {
+      expect(() => validateConfig({ swing: "1.5" })).toThrow("swing must be a positive number");
+    });
+  });
+
+  describe("swingStrategy validation", () => {
+    it("accepts valid swing strategies", () => {
+      expect(validateConfig({ swingStrategy: "linear" }).swingStrategy).toBe("linear");
+      expect(validateConfig({ swingStrategy: "exponential" }).swingStrategy).toBe("exponential");
+      expect(validateConfig({ swingStrategy: "alternating" }).swingStrategy).toBe("alternating");
+    });
+
+    it("throws for invalid swing strategy", () => {
+      expect(() => validateConfig({ swingStrategy: "invalid" })).toThrow("Invalid swingStrategy");
+    });
+
+    it("throws for non-string swing strategy", () => {
+      expect(() => validateConfig({ swingStrategy: 123 })).toThrow("Invalid swingStrategy");
+    });
+  });
+
+  describe("harmonies validation", () => {
+    it("accepts valid custom harmonies", () => {
+      const result = validateConfig({
+        harmonies: {
+          "warm-quad": { offsets: [0, 30, 60, 180] },
+          "golden-five": { offsets: [0, 72, 144, 216, 288] },
+        },
+      });
+      expect(result.harmonies).toBeDefined();
+      expect(result.harmonies!["warm-quad"]!.offsets).toEqual([0, 30, 60, 180]);
+      expect(result.harmonies!["golden-five"]!.offsets).toEqual([0, 72, 144, 216, 288]);
+    });
+
+    it("throws if harmonies is not an object", () => {
+      expect(() => validateConfig({ harmonies: "invalid" })).toThrow("harmonies must be an object");
+    });
+
+    it("throws if harmonies entry is not an object", () => {
+      expect(() => validateConfig({ harmonies: { bad: "string" } })).toThrow(
+        'harmonies.bad must be an object with an "offsets" array',
+      );
+    });
+
+    it("throws if offsets is not an array", () => {
+      expect(() => validateConfig({ harmonies: { bad: { offsets: 123 } } })).toThrow(
+        "harmonies.bad.offsets must be an array of numbers",
+      );
+    });
+
+    it("throws if offsets has fewer than 2 values", () => {
+      expect(() => validateConfig({ harmonies: { bad: { offsets: [0] } } })).toThrow(
+        "harmonies.bad.offsets must have at least 2 values",
+      );
+    });
+
+    it("throws if offsets contains non-numbers", () => {
+      expect(() => validateConfig({ harmonies: { bad: { offsets: [0, "90"] } } })).toThrow(
+        "harmonies.bad.offsets[1] must be a number",
+      );
+    });
+  });
+
+  describe("harmony with custom harmonies", () => {
+    it("accepts custom harmony name when defined in harmonies", () => {
+      const result = validateConfig({
+        harmonies: { "my-harmony": { offsets: [0, 90, 180] } },
+        harmony: "my-harmony",
+      });
+      expect(result.harmony).toBe("my-harmony");
+    });
+
+    it("rejects unknown harmony when not in harmonies", () => {
+      expect(() => validateConfig({ harmony: "unknown-harmony" })).toThrow("Invalid harmony");
+    });
+
+    it("still accepts built-in harmonies", () => {
+      const result = validateConfig({ harmony: "triadic" });
+      expect(result.harmony).toBe("triadic");
+    });
+  });
+
+  describe("preset validation", () => {
+    it("accepts valid preset string", () => {
+      const result = validateConfig({ preset: "ocean" });
+      expect(result.preset).toBe("ocean");
+    });
+
+    it("throws for non-string preset", () => {
+      expect(() => validateConfig({ preset: 123 })).toThrow("preset must be a string");
     });
   });
 

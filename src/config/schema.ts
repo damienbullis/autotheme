@@ -15,20 +15,42 @@ export const CONFIG_SCHEMA = {
     },
     harmony: {
       type: "string",
-      enum: [
-        "complementary",
-        "analogous",
-        "triadic",
-        "split-complementary",
-        "tetradic",
-        "square",
-        "rectangle",
-        "aurelian",
-        "bi-polar",
-        "retrograde",
-      ],
       default: "analogous",
-      description: "Color harmony type",
+      description:
+        "Color harmony type. Built-in: complementary, analogous, triadic, split-complementary, drift, square, rectangle, aurelian, bi-polar, retrograde. Or a custom name defined in harmonies.",
+    },
+    harmonies: {
+      type: "object",
+      description: "Named custom harmony definitions with explicit hue offsets",
+      additionalProperties: {
+        type: "object",
+        properties: {
+          offsets: {
+            type: "array",
+            items: { type: "number" },
+            minItems: 2,
+            description: "Array of hue offset angles (first should typically be 0)",
+          },
+        },
+        required: ["offsets"],
+        additionalProperties: false,
+      },
+    },
+    preset: {
+      type: "string",
+      enum: [
+        "ocean",
+        "sunset",
+        "forest",
+        "lavender",
+        "ember",
+        "arctic",
+        "midnight",
+        "terracotta",
+        "neon",
+        "sage",
+      ],
+      description: "Built-in preset name for quick theme setup",
     },
     output: {
       type: "string",
@@ -78,6 +100,18 @@ export const CONFIG_SCHEMA = {
       default: 1,
       exclusiveMinimum: 0,
       description: "Base font size in rem for typography scale",
+    },
+    swing: {
+      type: "number",
+      default: 1,
+      exclusiveMinimum: 0,
+      description: "Swing multiplier for harmony angular distance (1.0 = no change)",
+    },
+    swingStrategy: {
+      type: "string",
+      enum: ["linear", "exponential", "alternating"],
+      default: "linear",
+      description: "Strategy for applying swing to harmony offsets",
     },
     gradients: {
       type: "boolean",

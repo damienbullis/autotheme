@@ -11,18 +11,29 @@ describe("CONFIG_SCHEMA", () => {
     expect(CONFIG_SCHEMA.description).toContain("AutoTheme CSS generator");
   });
 
-  it("defines all harmony types", () => {
+  it("harmony property accepts any string (built-in or custom)", () => {
     const harmonyProp = CONFIG_SCHEMA.properties.harmony;
-    expect(harmonyProp.enum).toContain("complementary");
-    expect(harmonyProp.enum).toContain("analogous");
-    expect(harmonyProp.enum).toContain("triadic");
-    expect(harmonyProp.enum).toContain("split-complementary");
-    expect(harmonyProp.enum).toContain("tetradic");
-    expect(harmonyProp.enum).toContain("square");
-    expect(harmonyProp.enum).toContain("rectangle");
-    expect(harmonyProp.enum).toContain("aurelian");
-    expect(harmonyProp.enum).toContain("bi-polar");
-    expect(harmonyProp.enum).toContain("retrograde");
+    expect(harmonyProp.type).toBe("string");
+    expect(harmonyProp.default).toBe("analogous");
+    expect(harmonyProp.description).toContain("complementary");
+    expect(harmonyProp.description).toContain("custom");
+  });
+
+  it("has harmonies property for custom harmony definitions", () => {
+    const harmoniesProp = CONFIG_SCHEMA.properties.harmonies;
+    expect(harmoniesProp).toBeDefined();
+    expect(harmoniesProp.type).toBe("object");
+    expect(harmoniesProp.additionalProperties).toBeDefined();
+    expect(harmoniesProp.additionalProperties.properties.offsets).toBeDefined();
+  });
+
+  it("has preset property with enum of preset names", () => {
+    const presetProp = CONFIG_SCHEMA.properties.preset;
+    expect(presetProp).toBeDefined();
+    expect(presetProp.type).toBe("string");
+    expect(presetProp.enum).toContain("ocean");
+    expect(presetProp.enum).toContain("sunset");
+    expect(presetProp.enum).toContain("forest");
   });
 
   it("has correct default values", () => {
@@ -41,6 +52,24 @@ describe("CONFIG_SCHEMA", () => {
     expect(CONFIG_SCHEMA.properties.noise.default).toBe(true);
     expect(CONFIG_SCHEMA.properties.shadcn.default).toBe(true);
     expect(CONFIG_SCHEMA.properties.utilities.default).toBe(true);
+  });
+
+  it("has swing property with correct defaults", () => {
+    const swingProp = CONFIG_SCHEMA.properties.swing;
+    expect(swingProp).toBeDefined();
+    expect(swingProp.type).toBe("number");
+    expect(swingProp.default).toBe(1);
+    expect(swingProp.exclusiveMinimum).toBe(0);
+  });
+
+  it("has swingStrategy property with correct defaults", () => {
+    const strategyProp = CONFIG_SCHEMA.properties.swingStrategy;
+    expect(strategyProp).toBeDefined();
+    expect(strategyProp.type).toBe("string");
+    expect(strategyProp.default).toBe("linear");
+    expect(strategyProp.enum).toContain("linear");
+    expect(strategyProp.enum).toContain("exponential");
+    expect(strategyProp.enum).toContain("alternating");
   });
 
   it("has correct contrastTarget constraints", () => {

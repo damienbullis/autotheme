@@ -73,13 +73,9 @@ autotheme --color "#FF6B35" --harmony analogous --tailwind
 This generates Tailwind-compatible CSS with `@theme` directives. Use the colors like any Tailwind color:
 
 ```html
-<div class="bg-primary-500 text-primary-foreground">
-  Accessible by default.
-</div>
+<div class="bg-primary-500 text-primary-foreground">Accessible by default.</div>
 
-<div class="bg-secondary-200 dark:bg-secondary-800">
-  Dark mode included.
-</div>
+<div class="bg-secondary-200 dark:bg-secondary-800">Dark mode included.</div>
 ```
 
 Every color gets a 50–950 scale, foreground, contrast, and tone variants.
@@ -144,6 +140,7 @@ autotheme --color "#6439FF" --harmony triadic --dark-mode-script
 ```
 
 This gives you:
+
 - System preference detection (`prefers-color-scheme`)
 - LocalStorage persistence across visits
 - FOUC prevention (no flash of wrong theme)
@@ -233,36 +230,36 @@ autotheme \
 
 ### Toggle features
 
-| Flag              | Disables                      |
-| ----------------- | ----------------------------- |
-| `--no-shadcn`     | Shadcn UI semantic variables  |
-| `--no-gradients`  | Gradient CSS variables        |
-| `--no-spacing`    | Spacing scale                 |
-| `--no-noise`      | Noise texture                 |
-| `--no-utilities`  | Utility classes               |
+| Flag             | Disables                     |
+| ---------------- | ---------------------------- |
+| `--no-shadcn`    | Shadcn UI semantic variables |
+| `--no-gradients` | Gradient CSS variables       |
+| `--no-spacing`   | Spacing scale                |
+| `--no-noise`     | Noise texture                |
+| `--no-utilities` | Utility classes              |
 
 Priority: CLI flags > config file > defaults.
 
 ### All config options
 
-| Option           | Type      | Default                 | Description                    |
-| ---------------- | --------- | ----------------------- | ------------------------------ |
-| `color`          | `string`  | random                  | Primary color (hex, rgb, hsl)  |
-| `harmony`        | `string`  | `"analogous"`           | Harmony type                   |
-| `output`         | `string`  | `"./src/autotheme.css"` | Output path                    |
-| `prefix`         | `string`  | `"color"`               | CSS variable prefix            |
-| `fontSize`       | `number`  | `1`                     | Base font size (rem)           |
-| `preview`        | `boolean` | `false`                 | HTML preview                   |
-| `tailwind`       | `boolean` | `false`                 | Tailwind v4 CSS                |
-| `darkModeScript` | `boolean` | `false`                 | Dark mode script               |
-| `scalar`         | `number`  | `1.618`                 | Golden ratio multiplier        |
-| `contrastTarget` | `number`  | `7`                     | Contrast ratio (3–21)          |
-| `radius`         | `string`  | `"0.625rem"`            | Shadcn border radius           |
-| `gradients`      | `boolean` | `true`                  | Gradient variables             |
-| `spacing`        | `boolean` | `true`                  | Spacing scale                  |
-| `noise`          | `boolean` | `true`                  | Noise texture                  |
-| `shadcn`         | `boolean` | `true`                  | Shadcn UI variables            |
-| `utilities`      | `boolean` | `true`                  | Utility classes                |
+| Option           | Type      | Default                 | Description                   |
+| ---------------- | --------- | ----------------------- | ----------------------------- |
+| `color`          | `string`  | random                  | Primary color (hex, rgb, hsl) |
+| `harmony`        | `string`  | `"analogous"`           | Harmony type                  |
+| `output`         | `string`  | `"./src/autotheme.css"` | Output path                   |
+| `prefix`         | `string`  | `"color"`               | CSS variable prefix           |
+| `fontSize`       | `number`  | `1`                     | Base font size (rem)          |
+| `preview`        | `boolean` | `false`                 | HTML preview                  |
+| `tailwind`       | `boolean` | `false`                 | Tailwind v4 CSS               |
+| `darkModeScript` | `boolean` | `false`                 | Dark mode script              |
+| `scalar`         | `number`  | `1.618`                 | Golden ratio multiplier       |
+| `contrastTarget` | `number`  | `7`                     | Contrast ratio (3–21)         |
+| `radius`         | `string`  | `"0.625rem"`            | Shadcn border radius          |
+| `gradients`      | `boolean` | `true`                  | Gradient variables            |
+| `spacing`        | `boolean` | `true`                  | Spacing scale                 |
+| `noise`          | `boolean` | `true`                  | Noise texture                 |
+| `shadcn`         | `boolean` | `true`                  | Shadcn UI variables           |
+| `utilities`      | `boolean` | `true`                  | Utility classes               |
 
 </details>
 

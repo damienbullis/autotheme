@@ -6,13 +6,15 @@ const VALID_HARMONIES = [
   "analogous",
   "triadic",
   "split-complementary",
-  "tetradic",
+  "drift",
   "square",
   "rectangle",
   "aurelian",
   "bi-polar",
   "retrograde",
 ] as const;
+
+const VALID_SWING_STRATEGIES = ["linear", "exponential", "alternating"] as const;
 
 export function validateConfig(config: unknown): Partial<AutoThemeConfig> {
   if (typeof config !== "object" || config === null) {
@@ -36,17 +38,57 @@ export function validateConfig(config: unknown): Partial<AutoThemeConfig> {
     }
   }
 
-  // Validate harmony
+  // Validate harmonies (custom harmony definitions)
+  if (obj.harmonies !== undefined) {
+    if (typeof obj.harmonies !== "object" || obj.harmonies === null || Array.isArray(obj.harmonies)) {
+      throw new Error("harmonies must be an object mapping names to { offsets: number[] }");
+    }
+    const harmonies: Record<string, { offsets: number[] }> = {};
+    for (const [name, def] of Object.entries(obj.harmonies as Record<string, unknown>)) {
+      if (typeof def !== "object" || def === null || Array.isArray(def)) {
+        throw new Error(`harmonies.${name} must be an object with an "offsets" array`);
+      }
+      const defObj = def as Record<string, unknown>;
+      if (!Array.isArray(defObj.offsets)) {
+        throw new Error(`harmonies.${name}.offsets must be an array of numbers`);
+      }
+      if (defObj.offsets.length < 2) {
+        throw new Error(`harmonies.${name}.offsets must have at least 2 values`);
+      }
+      for (let i = 0; i < defObj.offsets.length; i++) {
+        if (typeof defObj.offsets[i] !== "number") {
+          throw new Error(`harmonies.${name}.offsets[${i}] must be a number`);
+        }
+      }
+      harmonies[name] = { offsets: defObj.offsets as number[] };
+    }
+    result.harmonies = harmonies;
+  }
+
+  // Validate harmony (accepts built-in names or custom names defined in harmonies)
   if (obj.harmony !== undefined) {
-    if (
-      typeof obj.harmony !== "string" ||
-      !VALID_HARMONIES.includes(obj.harmony as (typeof VALID_HARMONIES)[number])
-    ) {
+    if (typeof obj.harmony !== "string") {
       throw new Error(
-        `Invalid harmony: ${obj.harmony}. Must be one of: ${VALID_HARMONIES.join(", ")}`,
+        `Invalid harmony: ${obj.harmony}. Must be a string.`,
+      );
+    }
+    const isBuiltIn = VALID_HARMONIES.includes(obj.harmony as (typeof VALID_HARMONIES)[number]);
+    const customHarmonies = obj.harmonies as Record<string, unknown> | undefined;
+    const isCustom = customHarmonies && obj.harmony in customHarmonies;
+    if (!isBuiltIn && !isCustom) {
+      throw new Error(
+        `Invalid harmony: "${obj.harmony}". Must be one of: ${VALID_HARMONIES.join(", ")}${customHarmonies ? ", or a name defined in harmonies" : ""}`,
       );
     }
     result.harmony = obj.harmony as AutoThemeConfig["harmony"];
+  }
+
+  // Validate preset
+  if (obj.preset !== undefined) {
+    if (typeof obj.preset !== "string") {
+      throw new Error("preset must be a string");
+    }
+    result.preset = obj.preset;
   }
 
   // Validate output
@@ -93,6 +135,27 @@ export function validateConfig(config: unknown): Partial<AutoThemeConfig> {
       throw new Error("contrastTarget must be between 3 and 21");
     }
     result.contrastTarget = obj.contrastTarget;
+  }
+
+  // Validate swing
+  if (obj.swing !== undefined) {
+    if (typeof obj.swing !== "number" || obj.swing <= 0) {
+      throw new Error("swing must be a positive number");
+    }
+    result.swing = obj.swing;
+  }
+
+  // Validate swingStrategy
+  if (obj.swingStrategy !== undefined) {
+    if (
+      typeof obj.swingStrategy !== "string" ||
+      !VALID_SWING_STRATEGIES.includes(obj.swingStrategy as (typeof VALID_SWING_STRATEGIES)[number])
+    ) {
+      throw new Error(
+        `Invalid swingStrategy: ${obj.swingStrategy}. Must be one of: ${VALID_SWING_STRATEGIES.join(", ")}`,
+      );
+    }
+    result.swingStrategy = obj.swingStrategy as AutoThemeConfig["swingStrategy"];
   }
 
   // Validate radius

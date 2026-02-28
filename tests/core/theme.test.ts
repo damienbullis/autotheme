@@ -33,9 +33,9 @@ describe("generateTheme", () => {
     expect(theme.palette.palettes).toHaveLength(2);
   });
 
-  it("generates correct number of harmony colors for tetradic", () => {
-    const theme = generateTheme(makeConfig({ harmony: "tetradic" }));
-    expect(theme.palette.harmony.type).toBe("tetradic");
+  it("generates correct number of harmony colors for drift", () => {
+    const theme = generateTheme(makeConfig({ harmony: "drift" }));
+    expect(theme.palette.harmony.type).toBe("drift");
     expect(theme.palette.harmony.colors).toHaveLength(4);
     expect(theme.palette.palettes).toHaveLength(4);
   });
@@ -44,6 +44,42 @@ describe("generateTheme", () => {
     const theme = generateTheme(makeConfig({ harmony: "analogous" }));
     expect(theme.palette.harmony.type).toBe("analogous");
     expect(theme.palette.harmony.colors).toHaveLength(3);
+  });
+
+  it("passes swing options through to palette generation", () => {
+    const theme = generateTheme(makeConfig({ swing: 1.5, swingStrategy: "exponential" }));
+    expect(theme.palette).toBeDefined();
+    expect(theme.palette.harmony).toBeDefined();
+    expect(theme.config.swing).toBe(1.5);
+    expect(theme.config.swingStrategy).toBe("exponential");
+  });
+
+  it("swing affects harmony color hues", () => {
+    const normal = generateTheme(makeConfig({ harmony: "triadic" }));
+    const swung = generateTheme(makeConfig({ harmony: "triadic", swing: 0.5 }));
+
+    // With swing 0.5, offsets are halved, so hues should differ
+    const normalHue1 = normal.palette.harmony.colors[1]!.hsl.h;
+    const swungHue1 = swung.palette.harmony.colors[1]!.hsl.h;
+    expect(swungHue1).not.toBeCloseTo(normalHue1, 0);
+  });
+
+  it("generates theme with custom harmony", () => {
+    const config = makeConfig({
+      harmony: "warm-quad",
+      harmonies: {
+        "warm-quad": { offsets: [0, 30, 60, 180] },
+      },
+    });
+    const theme = generateTheme(config);
+    expect(theme.palette.harmony.type).toBe("warm-quad");
+    expect(theme.palette.harmony.colors).toHaveLength(4);
+    expect(theme.palette.palettes).toHaveLength(4);
+  });
+
+  it("throws for unknown custom harmony", () => {
+    const config = makeConfig({ harmony: "nonexistent" as any });
+    expect(() => generateTheme(config)).toThrow('Unknown harmony type: "nonexistent"');
   });
 
   it("throws on invalid color string", () => {

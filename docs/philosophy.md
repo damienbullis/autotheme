@@ -24,7 +24,7 @@ Every color gets a text color that meets WCAG AAA (7:1 contrast ratio). Not opt-
 
 ## OKLCH because it looks right
 
-OKLCH is perceptually uniform — a light-to-dark scale actually *looks* even regardless of hue. HSL can't do that. I don't want to hand-tune shades. The color space handles it.
+OKLCH is perceptually uniform — a light-to-dark scale actually _looks_ even regardless of hue. HSL can't do that. I don't want to hand-tune shades. The color space handles it.
 
 <!-- ASSET: oklch-vs-hsl-comparison.png
      Side-by-side comparison: the same 50-950 scale for two different hues
@@ -57,15 +57,15 @@ A complete design system from one hex code.
 
 Each one is a different shape on the color wheel.
 
-| Harmony                 | Colors | Feel                                 |
-| ----------------------- | ------ | ------------------------------------ |
-| **Analogous**           | 3      | Calm, cohesive, hard to mess up      |
-| **Complementary**       | 2      | High energy, maximum contrast        |
-| **Triadic**             | 3      | Balanced and vibrant                 |
-| **Split-Complementary** | 3      | Contrast without the clash           |
-| **Tetradic**            | 4      | Complex, mathematical                |
-| **Square**              | 4      | Bold, no single color dominates      |
-| **Rectangle**           | 4      | Versatile, natural pairings          |
-| **Aurelian**            | 3      | Golden angle — nature's favorite     |
-| **Bi-Polar**            | 2      | Two strong anchors                   |
-| **Retrograde**          | 3      | Triadic from a different angle       |
+| Harmony                 | Colors | Feel                             |
+| ----------------------- | ------ | -------------------------------- |
+| **Analogous**           | 3      | Calm, cohesive, hard to mess up  |
+| **Complementary**       | 2      | High energy, maximum contrast    |
+| **Triadic**             | 3      | Balanced and vibrant             |
+| **Split-Complementary** | 3      | Contrast without the clash       |
+| **Tetradic**            | 4      | Complex, mathematical            |
+| **Square**              | 4      | Bold, no single color dominates  |
+| **Rectangle**           | 4      | Versatile, natural pairings      |
+| **Aurelian**            | 3      | Golden angle — nature's favorite |
+| **Bi-Polar**            | 2      | Two strong anchors               |
+| **Retrograde**          | 3      | Triadic from a different angle   |

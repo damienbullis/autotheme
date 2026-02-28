@@ -9,6 +9,7 @@ Planned enhancements for AutoTheme, ordered by priority.
 The CLI currently stubs out the actual generation step (`src/cli/cli.ts:30`). Wiring `generateTheme()` and `writeOutputs()` is the critical path to making the tool functional.
 
 **What's needed:**
+
 - Import `Color`, `generateFullPalette`, `generateCSS` into the CLI run loop
 - Call `writeOutputs(theme, config)` to write all enabled outputs
 - Handle random color generation when no `--color` is provided
@@ -33,6 +34,7 @@ Generate organic, animated blob shapes as SVG data URLs or CSS `clip-path` value
 ```
 
 **Potential output:**
+
 - Static blob `clip-path` values for containers and hero sections
 - Animated blob SVGs (morphing between shapes) as background images
 - Configurable complexity (number of points, randomness)
@@ -44,10 +46,10 @@ Generate organic, animated blob shapes as SVG data URLs or CSS `clip-path` value
 Extend the noise texture concept with a library of SVG filter effects.
 
 ```css
---filter-grain: url("data:image/svg+xml,...");     /* Film grain */
---filter-glow: url("data:image/svg+xml,...");      /* Soft glow */
---filter-duotone: url("data:image/svg+xml,...");   /* Duotone using palette colors */
---filter-halftone: url("data:image/svg+xml,...");  /* Halftone dot pattern */
+--filter-grain: url("data:image/svg+xml,..."); /* Film grain */
+--filter-glow: url("data:image/svg+xml,..."); /* Soft glow */
+--filter-duotone: url("data:image/svg+xml,..."); /* Duotone using palette colors */
+--filter-halftone: url("data:image/svg+xml,..."); /* Halftone dot pattern */
 --filter-displacement: url("data:image/svg+xml,..."); /* Wavy distortion */
 ```
 
@@ -61,18 +63,18 @@ Pre-composed background blend utilities that combine palette colors.
 
 ```css
 .blend-multiply {
-    background-blend-mode: multiply;
+  background-blend-mode: multiply;
 }
 .blend-overlay {
-    background-blend-mode: overlay;
+  background-blend-mode: overlay;
 }
 .blend-screen-accent {
-    background-color: var(--accent);
-    background-blend-mode: screen;
+  background-color: var(--accent);
+  background-blend-mode: screen;
 }
 .blend-color-primary {
-    background-color: var(--primary);
-    background-blend-mode: color;
+  background-color: var(--primary);
+  background-blend-mode: color;
 }
 ```
 
@@ -85,20 +87,20 @@ CSS `filter` and `backdrop-filter` utilities derived from the theme.
 ```css
 /* Tinted glass effects using palette colors */
 .glass-primary {
-    backdrop-filter: blur(12px) saturate(1.5);
-    background: oklch(from var(--primary) l c h / 0.15);
+  backdrop-filter: blur(12px) saturate(1.5);
+  background: oklch(from var(--primary) l c h / 0.15);
 }
 .glass-surface {
-    backdrop-filter: blur(8px) saturate(1.2);
-    background: oklch(from var(--surface) l c h / 0.6);
+  backdrop-filter: blur(8px) saturate(1.2);
+  background: oklch(from var(--surface) l c h / 0.6);
 }
 
 /* Filter presets */
 .filter-tint-primary {
-    filter: sepia(1) hue-rotate(var(--primary-hue-offset)) saturate(2);
+  filter: sepia(1) hue-rotate(var(--primary-hue-offset)) saturate(2);
 }
 .filter-frosted {
-    backdrop-filter: blur(16px) brightness(1.1);
+  backdrop-filter: blur(16px) brightness(1.1);
 }
 ```
 
@@ -111,30 +113,30 @@ The key feature that ties everything together. A system for composing background
 ```css
 /* Each layer is a separate background-image, composed via background-blend-mode */
 .stack {
-    /* Base setup for layer compositing */
-    background-repeat: no-repeat;
-    background-size: cover;
+  /* Base setup for layer compositing */
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 /* Compose layers by combining classes */
 .stack-noise {
-    /* Adds noise as a background layer */
-    background-image: var(--background-image-noise);
+  /* Adds noise as a background layer */
+  background-image: var(--background-image-noise);
 }
 .stack-gradient-primary {
-    /* Adds primary gradient layer */
-    background-image: linear-gradient(
-        var(--gradient-direction, 135deg),
-        var(--primary-container),
-        var(--accent-container)
-    );
+  /* Adds primary gradient layer */
+  background-image: linear-gradient(
+    var(--gradient-direction, 135deg),
+    var(--primary-container),
+    var(--accent-container)
+  );
 }
 .stack-blob {
-    /* Adds blob shape layer */
-    background-image: var(--blob-1);
+  /* Adds blob shape layer */
+  background-image: var(--blob-1);
 }
 .stack-blend-overlay {
-    background-blend-mode: overlay;
+  background-blend-mode: overlay;
 }
 ```
 
@@ -142,14 +144,10 @@ The key feature that ties everything together. A system for composing background
 
 ```html
 <!-- Gradient + noise + overlay blend = textured hero -->
-<section class="stack stack-gradient-primary stack-noise stack-blend-overlay">
-  ...
-</section>
+<section class="stack stack-gradient-primary stack-noise stack-blend-overlay">...</section>
 
 <!-- Surface + blob + soft-light = organic card -->
-<div class="stack surface stack-blob stack-blend-soft-light">
-  ...
-</div>
+<div class="stack surface stack-blob stack-blend-soft-light">...</div>
 ```
 
 **Implementation approach:** CSS multiple backgrounds naturally stack. Each `.stack-*` class appends to `background-image` via CSS custom properties that get combined. The blend mode applies across all layers. This is pure CSS composition — no JS runtime.
@@ -226,6 +224,7 @@ Single hue with lightness and saturation variations only. Common for minimal, ed
 A `--simulate` flag or web app toggle to preview themes under color vision deficiencies.
 
 **Types:**
+
 - Deuteranopia (red-green, ~6% of males)
 - Protanopia (red-green, ~2% of males)
 - Tritanopia (blue-yellow, rare)
@@ -273,18 +272,19 @@ OKLCH already supports colors outside sRGB. A `--gamut wide` flag would unlock t
 ```css
 /* sRGB fallback */
 :root {
-    --primary: oklch(0.49 0.27 285);
+  --primary: oklch(0.49 0.27 285);
 }
 
 /* P3 enhanced — more saturated where the display supports it */
 @media (color-gamut: p3) {
-    :root {
-        --primary: oklch(0.49 0.34 285);
-    }
+  :root {
+    --primary: oklch(0.49 0.34 285);
+  }
 }
 ```
 
 **Implementation:**
+
 - Detect which palette colors can benefit from wider gamut (high chroma values that get clamped in sRGB)
 - Generate `@media (color-gamut: p3)` blocks with unclamped OKLCH values
 - Add gamut-aware clamping to `conversions.ts` so the sRGB fallback is correct

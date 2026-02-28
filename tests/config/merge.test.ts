@@ -138,6 +138,41 @@ describe("resolveConfig", () => {
     });
   });
 
+  describe("presets", () => {
+    it("applies preset color and harmony", async () => {
+      const config = await resolveConfig({ preset: "ocean" });
+      expect(config.color).toBe("#1E6091");
+      expect(config.harmony).toBe("analogous");
+    });
+
+    it("CLI args override preset", async () => {
+      const config = await resolveConfig({ preset: "ocean", color: "#FF0000" });
+      expect(config.color).toBe("#FF0000");
+      expect(config.harmony).toBe("analogous"); // from preset, not overridden
+    });
+
+    it("file config overrides preset", async () => {
+      const configPath = "./preset-test-config.json";
+      writeFileSync(configPath, JSON.stringify({ harmony: "triadic" }));
+      try {
+        const config = await resolveConfig({ preset: "ocean", config: configPath });
+        expect(config.color).toBe("#1E6091"); // from preset (not overridden by file)
+        expect(config.harmony).toBe("triadic"); // from file (overrides preset)
+      } finally {
+        if (existsSync(configPath)) unlinkSync(configPath);
+      }
+    });
+
+    it("throws for unknown preset", async () => {
+      await expect(resolveConfig({ preset: "nonexistent" })).rejects.toThrow("Unknown preset");
+    });
+
+    it("strips preset from final config", async () => {
+      const config = await resolveConfig({ preset: "ocean" });
+      expect(config.preset).toBeUndefined();
+    });
+  });
+
   describe("merge order", () => {
     const mergeTestConfig = "./merge-test-autotheme.json";
 

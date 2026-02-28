@@ -2,6 +2,7 @@ import type { AutoThemeConfig } from "./types";
 import { DEFAULT_CONFIG } from "./types";
 import type { CLIArgs } from "../cli/parser";
 import { loadConfig } from "./loader";
+import { getPreset } from "./presets";
 import { Color } from "../core/color";
 
 /**
@@ -22,9 +23,18 @@ export async function resolveConfig(cliArgs: CLIArgs): Promise<AutoThemeConfig> 
   // Load config file
   const fileConfig = await loadConfig(cliArgs.config);
 
-  // Merge: defaults < file config < CLI args
+  // Resolve preset: CLI --preset takes priority, then config file preset
+  const presetName = cliArgs.preset ?? fileConfig.preset;
+  let presetConfig: Partial<AutoThemeConfig> = {};
+  if (presetName) {
+    const preset = getPreset(presetName); // throws on unknown preset
+    presetConfig = preset.config;
+  }
+
+  // Merge: defaults < preset < file config < CLI args
   const merged: AutoThemeConfig = {
     ...DEFAULT_CONFIG,
+    ...presetConfig,
     ...fileConfig,
     ...(cliArgs.color && { color: cliArgs.color }),
     ...(cliArgs.harmony && { harmony: cliArgs.harmony as AutoThemeConfig["harmony"] }),
@@ -39,9 +49,16 @@ export async function resolveConfig(cliArgs: CLIArgs): Promise<AutoThemeConfig> 
     ...(cliArgs.noise !== undefined && { noise: cliArgs.noise }),
     ...(cliArgs.shadcn !== undefined && { shadcn: cliArgs.shadcn }),
     ...(cliArgs.utilities !== undefined && { utilities: cliArgs.utilities }),
+    ...(cliArgs.swing !== undefined && { swing: cliArgs.swing }),
+    ...(cliArgs.swingStrategy && {
+      swingStrategy: cliArgs.swingStrategy as AutoThemeConfig["swingStrategy"],
+    }),
     ...(cliArgs.silent !== undefined && { silent: cliArgs.silent }),
     ...(cliArgs.config && { config: cliArgs.config }),
   };
+
+  // Strip preset from final config (it's been resolved)
+  delete merged.preset;
 
   // Generate random color if not provided
   if (!merged.color) {

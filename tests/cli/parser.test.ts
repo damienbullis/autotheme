@@ -162,6 +162,24 @@ describe("parseArgs", () => {
     });
   });
 
+  describe("swing options", () => {
+    it("parses --swing flag", () => {
+      const args = parseArgs(["--swing", "1.5"]);
+      expect(args.swing).toBe(1.5);
+    });
+
+    it("parses --swing-strategy flag", () => {
+      const args = parseArgs(["--swing-strategy", "exponential"]);
+      expect(args.swingStrategy).toBe("exponential");
+    });
+
+    it("returns undefined when not provided", () => {
+      const args = parseArgs([]);
+      expect(args.swing).toBeUndefined();
+      expect(args.swingStrategy).toBeUndefined();
+    });
+  });
+
   describe("stdout flag", () => {
     it("parses --stdout flag", () => {
       const args = parseArgs(["--stdout"]);
@@ -171,6 +189,23 @@ describe("parseArgs", () => {
     it("returns undefined when not provided", () => {
       const args = parseArgs([]);
       expect(args.stdout).toBeUndefined();
+    });
+  });
+
+  describe("preset option", () => {
+    it("parses -p flag", () => {
+      const args = parseArgs(["-p", "ocean"]);
+      expect(args.preset).toBe("ocean");
+    });
+
+    it("parses --preset flag", () => {
+      const args = parseArgs(["--preset", "sunset"]);
+      expect(args.preset).toBe("sunset");
+    });
+
+    it("returns undefined when not provided", () => {
+      const args = parseArgs([]);
+      expect(args.preset).toBeUndefined();
     });
   });
 

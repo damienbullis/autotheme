@@ -33,12 +33,21 @@ export type HarmonyType =
   | "analogous"
   | "triadic"
   | "split-complementary"
-  | "tetradic"
+  | "drift"
   | "square"
   | "rectangle"
   | "aurelian"
   | "bi-polar"
   | "retrograde";
+
+/** Swing strategy for adjusting harmony angular distances */
+export type SwingStrategy = "linear" | "exponential" | "alternating";
+
+/** Options for harmony generation */
+export interface HarmonyOptions {
+  swing?: number;
+  swingStrategy?: SwingStrategy;
+}
 
 /** Function that computes hue offset for a given index */
 export type HarmonyOffsetFn = (index: number) => number;
@@ -51,7 +60,7 @@ export interface HarmonyDefinition {
 
 /** Result of generating a color harmony */
 export interface HarmonyResult {
-  type: HarmonyType;
+  type: HarmonyType | string;
   primary: Color;
   colors: Color[];
 }

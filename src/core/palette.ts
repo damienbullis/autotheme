@@ -1,8 +1,18 @@
 import { Color } from "./color";
-import type { HarmonyType, FullPalette, PaletteVariations } from "./types";
+import type {
+  HarmonyType,
+  FullPalette,
+  PaletteVariations,
+  HarmonyOptions,
+  HarmonyDefinition,
+} from "./types";
 import { generateHarmony } from "./harmonies";
 import { generatePaletteVariations } from "./variations";
 import { findAccessibleTextColor } from "./contrast";
+
+export interface PaletteOptions extends HarmonyOptions {
+  customDefinitions?: Record<string, HarmonyDefinition>;
+}
 
 /**
  * Generate a complete palette with harmony colors and accessible text colors
@@ -10,8 +20,12 @@ import { findAccessibleTextColor } from "./contrast";
  * @param harmonyType - The type of harmony to generate
  * @returns Full palette with all variations and accessible text colors
  */
-export function generateFullPalette(primaryColor: Color, harmonyType: HarmonyType): FullPalette {
-  const harmony = generateHarmony(primaryColor, harmonyType);
+export function generateFullPalette(
+  primaryColor: Color,
+  harmonyType: HarmonyType | string,
+  options?: PaletteOptions,
+): FullPalette {
+  const harmony = generateHarmony(primaryColor, harmonyType, options);
   const palettes: PaletteVariations[] = [];
   const textColors = new Map<string, Color>();
 

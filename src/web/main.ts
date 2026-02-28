@@ -121,6 +121,8 @@ class AutoThemeApp {
         radius: "0.625rem",
         prefix: "color",
         fontSize: 1,
+        swing: 1,
+        swingStrategy: "linear" as const,
         gradients: true,
         spacing: true,
         noise: true,

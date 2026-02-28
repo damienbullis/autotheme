@@ -7,6 +7,7 @@ export interface CLIArgs {
   harmony?: string | undefined;
   output?: string | undefined;
   config?: string | undefined;
+  preset?: string | undefined;
   prefix?: string | undefined;
   fontSize?: number | undefined;
   preview?: boolean | undefined;
@@ -17,6 +18,8 @@ export interface CLIArgs {
   noise?: boolean | undefined;
   shadcn?: boolean | undefined;
   utilities?: boolean | undefined;
+  swing?: number | undefined;
+  swingStrategy?: string | undefined;
   stdout?: boolean | undefined;
   silent?: boolean | undefined;
   help?: boolean | undefined;
@@ -30,7 +33,8 @@ export function parseArgs(args: string[]): CLIArgs {
     .option("-c, --color <color>", "Primary color (hex, rgb, hsl)")
     .option("-a, --harmony <type>", "Color harmony type")
     .option("-o, --output <path>", "Output file path")
-    .option("--config <path>", "Path to config file")
+    .option("--config <path>", "Path to config file or URL")
+    .option("-p, --preset <name>", "Use a built-in preset (e.g., ocean, sunset, forest)")
     .option("--prefix <prefix>", "CSS variable prefix (default: color)")
     .option("--font-size <size>", "Base font size in rem (default: 1)")
     .option("--preview", "Generate HTML preview")
@@ -41,6 +45,8 @@ export function parseArgs(args: string[]): CLIArgs {
     .option("--noise", "Generate noise texture (use --no-noise to disable)")
     .option("--shadcn", "Generate Shadcn UI variables (use --no-shadcn to disable)")
     .option("--utilities", "Generate utility classes (use --no-utilities to disable)")
+    .option("--swing <value>", "Swing multiplier for harmony angular distance (default: 1)")
+    .option("--swing-strategy <strategy>", "Swing strategy: linear, exponential, alternating")
     .option("--stdout", "Output CSS to stdout instead of writing files")
     .option("-s, --silent", "Suppress output")
     .help()
@@ -53,6 +59,7 @@ export function parseArgs(args: string[]): CLIArgs {
     harmony: parsed.options.harmony as string | undefined,
     output: parsed.options.output as string | undefined,
     config: parsed.options.config as string | undefined,
+    preset: parsed.options.preset as string | undefined,
     prefix: parsed.options.prefix as string | undefined,
     fontSize: parsed.options.fontSize !== undefined ? Number(parsed.options.fontSize) : undefined,
     preview: parsed.options.preview as boolean | undefined,
@@ -63,6 +70,8 @@ export function parseArgs(args: string[]): CLIArgs {
     noise: parsed.options.noise as boolean | undefined,
     shadcn: parsed.options.shadcn as boolean | undefined,
     utilities: parsed.options.utilities as boolean | undefined,
+    swing: parsed.options.swing !== undefined ? Number(parsed.options.swing) : undefined,
+    swingStrategy: parsed.options.swingStrategy as string | undefined,
     stdout: parsed.options.stdout as boolean | undefined,
     silent: parsed.options.silent as boolean | undefined,
     help: parsed.options.help as boolean | undefined,
