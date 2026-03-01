@@ -54,6 +54,16 @@ export function createTestTheme(
     gradients: overrides.gradients ?? false,
     noise: overrides.noise ?? false,
     utilities: overrides.utilities ?? false,
+    semantics: {
+      enabled: overrides.semantics?.enabled ?? false,
+      surfaceDepth: overrides.semantics?.surfaceDepth ?? 4,
+      textLevels: overrides.semantics?.textLevels ?? 3,
+      mapping: {
+        accent: overrides.semantics?.mapping?.accent ?? "primary",
+        accentSecondary: overrides.semantics?.mapping?.accentSecondary ?? "secondary",
+      },
+      ...(overrides.semantics?.overrides && { overrides: overrides.semantics.overrides }),
+    },
     shadcn: {
       enabled: overrides.shadcn?.enabled ?? false,
       radius: overrides.shadcn?.radius ?? "0.625rem",

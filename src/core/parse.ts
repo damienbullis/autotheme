@@ -22,9 +22,7 @@ export function isHSLColor(input: ColorInput): input is HSLColor {
  */
 function parseRgbString(str: string): HSLColor {
   // Matches: rgb(255, 128, 64) OR rgb(255 128 64) OR rgb(255 128 64 / 0.5)
-  const match = str.match(
-    /rgba?\s*\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)/,
-  );
+  const match = str.match(/rgba?\s*\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)/);
 
   if (!match || !match[1] || !match[2] || !match[3]) {
     throw new Error(`Invalid RGB format: ${str}`);

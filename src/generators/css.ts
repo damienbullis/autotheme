@@ -4,6 +4,7 @@ import { generateNoiseSVG } from "./noise";
 import { generateDarkModeCSS } from "./dark-mode";
 import { generateUtilityClasses } from "./utilities";
 import { generateShadcnCSS } from "./shadcn";
+import { generateSemanticCSS } from "./semantic";
 
 /**
  * Semantic names for harmony colors by index
@@ -197,6 +198,16 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   }
 
   lines.push("}");
+
+  // Semantic tokens
+  if (config.semantics.enabled) {
+    lines.push("");
+    lines.push("/* ========================================");
+    lines.push("   AutoTheme Semantic Tokens");
+    lines.push("   ======================================== */");
+    lines.push("");
+    lines.push(generateSemanticCSS(theme));
+  }
 
   // Dark mode
   if (config.mode === "both" || config.mode === "dark") {

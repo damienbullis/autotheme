@@ -17,6 +17,7 @@ export interface CLIArgs {
   gradients?: boolean | undefined;
   spacing?: boolean | undefined;
   noise?: boolean | undefined;
+  semantics?: boolean | undefined;
   shadcn?: boolean | undefined;
   utilities?: boolean | undefined;
   swing?: number | undefined;
@@ -45,6 +46,7 @@ export function parseArgs(args: string[]): CLIArgs {
     .option("--gradients", "Generate gradient variables (use --no-gradients to disable)")
     .option("--spacing", "Generate spacing scale (use --no-spacing to disable)")
     .option("--noise", "Generate noise texture (use --no-noise to disable)")
+    .option("--semantics", "Generate semantic token variables (use --no-semantics to disable)")
     .option("--shadcn", "Generate Shadcn UI variables (use --no-shadcn to disable)")
     .option("--utilities", "Generate utility classes (use --no-utilities to disable)")
     .option("--swing <value>", "Swing multiplier for harmony angular distance (default: 1)")
@@ -71,6 +73,7 @@ export function parseArgs(args: string[]): CLIArgs {
     gradients: parsed.options.gradients as boolean | undefined,
     spacing: parsed.options.spacing as boolean | undefined,
     noise: parsed.options.noise as boolean | undefined,
+    semantics: parsed.options.semantics as boolean | undefined,
     shadcn: parsed.options.shadcn as boolean | undefined,
     utilities: parsed.options.utilities as boolean | undefined,
     swing: parsed.options.swing !== undefined ? Number(parsed.options.swing) : undefined,

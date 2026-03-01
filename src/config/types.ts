@@ -5,6 +5,19 @@ export interface CustomHarmonyDefinition {
   offsets: number[];
 }
 
+export interface SemanticMapping {
+  accent: string;
+  accentSecondary: string;
+}
+
+export interface SemanticsConfig {
+  enabled: boolean;
+  surfaceDepth: number;
+  textLevels: number;
+  mapping: SemanticMapping;
+  overrides?: Record<string, string>;
+}
+
 export type ThemeMode = "light" | "dark" | "both";
 
 export interface AutoThemeConfig {
@@ -57,6 +70,9 @@ export interface AutoThemeConfig {
   gradients: boolean;
   noise: boolean;
   utilities: boolean;
+
+  // Semantic tokens
+  semantics: SemanticsConfig;
 
   // Framework bindings
   shadcn: {
@@ -111,6 +127,13 @@ export const DEFAULT_CONFIG: AutoThemeConfig = {
     base: 0.25,
     ratio: 2,
     steps: 10,
+  },
+
+  semantics: {
+    enabled: false,
+    surfaceDepth: 4,
+    textLevels: 3,
+    mapping: { accent: "primary", accentSecondary: "secondary" },
   },
 
   gradients: false,

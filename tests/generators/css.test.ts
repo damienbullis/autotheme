@@ -102,10 +102,10 @@ describe("generateCenteredScale", () => {
   it("produces correct values for 7 steps with ratio 1.25", () => {
     const values = generateCenteredScale(1, 1.25, 7);
     expect(values[0]).toBeCloseTo(0.512, 3); // 1/1.25^3
-    expect(values[1]).toBeCloseTo(0.64, 2);  // 1/1.25^2
-    expect(values[2]).toBeCloseTo(0.8, 2);   // 1/1.25^1
-    expect(values[3]).toBeCloseTo(1.0, 3);   // base
-    expect(values[4]).toBeCloseTo(1.25, 2);  // 1*1.25^1
+    expect(values[1]).toBeCloseTo(0.64, 2); // 1/1.25^2
+    expect(values[2]).toBeCloseTo(0.8, 2); // 1/1.25^1
+    expect(values[3]).toBeCloseTo(1.0, 3); // base
+    expect(values[4]).toBeCloseTo(1.25, 2); // 1*1.25^1
     expect(values[5]).toBeCloseTo(1.5625, 3); // 1*1.25^2
     expect(values[6]).toBeCloseTo(1.953, 2); // 1*1.25^3
   });

@@ -140,6 +140,12 @@ class AutoThemeApp {
         gradients: true,
         noise: true,
         utilities: true,
+        semantics: {
+          enabled: false,
+          surfaceDepth: 4,
+          textLevels: 3,
+          mapping: { accent: "primary", accentSecondary: "secondary" },
+        },
         shadcn: {
           enabled: true,
           radius: "0.625rem",

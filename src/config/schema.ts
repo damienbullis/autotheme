@@ -222,6 +222,55 @@ export const CONFIG_SCHEMA = {
       default: false,
       description: "Generate CSS utility classes",
     },
+    semantics: {
+      type: "object",
+      description: "Semantic token layer options",
+      properties: {
+        enabled: {
+          type: "boolean",
+          default: false,
+          description: "Generate semantic token CSS variables (surfaces, borders, text, accents)",
+        },
+        surfaceDepth: {
+          type: "number",
+          default: 4,
+          minimum: 0,
+          maximum: 100,
+          description:
+            "Controls surface lightness anchor (0 = pure white/black, higher = more tinted)",
+        },
+        textLevels: {
+          type: "number",
+          default: 3,
+          minimum: 2,
+          maximum: 6,
+          description: "Number of text hierarchy levels (text-1 through text-N)",
+        },
+        mapping: {
+          type: "object",
+          description: "Map semantic accent roles to harmony color names",
+          properties: {
+            accent: {
+              type: "string",
+              default: "primary",
+              description: "Which harmony color drives --accent (e.g., 'primary', 'secondary')",
+            },
+            accentSecondary: {
+              type: "string",
+              default: "secondary",
+              description: "Which harmony color drives --accent-secondary",
+            },
+          },
+          additionalProperties: false,
+        },
+        overrides: {
+          type: "object",
+          description: "Per-token color overrides (e.g., { surface: '#F5F5F5' })",
+          additionalProperties: { type: "string" },
+        },
+      },
+      additionalProperties: false,
+    },
     shadcn: {
       type: "object",
       description: "Shadcn UI integration options",
