@@ -229,17 +229,18 @@ describe("config → theme pipeline", () => {
 });
 
 describe("Tailwind integration output", () => {
-  it("@theme block references correct CSS variables from :root", () => {
+  it("@theme block references correct CSS variables via @import", () => {
     const config = {
       ...DEFAULT_CONFIG,
       color: "#3366CC",
-      palette: { prefix: "at", contrastTarget: 7 },
+      palette: { ...DEFAULT_CONFIG.palette, prefix: "at" },
     };
     const theme = generateTheme(config);
     const result = generateTailwindCSS(theme);
 
-    // :root uses custom prefix
-    expect(result.content).toContain("--at-primary-500:");
+    // Uses @import instead of embedding CSS
+    expect(result.content).toContain("@import");
+    expect(result.content).toContain("@theme {");
 
     // @theme remaps to --color-* namespace
     const themeBlock = result.content.split("@theme {")[1]!;
@@ -248,7 +249,7 @@ describe("Tailwind integration output", () => {
 });
 
 describe("Shadcn CSS output", () => {
-  it("generates valid light and dark mode blocks with OKLCH colors", () => {
+  it("maps shadcn variables to semantic tokens with var() references", () => {
     const config = { ...DEFAULT_CONFIG, color: "#6439FF" };
     const theme = generateTheme(config);
     const css = generateShadcnCSS(theme);
@@ -257,14 +258,14 @@ describe("Shadcn CSS output", () => {
     expect(css).toContain(":root {");
     expect(css).toContain(".dark {");
 
-    // All OKLCH values valid
+    // Destructive colors are computed OKLCH (not var refs)
     const oklchValues = extractOKLCHValues(css);
-    expect(oklchValues.length).toBeGreaterThan(20); // Should have many color vars
+    expect(oklchValues.length).toBeGreaterThan(0);
     for (const value of oklchValues) {
       expect(isValidOKLCH(value), `invalid OKLCH: ${value}`).toBe(true);
     }
 
-    // Has the required Shadcn variables
+    // Has the required Shadcn variables (now mostly var() refs)
     const vars = extractCSSVars(css);
     const required = [
       "--background",
@@ -284,5 +285,11 @@ describe("Shadcn CSS output", () => {
     for (const name of required) {
       expect(vars.has(name), `missing ${name}`).toBe(true);
     }
+
+    // Key mappings use var() references to semantic tokens
+    expect(vars.get("--background")).toBe("var(--surface)");
+    expect(vars.get("--foreground")).toBe("var(--text-1)");
+    expect(vars.get("--primary")).toBe("var(--accent)");
+    expect(vars.get("--border")).toBe("var(--border)");
   });
 });

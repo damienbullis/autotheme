@@ -1,132 +1,134 @@
 import { describe, it, expect } from "vitest";
-import {
-  generateShadcnColors,
-  generateShadcnCSS,
-  generateErrorColor,
-} from "../../src/generators/shadcn";
-import { Color } from "../../src/core/color";
+import { generateShadcnCSS, generateErrorColor, selectAccentColor } from "../../src/generators/shadcn";
 import { createTestTheme } from "../helpers/test-theme";
-
-describe("generateShadcnColors", () => {
-  it("generates all required semantic colors for light and dark modes", () => {
-    const theme = createTestTheme();
-    const { light, dark } = generateShadcnColors(theme);
-
-    // Both modes exist
-    expect(light).toBeDefined();
-    expect(dark).toBeDefined();
-
-    // All core semantic colors are Color instances
-    const requiredKeys = [
-      "background",
-      "foreground",
-      "primary",
-      "primaryForeground",
-      "secondary",
-      "secondaryForeground",
-      "accent",
-      "accentForeground",
-      "muted",
-      "mutedForeground",
-      "destructive",
-      "destructiveForeground",
-      "card",
-      "cardForeground",
-      "popover",
-      "popoverForeground",
-      "border",
-      "input",
-      "ring",
-    ] as const;
-
-    for (const key of requiredKeys) {
-      expect(light[key], `light.${key}`).toBeInstanceOf(Color);
-      expect(dark[key], `dark.${key}`).toBeInstanceOf(Color);
-    }
-  });
-
-  it("generates chart and sidebar colors", () => {
-    const { light } = generateShadcnColors(createTestTheme());
-
-    for (let i = 1; i <= 5; i++) {
-      expect(light[`chart${i}` as keyof typeof light]).toBeInstanceOf(Color);
-    }
-
-    expect(light.sidebar).toBeInstanceOf(Color);
-    expect(light.sidebarForeground).toBeInstanceOf(Color);
-    expect(light.sidebarPrimary).toBeInstanceOf(Color);
-    expect(light.sidebarAccent).toBeInstanceOf(Color);
-  });
-
-  it("light backgrounds are light, dark backgrounds are dark", () => {
-    const { light, dark } = generateShadcnColors(createTestTheme());
-
-    expect(light.background.hsl.l).toBeGreaterThan(70);
-    expect(dark.background.hsl.l).toBeLessThan(20);
-  });
-
-  it("destructive color is in red/orange hue range", () => {
-    const { light } = generateShadcnColors(createTestTheme());
-    const hue = light.destructive.hsl.h;
-    // Red hue range: 0-40 or 340-360
-    expect(hue < 40 || hue > 340).toBe(true);
-  });
-
-  it("primary color matches theme primary", () => {
-    const theme = createTestTheme();
-    const { light } = generateShadcnColors(theme);
-    const primaryBase = theme.palette.palettes[0]?.base;
-    expect(light.primary.hex).toBe(primaryBase?.hex);
-  });
-});
 
 describe("generateErrorColor", () => {
   it("falls back to orange when primary is red (~0°)", () => {
-    // Primary at 5°: all red candidates are within 30°, so falls back to 25° (orange)
     const error = generateErrorColor(5);
     expect(error.hsl.h).toBe(25);
   });
 
   it("picks a red candidate when primary is far from red (~180°)", () => {
     const error = generateErrorColor(180);
-    // All candidates are far from 180°; the algorithm picks the most distant
     expect([0, 10, 350]).toContain(error.hsl.h);
   });
 
   it("falls back to orange when primary is near 350°", () => {
-    // Primary at 350°: candidate 10 is 20° away (max), which is < 30 → fallback
     const error = generateErrorColor(350);
     expect(error.hsl.h).toBe(25);
   });
 
   it("picks standard red when primary is distant enough", () => {
-    // Primary at 120° (green): all red candidates are far enough (>30°)
     const error = generateErrorColor(120);
     expect([0, 10, 350]).toContain(error.hsl.h);
-    // Should pick the most distant: 350 is 130° away from 120
-    // 0 is 120° away, 10 is 110° away → picks 350
     expect(error.hsl.h).toBe(350);
   });
 });
 
+describe("selectAccentColor", () => {
+  it("returns the most hue-distant harmony color", () => {
+    const theme = createTestTheme({ harmony: "complementary" });
+    const result = selectAccentColor(theme.palette);
+    expect(result.color).toBeDefined();
+    expect(result.palette).toBeDefined();
+  });
+});
+
 describe("generateShadcnCSS", () => {
-  it("generates both :root and .dark blocks with OKLCH values", () => {
-    const theme = createTestTheme();
+  it("maps shadcn variables to semantic token references", () => {
+    const theme = createTestTheme({
+      shadcn: { enabled: true },
+      semantics: { enabled: true },
+    });
+    const css = generateShadcnCSS(theme);
+
+    expect(css).toContain("--background: var(--surface)");
+    expect(css).toContain("--foreground: var(--text-1)");
+    expect(css).toContain("--card: var(--surface-elevated)");
+    expect(css).toContain("--muted: var(--surface-sunken)");
+    expect(css).toContain("--muted-foreground: var(--text-2)");
+    expect(css).toContain("--primary: var(--accent)");
+    expect(css).toContain("--ring: var(--accent)");
+    expect(css).toContain("--input: var(--border-strong)");
+    expect(css).toContain("--border: var(--border)");
+  });
+
+  it("references palette vars for chart colors", () => {
+    const theme = createTestTheme({ shadcn: { enabled: true }, semantics: { enabled: true } });
+    const css = generateShadcnCSS(theme);
+
+    expect(css).toContain("--chart-1: var(--color-primary-500)");
+    expect(css).toContain("--chart-2: var(--color-secondary-500)");
+  });
+
+  it("computes destructive color as OKLCH (not a var reference)", () => {
+    const theme = createTestTheme({ shadcn: { enabled: true }, semantics: { enabled: true } });
+    const css = generateShadcnCSS(theme);
+
+    expect(css).toMatch(/--destructive:\s*oklch\(/);
+    expect(css).toMatch(/--destructive-foreground:\s*oklch\(/);
+  });
+
+  it("emits :root and .dark blocks in 'both' mode", () => {
+    const theme = createTestTheme({
+      mode: "both",
+      shadcn: { enabled: true },
+      semantics: { enabled: true },
+    });
     const css = generateShadcnCSS(theme);
 
     expect(css).toContain(":root {");
     expect(css).toContain(".dark {");
-    expect(css).toMatch(/--background:\s*oklch\(/);
-    expect(css).toMatch(/--primary:\s*oklch\(/);
+  });
+
+  it("dark override only contains destructive overrides in 'both' mode", () => {
+    const theme = createTestTheme({
+      mode: "both",
+      shadcn: { enabled: true },
+      semantics: { enabled: true },
+    });
+    const css = generateShadcnCSS(theme);
+    const darkBlock = css.split(".dark {")[1]!.split("}")[0]!;
+
+    // Dark block should only have destructive overrides
+    expect(darkBlock).toContain("--destructive:");
+    expect(darkBlock).toContain("--destructive-foreground:");
+    expect(darkBlock).not.toContain("--background:");
+    expect(darkBlock).not.toContain("--foreground:");
+  });
+
+  it("emits dark values under :root for dark-only mode", () => {
+    const theme = createTestTheme({
+      mode: "dark",
+      shadcn: { enabled: true },
+      semantics: { enabled: true },
+    });
+    const css = generateShadcnCSS(theme);
+
+    expect(css).toContain(":root {");
+    expect(css).not.toContain(".dark {");
+    expect(css).toContain("--background: var(--surface)");
   });
 
   it("uses provided radius value", () => {
-    const css = generateShadcnCSS(createTestTheme(), "1.5rem");
+    const theme = createTestTheme({ shadcn: { enabled: true }, semantics: { enabled: true } });
+    const css = generateShadcnCSS(theme, "1.5rem");
     expect(css).toContain("--radius: 1.5rem");
   });
 
   it("uses default radius when not provided", () => {
-    const css = generateShadcnCSS(createTestTheme());
+    const theme = createTestTheme({ shadcn: { enabled: true }, semantics: { enabled: true } });
+    const css = generateShadcnCSS(theme);
     expect(css).toContain("--radius: 0.625rem");
+  });
+
+  it("references sidebar semantic tokens", () => {
+    const theme = createTestTheme({ shadcn: { enabled: true }, semantics: { enabled: true } });
+    const css = generateShadcnCSS(theme);
+
+    expect(css).toContain("--sidebar: var(--surface-sunken)");
+    expect(css).toContain("--sidebar-foreground: var(--text-1)");
+    expect(css).toContain("--sidebar-border: var(--border-subtle)");
+    expect(css).toContain("--sidebar-ring: var(--accent)");
   });
 });

@@ -291,15 +291,17 @@ describe("generateCSS", () => {
     expect(result.content).not.toContain("--text-");
   });
 
-  it("uses OKLCH color format for all color values", () => {
-    const theme = createTestTheme({ shadcn: { enabled: true } });
+  it("uses OKLCH color format for palette and var() refs for shadcn", () => {
+    const theme = createTestTheme({ shadcn: { enabled: true }, semantics: { enabled: true } });
     const result = generateCSS(theme);
 
-    // Verify multiple color types use OKLCH
+    // Palette colors use OKLCH
     expect(result.content).toMatch(/--color-primary-500:\s*oklch\(/);
     expect(result.content).toMatch(/--color-primary-50:\s*oklch\(/);
-    expect(result.content).toMatch(/--background:\s*oklch\(/);
-    expect(result.content).toMatch(/--primary:\s*oklch\(/);
+
+    // Shadcn variables reference semantic tokens via var()
+    expect(result.content).toMatch(/--background:\s*var\(--surface\)/);
+    expect(result.content).toMatch(/--primary:\s*var\(--accent\)/);
   });
 
   it("Phase 3 features disabled by default produce no extra output", () => {

@@ -21,33 +21,41 @@ type DeepPartial<T> = {
 };
 
 /**
- * Deep merge two objects (2 levels deep)
+ * Deep merge two objects recursively.
+ * When both sides have a nested object (non-array), recurse. Arrays are replaced, not merged.
  */
 function deepMerge(target: AutoThemeConfig, source: DeepPartial<AutoThemeConfig>): AutoThemeConfig {
-  const result = { ...target };
+  return deepMergeObjects(
+    target as unknown as Record<string, unknown>,
+    source as unknown as Record<string, unknown>,
+  ) as unknown as AutoThemeConfig;
+}
 
-  for (const key of Object.keys(source) as (keyof AutoThemeConfig)[]) {
+function deepMergeObjects(
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+): Record<string, unknown> {
+  const result = { ...target };
+  for (const key of Object.keys(source)) {
     const val = source[key];
     if (val === undefined) continue;
-
-    const current = (result as Record<string, unknown>)[key];
+    const current = result[key];
     if (
       typeof val === "object" &&
       val !== null &&
       !Array.isArray(val) &&
       typeof current === "object" &&
-      current !== null
+      current !== null &&
+      !Array.isArray(current)
     ) {
-      // Merge nested object
-      (result as Record<string, unknown>)[key] = {
-        ...(current as Record<string, unknown>),
-        ...(val as Record<string, unknown>),
-      };
+      result[key] = deepMergeObjects(
+        current as Record<string, unknown>,
+        val as Record<string, unknown>,
+      );
     } else {
-      (result as Record<string, unknown>)[key] = val;
+      result[key] = val;
     }
   }
-
   return result;
 }
 
@@ -154,6 +162,11 @@ export async function resolveConfig(cliArgs: CLIArgs): Promise<AutoThemeConfig> 
 
   // Strip preset from final config (it's been resolved)
   delete merged.preset;
+
+  // Auto-enable semantics when shadcn is enabled (shadcn maps from semantic tokens)
+  if (merged.shadcn.enabled && !merged.semantics.enabled) {
+    merged.semantics.enabled = true;
+  }
 
   // Generate random color if not provided
   if (!merged.color) {

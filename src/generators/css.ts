@@ -65,17 +65,6 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   const prefix = config.palette.prefix;
   const lines: string[] = [];
 
-  // Generate Shadcn-compatible CSS first (if enabled)
-  if (config.shadcn.enabled) {
-    lines.push("/* ========================================");
-    lines.push("   Shadcn UI Compatible Theme Variables");
-    lines.push("   ======================================== */");
-    lines.push("");
-    lines.push(generateShadcnCSS(theme, config.shadcn.radius));
-    lines.push("");
-    lines.push("");
-  }
-
   // AutoTheme extended variables with Tailwind namespaces
   lines.push("/* ========================================");
   lines.push("   AutoTheme Color Scales (Tailwind v4 compatible)");
@@ -217,6 +206,16 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     lines.push("   ======================================== */");
     lines.push("");
     lines.push(generateSemanticCSS(theme));
+  }
+
+  // Shadcn UI variables (after semantics, since shadcn references semantic tokens)
+  if (config.shadcn.enabled) {
+    lines.push("");
+    lines.push("/* ========================================");
+    lines.push("   Shadcn UI Compatible Theme Variables");
+    lines.push("   ======================================== */");
+    lines.push("");
+    lines.push(generateShadcnCSS(theme, config.shadcn.radius));
   }
 
   // Dark mode

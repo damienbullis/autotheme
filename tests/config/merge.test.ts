@@ -169,6 +169,78 @@ describe("resolveConfig", () => {
     });
   });
 
+  describe("deep merge", () => {
+    it("preserves nested defaults when merging partial semantics config", async () => {
+      writeFileSync(
+        "autotheme.json",
+        JSON.stringify({
+          color: "#ff0000",
+          semantics: { states: { enabled: true } },
+        }),
+      );
+
+      const config = await resolveConfig({});
+
+      // states.enabled should be true from file
+      expect(config.semantics.states.enabled).toBe(true);
+      // states.hoverShift should be preserved from defaults (not wiped)
+      expect(config.semantics.states.hoverShift).toBe(DEFAULT_CONFIG.semantics.states.hoverShift);
+      expect(config.semantics.states.activeShift).toBe(DEFAULT_CONFIG.semantics.states.activeShift);
+    });
+
+    it("preserves 3+ levels of nesting when merging", async () => {
+      writeFileSync(
+        "autotheme.json",
+        JSON.stringify({
+          color: "#ff0000",
+          palette: { alphaSteps: { bg: 20 } },
+        }),
+      );
+
+      const config = await resolveConfig({});
+
+      // bg should be overridden
+      expect(config.palette.alphaSteps.bg).toBe(20);
+      // Other alpha steps should be preserved from defaults
+      expect(config.palette.alphaSteps.border).toBe(DEFAULT_CONFIG.palette.alphaSteps.border);
+      expect(config.palette.alphaSteps.glow).toBe(DEFAULT_CONFIG.palette.alphaSteps.glow);
+      expect(config.palette.alphaSteps.hover).toBe(DEFAULT_CONFIG.palette.alphaSteps.hover);
+    });
+  });
+
+  describe("auto-enable semantics", () => {
+    it("enables semantics when shadcn is enabled", async () => {
+      const config = await resolveConfig({ color: "#ff0000", shadcn: true });
+
+      expect(config.shadcn.enabled).toBe(true);
+      expect(config.semantics.enabled).toBe(true);
+    });
+
+    it("does not disable explicitly enabled semantics when shadcn is off", async () => {
+      const config = await resolveConfig({ color: "#ff0000", semantics: true });
+
+      expect(config.shadcn.enabled).toBe(false);
+      expect(config.semantics.enabled).toBe(true);
+    });
+  });
+
+  describe("presets with deep config", () => {
+    it("resolves dashboard-dark preset with full config", async () => {
+      const config = await resolveConfig({ preset: "dashboard-dark" });
+
+      expect(config.color).toBe("#6366F1");
+      expect(config.mode).toBe("dark");
+      expect(config.semantics.enabled).toBe(true);
+      expect(config.semantics.surfaceDepth).toBe(6);
+      expect(config.semantics.textLevels).toBe(4);
+      expect(config.shadcn.enabled).toBe(true);
+      expect(config.shadcn.radius).toBe("0.5rem");
+      expect(config.spacing.enabled).toBe(true);
+      // Defaults should be preserved
+      expect(config.semantics.states.hoverShift).toBe(DEFAULT_CONFIG.semantics.states.hoverShift);
+    });
+  });
+
   describe("merge order", () => {
     const mergeTestConfig = "./merge-test-autotheme.json";
 

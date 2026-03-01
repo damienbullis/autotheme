@@ -155,6 +155,51 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
       }
       result.palette.contrastTarget = paletteObj.contrastTarget;
     }
+
+    for (const key of ["tints", "shades", "tones"] as const) {
+      if (paletteObj[key] !== undefined) {
+        if (typeof paletteObj[key] !== "number" || (paletteObj[key] as number) < 1) {
+          throw new Error(`palette.${key} must be a positive integer`);
+        }
+        result.palette[key] = paletteObj[key] as number;
+      }
+    }
+
+    for (const key of ["tintIncrement", "shadeIncrement", "toneIncrement"] as const) {
+      if (paletteObj[key] !== undefined) {
+        if (typeof paletteObj[key] !== "number" || (paletteObj[key] as number) <= 0) {
+          throw new Error(`palette.${key} must be a positive number`);
+        }
+        result.palette[key] = paletteObj[key] as number;
+      }
+    }
+
+    if (paletteObj.alphaVariants !== undefined) {
+      if (typeof paletteObj.alphaVariants !== "boolean") {
+        throw new Error("palette.alphaVariants must be a boolean");
+      }
+      result.palette.alphaVariants = paletteObj.alphaVariants;
+    }
+
+    if (paletteObj.alphaSteps !== undefined) {
+      if (
+        typeof paletteObj.alphaSteps !== "object" ||
+        paletteObj.alphaSteps === null ||
+        Array.isArray(paletteObj.alphaSteps)
+      ) {
+        throw new Error("palette.alphaSteps must be an object");
+      }
+      const alphaObj = paletteObj.alphaSteps as Record<string, unknown>;
+      result.palette.alphaSteps = {} as Record<string, number>;
+      for (const key of ["bg", "border", "glow", "hover"] as const) {
+        if (alphaObj[key] !== undefined) {
+          if (typeof alphaObj[key] !== "number") {
+            throw new Error(`palette.alphaSteps.${key} must be a number`);
+          }
+          (result.palette.alphaSteps as Record<string, number>)[key] = alphaObj[key] as number;
+        }
+      }
+    }
   }
 
   // Validate typography (nested object)
@@ -235,6 +280,98 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
         throw new Error(`${key} must be a boolean`);
       }
       result[key] = obj[key] as boolean;
+    }
+  }
+
+  // Validate mode
+  if (obj.mode !== undefined) {
+    if (typeof obj.mode !== "string" || !["light", "dark", "both"].includes(obj.mode)) {
+      throw new Error('mode must be one of: "light", "dark", "both"');
+    }
+    result.mode = obj.mode as AutoThemeConfig["mode"];
+  }
+
+  // Validate semantics (nested object)
+  if (obj.semantics !== undefined) {
+    if (
+      typeof obj.semantics !== "object" ||
+      obj.semantics === null ||
+      Array.isArray(obj.semantics)
+    ) {
+      throw new Error("semantics must be an object");
+    }
+    const semObj = obj.semantics as Record<string, unknown>;
+    result.semantics = {};
+
+    if (semObj.enabled !== undefined) {
+      if (typeof semObj.enabled !== "boolean") {
+        throw new Error("semantics.enabled must be a boolean");
+      }
+      result.semantics.enabled = semObj.enabled;
+    }
+
+    if (semObj.surfaceDepth !== undefined) {
+      if (typeof semObj.surfaceDepth !== "number" || semObj.surfaceDepth < 1) {
+        throw new Error("semantics.surfaceDepth must be a positive number");
+      }
+      result.semantics.surfaceDepth = semObj.surfaceDepth;
+    }
+
+    if (semObj.textLevels !== undefined) {
+      if (typeof semObj.textLevels !== "number" || semObj.textLevels < 1) {
+        throw new Error("semantics.textLevels must be a positive number");
+      }
+      result.semantics.textLevels = semObj.textLevels;
+    }
+
+    if (semObj.states !== undefined) {
+      if (
+        typeof semObj.states !== "object" ||
+        semObj.states === null ||
+        Array.isArray(semObj.states)
+      ) {
+        throw new Error("semantics.states must be an object");
+      }
+      const statesObj = semObj.states as Record<string, unknown>;
+      result.semantics.states = {} as Record<string, unknown>;
+      if (statesObj.enabled !== undefined) {
+        if (typeof statesObj.enabled !== "boolean") {
+          throw new Error("semantics.states.enabled must be a boolean");
+        }
+        (result.semantics.states as Record<string, unknown>).enabled = statesObj.enabled;
+      }
+      for (const key of ["hoverShift", "activeShift", "focusRingAlpha", "disabledAlpha", "disabledDesat"] as const) {
+        if (statesObj[key] !== undefined) {
+          if (typeof statesObj[key] !== "number") {
+            throw new Error(`semantics.states.${key} must be a number`);
+          }
+          (result.semantics.states as Record<string, unknown>)[key] = statesObj[key] as number;
+        }
+      }
+    }
+
+    if (semObj.elevation !== undefined) {
+      if (
+        typeof semObj.elevation !== "object" ||
+        semObj.elevation === null ||
+        Array.isArray(semObj.elevation)
+      ) {
+        throw new Error("semantics.elevation must be an object");
+      }
+      const elevObj = semObj.elevation as Record<string, unknown>;
+      result.semantics.elevation = {} as Record<string, unknown>;
+      if (elevObj.enabled !== undefined) {
+        if (typeof elevObj.enabled !== "boolean") {
+          throw new Error("semantics.elevation.enabled must be a boolean");
+        }
+        (result.semantics.elevation as Record<string, unknown>).enabled = elevObj.enabled;
+      }
+      if (elevObj.levels !== undefined) {
+        if (typeof elevObj.levels !== "number" || elevObj.levels < 1) {
+          throw new Error("semantics.elevation.levels must be a positive number");
+        }
+        (result.semantics.elevation as Record<string, unknown>).levels = elevObj.levels;
+      }
     }
   }
 
