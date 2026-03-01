@@ -1,9 +1,13 @@
 import type { AutoThemeConfig } from "./types";
 
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
 export interface Preset {
   name: string;
   description: string;
-  config: Partial<Pick<AutoThemeConfig, "color" | "harmony">>;
+  config: DeepPartial<AutoThemeConfig>;
 }
 
 export const PRESETS: Record<string, Preset> = {

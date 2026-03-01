@@ -1,35 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generatePreview } from "../../src/generators/preview";
-import { Color } from "../../src/core/color";
-import { generateFullPalette } from "../../src/core/palette";
-import type { GeneratedTheme } from "../../src/generators/types";
-import type { AutoThemeConfig } from "../../src/config/types";
-
-function createTestTheme(overrides: Partial<AutoThemeConfig> = {}): GeneratedTheme {
-  const primaryColor = new Color("#6439FF");
-  const palette = generateFullPalette(primaryColor, "triadic");
-  const config: AutoThemeConfig = {
-    color: "#6439FF",
-    harmony: "triadic",
-    output: "./autotheme.css",
-    preview: true,
-    tailwind: false,
-    darkModeScript: false,
-    scalar: 1.618,
-    contrastTarget: 7,
-    radius: "0.625rem",
-    prefix: "color",
-    fontSize: 1,
-    gradients: true,
-    spacing: true,
-    noise: true,
-    shadcn: true,
-    utilities: true,
-    ...overrides,
-  };
-
-  return { palette, config };
-}
+import { createTestTheme } from "../helpers/test-theme";
 
 describe("generatePreview", () => {
   it("generates output with correct filename", () => {
@@ -77,7 +48,7 @@ describe("generatePreview", () => {
     const theme = createTestTheme();
     const result = generatePreview(theme);
 
-    expect(result.content).toContain("<strong>Harmony:</strong> triadic");
+    expect(result.content).toContain("<strong>Harmony:</strong> analogous");
   });
 
   it("displays primary color", () => {
@@ -88,10 +59,9 @@ describe("generatePreview", () => {
   });
 
   it("generates color swatches with semantic names", () => {
-    const theme = createTestTheme();
+    const theme = createTestTheme({ harmony: "triadic" });
     const result = generatePreview(theme);
 
-    // Check for semantic color names (triadic = 3 colors: primary, secondary, tertiary)
     expect(result.content).toContain("Primary");
     expect(result.content).toContain("Secondary");
     expect(result.content).toContain("Tertiary");
@@ -139,8 +109,8 @@ describe("generatePreview", () => {
     expect(result.content).toContain(">T4</div>");
   });
 
-  it("includes gradient section with semantic names", () => {
-    const theme = createTestTheme();
+  it("includes gradient section when gradients enabled", () => {
+    const theme = createTestTheme({ gradients: true });
     const result = generatePreview(theme);
 
     expect(result.content).toContain("<h2>Gradients</h2>");
@@ -149,8 +119,8 @@ describe("generatePreview", () => {
     expect(result.content).toContain("gradient-radial");
   });
 
-  it("includes noise section", () => {
-    const theme = createTestTheme();
+  it("includes noise section when noise enabled", () => {
+    const theme = createTestTheme({ noise: true });
     const result = generatePreview(theme);
 
     expect(result.content).toContain("<h2>Noise</h2>");

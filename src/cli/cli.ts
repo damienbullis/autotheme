@@ -25,7 +25,9 @@ export async function run(args: string[]): Promise<void> {
   if (args[0] === "presets") {
     log.info("Available presets:\n");
     for (const [key, preset] of Object.entries(PRESETS)) {
-      log.info(`  ${key.padEnd(12)} ${preset.config.color}  ${preset.config.harmony?.padEnd(22) ?? ""}  ${preset.description}`);
+      log.info(
+        `  ${key.padEnd(12)} ${preset.config.color}  ${preset.config.harmony?.padEnd(22) ?? ""}  ${preset.description}`,
+      );
     }
     return;
   }

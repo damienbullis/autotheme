@@ -144,8 +144,7 @@ export function generateHarmony(
   type: HarmonyType | string,
   options?: HarmonyOptions & { customDefinitions?: Record<string, HarmonyDefinition> },
 ): HarmonyResult {
-  const definition =
-    HARMONY_DEFINITIONS[type as HarmonyType] ?? options?.customDefinitions?.[type];
+  const definition = HARMONY_DEFINITIONS[type as HarmonyType] ?? options?.customDefinitions?.[type];
 
   if (!definition) {
     throw new Error(

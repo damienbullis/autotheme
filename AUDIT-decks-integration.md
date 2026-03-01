@@ -8,24 +8,24 @@ Decks uses autotheme to generate `lib/theme.css` and per-deck `theme.css` files.
 
 ### What decks actually consumes from autotheme
 
-| Used | How |
-|------|-----|
-| `palette.palettes[N].base` | Raw harmony colors for `--accent` / `--accent-sub` |
+| Used                               | How                                                 |
+| ---------------------------------- | --------------------------------------------------- |
+| `palette.palettes[N].base`         | Raw harmony colors for `--accent` / `--accent-sub`  |
 | `palette.palettes[N].base.oklch.h` | Primary hue — tints all hand-computed surfaces/text |
-| `palette.palettes[N].tones[1]` | One desaturated tone for gray variants |
-| `formatOklch()` | Formatting utility |
+| `palette.palettes[N].tones[1]`     | One desaturated tone for gray variants              |
+| `formatOklch()`                    | Formatting utility                                  |
 
 ### What decks ignores (~239 vars of deadweight per theme file)
 
-| Section | Var count | Why unused |
-|---------|-----------|------------|
-| Shadcn semantic vars (--primary, --card, --muted, etc.) | ~40 | Light-mode defaults are white; dark-mode doesn't go dark enough |
-| Material 3 tokens (--surface, --container, --outline) | ~30 | Surface hierarchy too bright for ultra-dark aesthetic |
-| Color scales (--color-primary-50 through -950, x4) | ~76 | Decks needs alpha overlays, not solid swatches |
-| Typography scale (--text-xs through --text-4xl) | 8 | Starts at 1.0rem; slides need 0.55-1.6rem range |
-| Spacing scale (--spacing-1 through --spacing-10) | 10 | Golden ratio from 0.155rem overshoots; slides define own scale |
-| Dark mode overrides (.dark {...}) | ~60 | Decks is always dark; no toggle needed |
-| Gradient vars + utility classes | ~15 | Not used |
+| Section                                                 | Var count | Why unused                                                      |
+| ------------------------------------------------------- | --------- | --------------------------------------------------------------- |
+| Shadcn semantic vars (--primary, --card, --muted, etc.) | ~40       | Light-mode defaults are white; dark-mode doesn't go dark enough |
+| Material 3 tokens (--surface, --container, --outline)   | ~30       | Surface hierarchy too bright for ultra-dark aesthetic           |
+| Color scales (--color-primary-50 through -950, x4)      | ~76       | Decks needs alpha overlays, not solid swatches                  |
+| Typography scale (--text-xs through --text-4xl)         | 8         | Starts at 1.0rem; slides need 0.55-1.6rem range                 |
+| Spacing scale (--spacing-1 through --spacing-10)        | 10        | Golden ratio from 0.155rem overshoots; slides define own scale  |
+| Dark mode overrides (.dark {...})                       | ~60       | Decks is always dark; no toggle needed                          |
+| Gradient vars + utility classes                         | ~15       | Not used                                                        |
 
 ---
 
@@ -53,7 +53,7 @@ What decks needs:
 --line:        L=0.320   (structural lines)
 ```
 
-The entire dark-mode surface hierarchy is shifted ~0.08-0.10L too bright. Decks operates in an ultra-dark range (L=0.10-0.12 for backgrounds) that autotheme's dark mode doesn't reach. The darkest surface autotheme generates is `--surface-dim` at L=0.165, which is brighter than decks' *borders*.
+The entire dark-mode surface hierarchy is shifted ~0.08-0.10L too bright. Decks operates in an ultra-dark range (L=0.10-0.12 for backgrounds) that autotheme's dark mode doesn't reach. The darkest surface autotheme generates is `--surface-dim` at L=0.165, which is brighter than decks' _borders_.
 
 **Fix:** Add a `darkness` or `surfaceLevel` config option that shifts the entire dark-mode surface range. A value like `darkness: 0.10` would anchor the darkest surface at L=0.10 and space the hierarchy from there.
 
@@ -108,6 +108,7 @@ What decks needs (dense slide content, 0.55-1.6rem range):
 The `fontSize` config exists but it's a simple multiplier on the scale. Setting `fontSize: 0.55` would get the bottom right, but the golden ratio (1.618) blows up too fast — step 3 would already be 1.44rem. Decks uses a ratio closer to 1.13 (major second).
 
 **Fix:** Either:
+
 - (a) Make `scalar` apply separately to spacing vs typography (currently shared), or add a `typeRatio` option
 - (b) Add a `typeScale` config: `{ base: 0.55, ratio: 1.13, steps: 7 }` for full control
 - (c) At minimum, let `fontSize` set the base AND accept a separate ratio
@@ -127,6 +128,7 @@ Current autotheme spacing (`scalar: 1.618`, base hardcoded to 0.155rem):
 ```
 
 The golden ratio spacing actually lines up reasonably well at steps 2-4, but:
+
 - The base (0.155rem) is too large for micro spacing (decks needs 0.10rem)
 - There's no "tight" step between 0.155 and 0.251 (decks has --sp-2: 0.15rem)
 - It grows too fast after step 4
@@ -138,9 +140,9 @@ The golden ratio spacing actually lines up reasonably well at steps 2-4, but:
 Decks' diagram color system uses alpha overlays on the base color:
 
 ```css
---purple-bg:     oklch(0.695 0.152 293 / 7%);    /* 7% alpha */
---purple-border: oklch(0.695 0.152 293 / 22%);   /* 22% alpha */
---purple-glow:   oklch(0.695 0.152 293 / 4%);    /* 4% alpha */
+--purple-bg: oklch(0.695 0.152 293 / 7%); /* 7% alpha */
+--purple-border: oklch(0.695 0.152 293 / 22%); /* 22% alpha */
+--purple-glow: oklch(0.695 0.152 293 / 4%); /* 4% alpha */
 ```
 
 This is fundamentally different from autotheme's approach of generating solid swatches at different lightness levels (50-950 scale). The alpha approach means the dark background shows through, creating depth. Solid swatches don't achieve this effect.
@@ -161,7 +163,7 @@ Always-emitted (no toggle): semantic tokens, color scales, typography, dark mode
 
 For a consumer like decks that doesn't use semantic tokens or color scales, there's no way to slim the output. Decks would ideally only emit: color scales (for the diagram layer opt-in) + spacing + the bridge layer it appends.
 
-**Fix:** Add toggles for `semanticTokens` (the MD3-style surface/container/outline system), `colorScales` (the 50-950 Tailwind scales), `typography` (the --text-* scale), and `darkMode` (the .dark block). This lets consumers build minimal outputs.
+**Fix:** Add toggles for `semanticTokens` (the MD3-style surface/container/outline system), `colorScales` (the 50-950 Tailwind scales), `typography` (the --text-\* scale), and `darkMode` (the .dark block). This lets consumers build minimal outputs.
 
 ---
 
@@ -175,11 +177,11 @@ const config = {
   color: "#7aa2f7",
   harmony: "square",
   mode: "dark",
-  darkness: 0.10,           // anchor darkest surface
-  textLevels: 5,            // 5-level text hierarchy
+  darkness: 0.1, // anchor darkest surface
+  textLevels: 5, // 5-level text hierarchy
   typeScale: { base: 0.55, ratio: 1.13, steps: 7 },
-  spacingBase: 0.10,
-  alphaVariants: true,      // generate -bg/-border/-glow
+  spacingBase: 0.1,
+  alphaVariants: true, // generate -bg/-border/-glow
   shadcn: false,
   semanticTokens: false,
   gradients: false,
@@ -213,7 +215,7 @@ These changes should be **additive and backwards-compatible**. The defaults stay
 1. **`mode: "dark"`** — biggest bang, cuts output in half, trivial to implement
 2. **`darkness` / surface level control** — fixes the fundamental mismatch
 3. **`textLevels`** — replaces binary foreground/muted with a real hierarchy
-4. **Section toggles** (`semanticTokens`, `colorScales`, `darkMode`)  — lets consumers slim output
+4. **Section toggles** (`semanticTokens`, `colorScales`, `darkMode`) — lets consumers slim output
 5. **`alphaVariants`** — generates -bg/-border/-glow from base colors
 6. **Typography `typeScale`** — separate base/ratio from spacing
 7. **Spacing `spacingBase`** — configurable starting point

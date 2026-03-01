@@ -8,7 +8,7 @@ import { getHarmonyName } from "./css";
  */
 export function generateDarkModeCSS(theme: GeneratedTheme): string {
   const { palette, config } = theme;
-  const prefix = config.prefix;
+  const prefix = config.palette.prefix;
   const lines: string[] = [];
 
   lines.push(".dark {");

@@ -20,15 +20,15 @@ export async function writeOutputs(
   outputs.push(generateCSS(theme));
 
   // Conditional outputs
-  if (config.tailwind) {
+  if (config.output.tailwind) {
     outputs.push(generateTailwindCSS(theme));
   }
 
-  if (config.preview) {
+  if (config.output.preview) {
     outputs.push(generatePreview(theme));
   }
 
-  if (config.darkModeScript) {
+  if (config.output.darkModeScript) {
     outputs.push(generateDarkModeScript());
   }
 
@@ -52,4 +52,3 @@ export * from "./tailwind";
 export * from "./preview";
 export * from "./script";
 export * from "./shadcn";
-export * from "./semantic";

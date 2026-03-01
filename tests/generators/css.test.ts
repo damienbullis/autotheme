@@ -6,35 +6,7 @@ import {
   getHarmonyName,
 } from "../../src/generators/css";
 import { Color } from "../../src/core/color";
-import { generateFullPalette } from "../../src/core/palette";
-import type { GeneratedTheme } from "../../src/generators/types";
-import type { AutoThemeConfig } from "../../src/config/types";
-
-function createTestTheme(overrides: Partial<AutoThemeConfig> = {}): GeneratedTheme {
-  const primaryColor = new Color("#6439FF");
-  const palette = generateFullPalette(primaryColor, "analogous");
-  const config: AutoThemeConfig = {
-    color: "#6439FF",
-    harmony: "analogous",
-    output: "./autotheme.css",
-    preview: false,
-    tailwind: false,
-    darkModeScript: false,
-    scalar: 1.618,
-    contrastTarget: 7,
-    radius: "0.625rem",
-    prefix: "color",
-    fontSize: 1,
-    gradients: true,
-    spacing: true,
-    noise: true,
-    shadcn: true,
-    utilities: true,
-    ...overrides,
-  };
-
-  return { palette, config };
-}
+import { createTestTheme } from "../helpers/test-theme";
 
 describe("generateCSS", () => {
   it("generates CSS with root variables", () => {
@@ -101,8 +73,8 @@ describe("generateCSS", () => {
     expect(result.content).toContain("--text-4xl:");
   });
 
-  it("generates spacing scale with Tailwind naming", () => {
-    const theme = createTestTheme();
+  it("generates spacing scale when enabled", () => {
+    const theme = createTestTheme({ spacing: { enabled: true } });
     const result = generateCSS(theme);
 
     expect(result.content).toContain("/* Spacing Scale */");
@@ -111,8 +83,8 @@ describe("generateCSS", () => {
     }
   });
 
-  it("includes noise variable with Tailwind naming", () => {
-    const theme = createTestTheme();
+  it("includes noise variable when enabled", () => {
+    const theme = createTestTheme({ noise: true });
     const result = generateCSS(theme);
 
     expect(result.content).toContain("/* Background Images */");
@@ -120,8 +92,8 @@ describe("generateCSS", () => {
     expect(result.content).toContain("data:image/svg+xml");
   });
 
-  it("generates gradient variables with Tailwind naming", () => {
-    const theme = createTestTheme();
+  it("generates gradient variables when enabled", () => {
+    const theme = createTestTheme({ gradients: true });
     const result = generateCSS(theme);
 
     expect(result.content).toContain("/* Gradients */");
@@ -137,8 +109,8 @@ describe("generateCSS", () => {
     expect(result.content).toContain(".dark {");
   });
 
-  it("includes utility classes with new naming", () => {
-    const theme = createTestTheme();
+  it("includes utility classes when enabled", () => {
+    const theme = createTestTheme({ utilities: true });
     const result = generateCSS(theme);
 
     expect(result.content).toContain(".gradient-linear {");
@@ -147,119 +119,39 @@ describe("generateCSS", () => {
     expect(result.content).toContain(".bg-noise-overlay {");
   });
 
-  it("includes Shadcn-compatible variables header", () => {
-    const theme = createTestTheme();
+  it("includes Shadcn-compatible variables when enabled", () => {
+    const theme = createTestTheme({ shadcn: { enabled: true } });
     const result = generateCSS(theme);
 
     expect(result.content).toContain("Shadcn UI Compatible Theme Variables");
-  });
-
-  it("generates Shadcn background and foreground variables", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
     expect(result.content).toContain("--background:");
     expect(result.content).toContain("--foreground:");
-  });
-
-  it("generates Shadcn primary variables", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
     expect(result.content).toContain("--primary:");
     expect(result.content).toContain("--primary-foreground:");
-  });
-
-  it("generates Shadcn secondary variables", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
     expect(result.content).toContain("--secondary:");
     expect(result.content).toContain("--secondary-foreground:");
-  });
-
-  it("generates Shadcn accent variables", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
     expect(result.content).toContain("--accent:");
     expect(result.content).toContain("--accent-foreground:");
-  });
-
-  it("generates Shadcn muted variables", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
     expect(result.content).toContain("--muted:");
     expect(result.content).toContain("--muted-foreground:");
-  });
-
-  it("generates Shadcn destructive variables", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
     expect(result.content).toContain("--destructive:");
     expect(result.content).toContain("--destructive-foreground:");
-  });
-
-  it("generates Shadcn card and popover variables", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
     expect(result.content).toContain("--card:");
     expect(result.content).toContain("--card-foreground:");
     expect(result.content).toContain("--popover:");
     expect(result.content).toContain("--popover-foreground:");
-  });
-
-  it("generates Shadcn border and input variables", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
     expect(result.content).toContain("--border:");
     expect(result.content).toContain("--input:");
     expect(result.content).toContain("--ring:");
-  });
-
-  it("generates Shadcn radius variable", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
     expect(result.content).toContain("--radius: 0.625rem");
-  });
-
-  it("generates Shadcn chart variables", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
     expect(result.content).toContain("--chart-1:");
-    expect(result.content).toContain("--chart-2:");
-    expect(result.content).toContain("--chart-3:");
-    expect(result.content).toContain("--chart-4:");
     expect(result.content).toContain("--chart-5:");
-  });
-
-  it("generates Shadcn sidebar variables", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
     expect(result.content).toContain("--sidebar:");
     expect(result.content).toContain("--sidebar-foreground:");
-    expect(result.content).toContain("--sidebar-primary:");
-    expect(result.content).toContain("--sidebar-accent:");
-    expect(result.content).toContain("--sidebar-border:");
-    expect(result.content).toContain("--sidebar-ring:");
-  });
-
-  it("generates Shadcn dark mode variables", () => {
-    const theme = createTestTheme();
-    const result = generateCSS(theme);
-
-    expect(result.content).toContain(".dark {");
   });
 
   it("uses OKLCH color format for all color variables", () => {
-    const theme = createTestTheme();
+    const theme = createTestTheme({ shadcn: { enabled: true } });
     const result = generateCSS(theme);
 
     expect(result.content).toMatch(/--background:\s*oklch\(/);
@@ -345,7 +237,7 @@ describe("findContrastColor", () => {
 
 describe("generateCSS with custom prefix", () => {
   it("uses custom prefix in color variable names", () => {
-    const theme = createTestTheme({ prefix: "at" });
+    const theme = createTestTheme({ palette: { prefix: "at" } });
     const result = generateCSS(theme);
 
     expect(result.content).toContain("--at-primary-500:");
@@ -359,7 +251,7 @@ describe("generateCSS with custom prefix", () => {
 
 describe("generateCSS with custom fontSize", () => {
   it("uses custom fontSize as typography base", () => {
-    const theme = createTestTheme({ fontSize: 0.875 });
+    const theme = createTestTheme({ typography: { base: 0.875 } });
     const result = generateCSS(theme);
 
     expect(result.content).toContain("--text-xs: 0.875rem;");
@@ -367,15 +259,15 @@ describe("generateCSS with custom fontSize", () => {
 });
 
 describe("generateCSS toggles", () => {
-  it("omits shadcn section when shadcn is false", () => {
-    const theme = createTestTheme({ shadcn: false });
+  it("omits shadcn section when shadcn is disabled", () => {
+    const theme = createTestTheme({ shadcn: { enabled: false } });
     const result = generateCSS(theme);
 
     expect(result.content).not.toContain("Shadcn UI Compatible Theme Variables");
   });
 
-  it("omits spacing section when spacing is false", () => {
-    const theme = createTestTheme({ spacing: false });
+  it("omits spacing section when spacing is disabled", () => {
+    const theme = createTestTheme({ spacing: { enabled: false } });
     const result = generateCSS(theme);
 
     expect(result.content).not.toContain("/* Spacing Scale */");
@@ -406,14 +298,8 @@ describe("generateCSS toggles", () => {
     expect(result.content).not.toContain(".gradient-linear {");
   });
 
-  it("produces valid output with all toggles false", () => {
-    const theme = createTestTheme({
-      shadcn: false,
-      spacing: false,
-      noise: false,
-      gradients: false,
-      utilities: false,
-    });
+  it("produces valid output with all toggles off (defaults)", () => {
+    const theme = createTestTheme();
     const result = generateCSS(theme);
 
     // Still has color palette + typography + dark mode

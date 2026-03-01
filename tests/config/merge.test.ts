@@ -10,7 +10,6 @@ describe("generateRandomColor", () => {
   });
 
   it("generates vibrant colors (high saturation)", () => {
-    // Generate multiple colors and check saturation
     for (let i = 0; i < 10; i++) {
       const color = generateRandomColor();
       expect(color.hsl.s).toBeGreaterThanOrEqual(70);
@@ -19,7 +18,6 @@ describe("generateRandomColor", () => {
   });
 
   it("generates colors with moderate lightness", () => {
-    // Generate multiple colors and check lightness
     for (let i = 0; i < 10; i++) {
       const color = generateRandomColor();
       expect(color.hsl.l).toBeGreaterThanOrEqual(45);
@@ -30,7 +28,6 @@ describe("generateRandomColor", () => {
 
 describe("resolveConfig", () => {
   afterEach(() => {
-    // Clean up test files
     if (existsSync("autotheme.json")) {
       unlinkSync("autotheme.json");
     }
@@ -41,12 +38,12 @@ describe("resolveConfig", () => {
       const config = await resolveConfig({});
 
       expect(config.harmony).toBe(DEFAULT_CONFIG.harmony);
-      expect(config.output).toBe(DEFAULT_CONFIG.output);
-      expect(config.preview).toBe(DEFAULT_CONFIG.preview);
-      expect(config.tailwind).toBe(DEFAULT_CONFIG.tailwind);
-      expect(config.darkModeScript).toBe(DEFAULT_CONFIG.darkModeScript);
-      expect(config.scalar).toBe(DEFAULT_CONFIG.scalar);
-      expect(config.contrastTarget).toBe(DEFAULT_CONFIG.contrastTarget);
+      expect(config.output.path).toBe(DEFAULT_CONFIG.output.path);
+      expect(config.output.preview).toBe(DEFAULT_CONFIG.output.preview);
+      expect(config.output.tailwind).toBe(DEFAULT_CONFIG.output.tailwind);
+      expect(config.output.darkModeScript).toBe(DEFAULT_CONFIG.output.darkModeScript);
+      expect(config.typography.ratio).toBe(DEFAULT_CONFIG.typography.ratio);
+      expect(config.palette.contrastTarget).toBe(DEFAULT_CONFIG.palette.contrastTarget);
     });
 
     it("generates random color when not provided", async () => {
@@ -70,10 +67,10 @@ describe("resolveConfig", () => {
 
       expect(config.color).toBe("#ff0000");
       expect(config.harmony).toBe("triadic");
-      expect(config.output).toBe("./custom.css");
-      expect(config.preview).toBe(true);
-      expect(config.tailwind).toBe(true);
-      expect(config.darkModeScript).toBe(true);
+      expect(config.output.path).toBe("./custom.css");
+      expect(config.output.preview).toBe(true);
+      expect(config.output.tailwind).toBe(true);
+      expect(config.output.darkModeScript).toBe(true);
       expect(config.silent).toBe(true);
     });
 
@@ -83,7 +80,7 @@ describe("resolveConfig", () => {
         JSON.stringify({
           color: "#00ff00",
           harmony: "analogous",
-          output: "./file.css",
+          output: { path: "./file.css" },
         }),
       );
 
@@ -94,8 +91,8 @@ describe("resolveConfig", () => {
 
       expect(config.color).toBe("#ff0000");
       expect(config.harmony).toBe("triadic");
-      // Output should come from file since not in CLI args
-      expect(config.output).toBe("./file.css");
+      // Output path should come from file since not in CLI args
+      expect(config.output.path).toBe("./file.css");
     });
   });
 
@@ -106,7 +103,7 @@ describe("resolveConfig", () => {
         JSON.stringify({
           color: "#0000ff",
           harmony: "complementary",
-          preview: true,
+          output: { preview: true },
         }),
       );
 
@@ -114,7 +111,7 @@ describe("resolveConfig", () => {
 
       expect(config.color).toBe("#0000ff");
       expect(config.harmony).toBe("complementary");
-      expect(config.preview).toBe(true);
+      expect(config.output.preview).toBe(true);
     });
 
     it("uses explicit config path", async () => {
@@ -128,7 +125,6 @@ describe("resolveConfig", () => {
       );
 
       try {
-        // This should fail because "invalid-color" is not a valid color format
         await expect(resolveConfig({ config: customPath })).rejects.toThrow("Invalid color format");
       } finally {
         if (existsSync(customPath)) {
@@ -156,8 +152,8 @@ describe("resolveConfig", () => {
       writeFileSync(configPath, JSON.stringify({ harmony: "triadic" }));
       try {
         const config = await resolveConfig({ preset: "ocean", config: configPath });
-        expect(config.color).toBe("#1E6091"); // from preset (not overridden by file)
-        expect(config.harmony).toBe("triadic"); // from file (overrides preset)
+        expect(config.color).toBe("#1E6091"); // from preset
+        expect(config.harmony).toBe("triadic"); // from file
       } finally {
         if (existsSync(configPath)) unlinkSync(configPath);
       }
@@ -187,8 +183,7 @@ describe("resolveConfig", () => {
         mergeTestConfig,
         JSON.stringify({
           harmony: "square",
-          output: "./from-file.css",
-          preview: true,
+          output: { path: "./from-file.css", preview: true },
         }),
       );
 
@@ -199,12 +194,12 @@ describe("resolveConfig", () => {
 
       // harmony from CLI (overrides file)
       expect(config.harmony).toBe("triadic");
-      // output from file (overrides default)
-      expect(config.output).toBe("./from-file.css");
-      // preview from file (overrides default false)
-      expect(config.preview).toBe(true);
-      // tailwind from default (not in file or CLI)
-      expect(config.tailwind).toBe(false);
+      // output.path from file (overrides default)
+      expect(config.output.path).toBe("./from-file.css");
+      // output.preview from file (overrides default false)
+      expect(config.output.preview).toBe(true);
+      // output.tailwind from default (not in file or CLI)
+      expect(config.output.tailwind).toBe(false);
     });
   });
 });

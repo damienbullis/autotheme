@@ -8,6 +8,11 @@ export const CONFIG_SCHEMA = {
       type: "string",
       description: "Path to the JSON schema",
     },
+    version: {
+      type: "number",
+      const: 2,
+      description: "Config version",
+    },
     color: {
       type: "string",
       description: "Primary color in hex, rgb, or hsl format",
@@ -52,55 +57,6 @@ export const CONFIG_SCHEMA = {
       ],
       description: "Built-in preset name for quick theme setup",
     },
-    output: {
-      type: "string",
-      default: "./src/autotheme.css",
-      description: "Output file path for generated CSS",
-    },
-    preview: {
-      type: "boolean",
-      default: false,
-      description: "Generate HTML preview file",
-    },
-    tailwind: {
-      type: "boolean",
-      default: false,
-      description: "Generate Tailwind v4 compatible CSS",
-    },
-    darkModeScript: {
-      type: "boolean",
-      default: false,
-      description: "Generate dark mode initialization script",
-    },
-    scalar: {
-      type: "number",
-      default: 1.618,
-      description: "Scale factor for spacing and typography (golden ratio)",
-    },
-    contrastTarget: {
-      type: "number",
-      default: 7,
-      minimum: 3,
-      maximum: 21,
-      description: "Target contrast ratio for accessible text (7 = AAA, 4.5 = AA)",
-    },
-    radius: {
-      type: "string",
-      default: "0.625rem",
-      description: "Border radius for Shadcn components",
-    },
-    prefix: {
-      type: "string",
-      default: "color",
-      pattern: "^[a-zA-Z][a-zA-Z0-9-]*$",
-      description: "CSS variable prefix (e.g., --{prefix}-primary-500)",
-    },
-    fontSize: {
-      type: "number",
-      default: 1,
-      exclusiveMinimum: 0,
-      description: "Base font size in rem for typography scale",
-    },
     swing: {
       type: "number",
       default: 1,
@@ -113,30 +69,139 @@ export const CONFIG_SCHEMA = {
       default: "linear",
       description: "Strategy for applying swing to harmony offsets",
     },
-    gradients: {
-      type: "boolean",
-      default: true,
-      description: "Generate gradient CSS variables",
+    palette: {
+      type: "object",
+      description: "Palette generation options",
+      properties: {
+        prefix: {
+          type: "string",
+          default: "color",
+          pattern: "^[a-zA-Z][a-zA-Z0-9-]*$",
+          description: "CSS variable prefix (e.g., --{prefix}-primary-500)",
+        },
+        contrastTarget: {
+          type: "number",
+          default: 7,
+          minimum: 3,
+          maximum: 21,
+          description: "Target contrast ratio for accessible text (7 = AAA, 4.5 = AA)",
+        },
+      },
+      additionalProperties: false,
+    },
+    typography: {
+      type: "object",
+      description: "Typography scale options",
+      properties: {
+        base: {
+          type: "number",
+          default: 1,
+          exclusiveMinimum: 0,
+          description: "Base font size in rem for typography scale",
+        },
+        ratio: {
+          type: "number",
+          default: 1.618,
+          exclusiveMinimum: 0,
+          description: "Scale factor for typography (golden ratio)",
+        },
+        steps: {
+          type: "number",
+          default: 8,
+          minimum: 1,
+          description: "Number of typography scale steps",
+        },
+      },
+      additionalProperties: false,
     },
     spacing: {
+      type: "object",
+      description: "Spacing scale options",
+      properties: {
+        enabled: {
+          type: "boolean",
+          default: false,
+          description: "Generate spacing scale CSS variables",
+        },
+        base: {
+          type: "number",
+          default: 0.155,
+          exclusiveMinimum: 0,
+          description: "Base spacing value in rem",
+        },
+        ratio: {
+          type: "number",
+          default: 1.618,
+          exclusiveMinimum: 0,
+          description: "Scale factor for spacing",
+        },
+        steps: {
+          type: "number",
+          default: 10,
+          minimum: 1,
+          description: "Number of spacing scale steps",
+        },
+      },
+      additionalProperties: false,
+    },
+    gradients: {
       type: "boolean",
-      default: true,
-      description: "Generate spacing scale CSS variables",
+      default: false,
+      description: "Generate gradient CSS variables",
     },
     noise: {
       type: "boolean",
-      default: true,
+      default: false,
       description: "Generate noise texture CSS variable",
-    },
-    shadcn: {
-      type: "boolean",
-      default: true,
-      description: "Generate Shadcn UI compatible CSS variables",
     },
     utilities: {
       type: "boolean",
-      default: true,
+      default: false,
       description: "Generate CSS utility classes",
+    },
+    shadcn: {
+      type: "object",
+      description: "Shadcn UI integration options",
+      properties: {
+        enabled: {
+          type: "boolean",
+          default: false,
+          description: "Generate Shadcn UI compatible CSS variables",
+        },
+        radius: {
+          type: "string",
+          default: "0.625rem",
+          description: "Border radius for Shadcn components",
+        },
+      },
+      additionalProperties: false,
+    },
+    output: {
+      type: "object",
+      description: "Output options",
+      properties: {
+        path: {
+          type: "string",
+          default: "./src/autotheme.css",
+          description: "Output file path for generated CSS",
+        },
+        tailwind: {
+          type: "boolean",
+          default: false,
+          description: "Generate Tailwind v4 compatible CSS",
+        },
+        preview: {
+          type: "boolean",
+          default: false,
+          description: "Generate HTML preview file",
+        },
+        darkModeScript: {
+          type: "boolean",
+          default: false,
+          description: "Generate dark mode initialization script",
+        },
+      },
+      additionalProperties: false,
     },
   },
   additionalProperties: false,

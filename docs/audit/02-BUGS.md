@@ -44,9 +44,10 @@ What dark UIs need:
 **Location:** `src/generators/shadcn.ts`
 
 **Problem:**
+
 ```typescript
-secondary: semantic.secondaryContainer  // Should be semantic.secondary
-accent: semantic.accentContainer        // Should be semantic.accent
+secondary: semantic.secondaryContainer; // Should be semantic.secondary
+accent: semantic.accentContainer; // Should be semantic.accent
 ```
 
 The Shadcn `--secondary` token maps to `secondaryContainer` (a desaturated tint), not the actual secondary color. This means `bg-secondary` in Shadcn gives you a washed-out container color instead of the harmony secondary. Same issue with `--accent`.
@@ -76,6 +77,7 @@ The Shadcn `--secondary` token maps to `secondaryContainer` (a desaturated tint)
 **Location:** `src/generators/css.ts`
 
 **Problem:** The typography scale applies the scalar starting from `fontSize` upward:
+
 ```
 --text-xs:  fontSize * scalar^0 = base
 --text-sm:  fontSize * scalar^1
@@ -125,6 +127,7 @@ const spacingBase = 0.155;
 **Location:** `src/generators/semantic.ts`
 
 **Problem:** Error hue is determined by a simple conditional:
+
 ```typescript
 if (primaryHue < 40 || primaryHue > 340) errorHue = 0;
 else errorHue = 15;

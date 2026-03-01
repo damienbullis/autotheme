@@ -1,6 +1,5 @@
 import { existsSync } from "fs";
 import { readFile } from "fs/promises";
-import type { AutoThemeConfig } from "./types";
 import { validateConfig } from "./validator";
 
 const CONFIG_FILENAME = "autotheme.json";
@@ -12,7 +11,7 @@ export function isUrl(path: string): boolean {
   return path.startsWith("http://") || path.startsWith("https://");
 }
 
-export async function loadConfig(configPath?: string): Promise<Partial<AutoThemeConfig>> {
+export async function loadConfig(configPath?: string): Promise<Record<string, unknown>> {
   // If explicit path provided, use it
   if (configPath) {
     if (isUrl(configPath)) {
@@ -30,7 +29,7 @@ export async function loadConfig(configPath?: string): Promise<Partial<AutoTheme
   return {};
 }
 
-async function loadConfigFromPath(path: string): Promise<Partial<AutoThemeConfig>> {
+async function loadConfigFromPath(path: string): Promise<Record<string, unknown>> {
   if (!existsSync(path)) {
     throw new Error(`Config file not found: ${path}`);
   }
@@ -48,7 +47,7 @@ async function loadConfigFromPath(path: string): Promise<Partial<AutoThemeConfig
   }
 }
 
-async function loadConfigFromUrl(url: string): Promise<Partial<AutoThemeConfig>> {
+async function loadConfigFromUrl(url: string): Promise<Record<string, unknown>> {
   let response: Response;
   try {
     response = await fetch(url, {

@@ -1,7 +1,8 @@
 import { Color } from "../core/color";
 import { findAccessibleTextColor } from "../core/contrast";
+import { normalizeHue } from "../core/harmonies";
 import type { GeneratedTheme } from "./types";
-import { generateSemanticColors, type SemanticColors } from "./semantic";
+import type { FullPalette, PaletteVariations } from "../core/types";
 
 /**
  * Shadcn semantic color variables
@@ -42,99 +43,248 @@ export interface ShadcnColors {
 }
 
 /**
- * Derive Shadcn colors from semantic tokens for a given mode
+ * Calculate the hue distance between two hues (0-180)
  */
-function deriveShadcnFromSemantic(
-  semantic: SemanticColors,
-  harmonyColors: Color[],
-  mode: "light" | "dark",
-): ShadcnColors {
-  const primary = harmonyColors[0]!;
+function hueDistance(h1: number, h2: number): number {
+  const diff = Math.abs(normalizeHue(h1) - normalizeHue(h2));
+  return Math.min(diff, 360 - diff);
+}
 
-  // Card and popover: use surface container for subtle elevation
-  const card = mode === "light" ? semantic.surfaceContainer : semantic.surfaceContainerHigh;
-  const popover = mode === "light" ? semantic.surfaceContainer : semantic.surfaceContainerHigh;
+/**
+ * Select the most hue-distant harmony color from primary
+ */
+export function selectAccentColor(palette: FullPalette): {
+  color: Color;
+  palette: PaletteVariations;
+} {
+  const primaryHue = palette.palettes[0]!.base.hsl.h;
+  let maxDist = -1;
+  let accentIdx = 1;
 
-  // Sidebar: slightly offset from main surface
-  const sidebar = mode === "light" ? semantic.surfaceContainerLow : semantic.surface;
-
-  // Chart colors: direct from harmony colors
-  const chart1 =
-    mode === "dark" ? (harmonyColors[0] || primary).lighten(5) : harmonyColors[0] || primary;
-  const chart2 =
-    mode === "dark"
-      ? (harmonyColors[1] || primary.rotate(60)).lighten(5)
-      : harmonyColors[1] || primary.rotate(60);
-  const chart3 =
-    mode === "dark"
-      ? (harmonyColors[2] || primary.rotate(120)).lighten(5)
-      : harmonyColors[2] || primary.rotate(120);
-  const chart4 =
-    mode === "dark"
-      ? (harmonyColors[3] || primary.rotate(180)).lighten(5)
-      : harmonyColors[3] || primary.rotate(180);
-  const chart5 =
-    mode === "dark"
-      ? (harmonyColors[4] || primary.rotate(240)).lighten(5)
-      : harmonyColors[4] || primary.rotate(240);
+  for (let i = 1; i < palette.palettes.length; i++) {
+    const dist = hueDistance(primaryHue, palette.palettes[i]!.base.hsl.h);
+    if (dist > maxDist) {
+      maxDist = dist;
+      accentIdx = i;
+    }
+  }
 
   return {
-    // Background/foreground from semantic surface
-    background: semantic.surface,
-    foreground: semantic.surfaceForeground,
+    color: palette.palettes[accentIdx]!.base,
+    palette: palette.palettes[accentIdx]!,
+  };
+}
 
-    card,
-    cardForeground: findAccessibleTextColor(card),
+/**
+ * Generate a container color: a soft, tinted background version of a base color
+ */
+function generateContainer(
+  base: PaletteVariations,
+  tintIndex: number,
+  desatAmount: number = 10,
+): Color {
+  const tint = base.tints[tintIndex];
+  if (tint) {
+    return tint.desaturate(desatAmount);
+  }
+  return base.base.lighten(30).desaturate(desatAmount);
+}
 
-    popover,
-    popoverForeground: findAccessibleTextColor(popover),
+/**
+ * Generate a destructive/error color independent of the palette
+ */
+function generateErrorColor(primaryHue: number): Color {
+  const isNearRed = primaryHue < 40 || primaryHue > 340;
+  const errorHue = isNearRed ? 0 : 15;
+  return new Color({ h: errorHue, s: 85, l: 45, a: 1 });
+}
 
-    // Primary: direct from semantic
-    primary: semantic.primary,
-    primaryForeground: semantic.primaryForeground,
+/**
+ * Derive Shadcn colors for light mode directly from palette
+ */
+function deriveLightShadcnColors(palette: FullPalette, harmonyColors: Color[]): ShadcnColors {
+  const primaryPalette = palette.palettes[0]!;
+  const primary = primaryPalette.base;
+  const primaryHsl = primary.hsl;
 
-    // Secondary: shadcn "secondary" is a soft background, so use secondaryContainer
-    secondary: semantic.secondaryContainer,
-    secondaryForeground: semantic.secondaryContainerForeground,
+  const secondaryPalette = palette.palettes[1] || primaryPalette;
+  const accentData = selectAccentColor(palette);
+  const accentPalette = accentData.palette;
 
-    // Muted: from semantic muted container
-    muted: semantic.mutedContainer,
-    mutedForeground: semantic.mutedForeground,
+  // Surface system
+  const surface = primaryPalette.tints[4] || primary.lighten(45);
+  const surfaceContainer = (primaryPalette.tints[4] || primary.lighten(45)).desaturate(15);
+  const surfaceContainerLow = (primaryPalette.tints[4] || primary.lighten(45)).desaturate(25);
 
-    // Accent: shadcn "accent" is a soft background, so use accentContainer
-    accent: semantic.accentContainer,
-    accentForeground: semantic.accentContainerForeground,
+  // Containers
+  const secondaryContainer = generateContainer(secondaryPalette, 2);
+  const accentContainer = generateContainer(accentPalette, 2);
 
-    // Destructive: from semantic error
-    destructive: semantic.error,
-    destructiveForeground: semantic.errorForeground,
+  // Muted
+  const muted = primaryPalette.tones[1] || primary.desaturate(40);
+  const mutedContainer = primaryPalette.tones[2] || primary.desaturate(60);
 
-    // Border/input from semantic outline
-    border: semantic.outlineVariant,
-    input: semantic.outline,
-    ring: semantic.primary,
+  // Error
+  const error = generateErrorColor(primaryHsl.h);
 
-    // Charts
+  // Outline
+  const outline = new Color({ h: primaryHsl.h, s: 10, l: 55, a: 1 });
+  const outlineVariant = new Color({ h: primaryHsl.h, s: 8, l: 80, a: 1 });
+
+  // Chart colors
+  const chart1 = harmonyColors[0] || primary;
+  const chart2 = harmonyColors[1] || primary.rotate(60);
+  const chart3 = harmonyColors[2] || primary.rotate(120);
+  const chart4 = harmonyColors[3] || primary.rotate(180);
+  const chart5 = harmonyColors[4] || primary.rotate(240);
+
+  return {
+    background: surface,
+    foreground: findAccessibleTextColor(surface),
+
+    card: surfaceContainer,
+    cardForeground: findAccessibleTextColor(surfaceContainer),
+
+    popover: surfaceContainer,
+    popoverForeground: findAccessibleTextColor(surfaceContainer),
+
+    primary,
+    primaryForeground: findAccessibleTextColor(primary),
+
+    secondary: secondaryContainer,
+    secondaryForeground: findAccessibleTextColor(secondaryContainer),
+
+    muted: mutedContainer,
+    mutedForeground: findAccessibleTextColor(muted),
+
+    accent: accentContainer,
+    accentForeground: findAccessibleTextColor(accentContainer),
+
+    destructive: error,
+    destructiveForeground: findAccessibleTextColor(error),
+
+    border: outlineVariant,
+    input: outline,
+    ring: primary,
+
     chart1,
     chart2,
     chart3,
     chart4,
     chart5,
 
-    // Sidebar
-    sidebar,
-    sidebarForeground: findAccessibleTextColor(sidebar),
-    sidebarPrimary: semantic.primary,
-    sidebarPrimaryForeground: semantic.primaryForeground,
-    sidebarAccent: semantic.accentContainer,
-    sidebarAccentForeground: semantic.accentContainerForeground,
-    sidebarBorder: semantic.outlineVariant,
-    sidebarRing: semantic.primary,
+    sidebar: surfaceContainerLow,
+    sidebarForeground: findAccessibleTextColor(surfaceContainerLow),
+    sidebarPrimary: primary,
+    sidebarPrimaryForeground: findAccessibleTextColor(primary),
+    sidebarAccent: accentContainer,
+    sidebarAccentForeground: findAccessibleTextColor(accentContainer),
+    sidebarBorder: outlineVariant,
+    sidebarRing: primary,
   };
 }
 
 /**
- * Generate Shadcn-compatible colors from AutoTheme palette via semantic tokens
+ * Derive Shadcn colors for dark mode directly from palette
+ */
+function deriveDarkShadcnColors(palette: FullPalette, harmonyColors: Color[]): ShadcnColors {
+  const primaryPalette = palette.palettes[0]!;
+  const primary = primaryPalette.base;
+  const primaryHsl = primary.hsl;
+
+  const secondaryPalette = palette.palettes[1] || primaryPalette;
+  const accentData = selectAccentColor(palette);
+  const accentPalette = accentData.palette;
+
+  // Dark primary is lightened for visibility
+  const darkPrimary = primary.lighten(10);
+
+  // Surface system (dark)
+  const surface = new Color({ h: primaryHsl.h, s: Math.min(20, primaryHsl.s * 0.3), l: 10, a: 1 });
+  const surfaceContainerHigh = new Color({
+    h: primaryHsl.h,
+    s: Math.min(15, primaryHsl.s * 0.25),
+    l: 18,
+    a: 1,
+  });
+
+  // Containers (dark): sufficiently dark for AAA foreground contrast
+  const secondaryContainer = (
+    secondaryPalette.shades[3] || secondaryPalette.base.darken(40)
+  ).desaturate(30);
+  const accentContainer = (accentPalette.shades[3] || accentPalette.base.darken(40)).desaturate(30);
+
+  // Muted (dark)
+  const muted = new Color({ h: primaryHsl.h, s: Math.min(15, primaryHsl.s * 0.3), l: 22, a: 1 });
+  const mutedContainer = new Color({
+    h: primaryHsl.h,
+    s: Math.min(12, primaryHsl.s * 0.2),
+    l: 18,
+    a: 1,
+  });
+
+  // Error (dark)
+  const error = generateErrorColor(primaryHsl.h).lighten(10).saturate(10);
+
+  // Outline (dark)
+  const outline = new Color({ h: primaryHsl.h, s: 10, l: 45, a: 1 });
+  const outlineVariant = new Color({ h: primaryHsl.h, s: 8, l: 30, a: 1 });
+
+  // Chart colors (lightened for dark mode)
+  const chart1 = (harmonyColors[0] || primary).lighten(5);
+  const chart2 = (harmonyColors[1] || primary.rotate(60)).lighten(5);
+  const chart3 = (harmonyColors[2] || primary.rotate(120)).lighten(5);
+  const chart4 = (harmonyColors[3] || primary.rotate(180)).lighten(5);
+  const chart5 = (harmonyColors[4] || primary.rotate(240)).lighten(5);
+
+  return {
+    background: surface,
+    foreground: findAccessibleTextColor(surface),
+
+    card: surfaceContainerHigh,
+    cardForeground: findAccessibleTextColor(surfaceContainerHigh),
+
+    popover: surfaceContainerHigh,
+    popoverForeground: findAccessibleTextColor(surfaceContainerHigh),
+
+    primary: darkPrimary,
+    primaryForeground: findAccessibleTextColor(darkPrimary),
+
+    secondary: secondaryContainer,
+    secondaryForeground: findAccessibleTextColor(secondaryContainer),
+
+    muted: mutedContainer,
+    mutedForeground: findAccessibleTextColor(muted),
+
+    accent: accentContainer,
+    accentForeground: findAccessibleTextColor(accentContainer),
+
+    destructive: error,
+    destructiveForeground: findAccessibleTextColor(error),
+
+    border: outlineVariant,
+    input: outline,
+    ring: darkPrimary,
+
+    chart1,
+    chart2,
+    chart3,
+    chart4,
+    chart5,
+
+    sidebar: surface,
+    sidebarForeground: findAccessibleTextColor(surface),
+    sidebarPrimary: darkPrimary,
+    sidebarPrimaryForeground: findAccessibleTextColor(darkPrimary),
+    sidebarAccent: accentContainer,
+    sidebarAccentForeground: findAccessibleTextColor(accentContainer),
+    sidebarBorder: outlineVariant,
+    sidebarRing: darkPrimary,
+  };
+}
+
+/**
+ * Generate Shadcn-compatible colors from AutoTheme palette directly
  */
 export function generateShadcnColors(theme: GeneratedTheme): {
   light: ShadcnColors;
@@ -147,17 +297,15 @@ export function generateShadcnColors(theme: GeneratedTheme): {
   }
 
   const harmonyColors = palette.palettes.map((p) => p.base);
-  const semantic = generateSemanticColors(theme);
 
   return {
-    light: deriveShadcnFromSemantic(semantic.light, harmonyColors, "light"),
-    dark: deriveShadcnFromSemantic(semantic.dark, harmonyColors, "dark"),
+    light: deriveLightShadcnColors(palette, harmonyColors),
+    dark: deriveDarkShadcnColors(palette, harmonyColors),
   };
 }
 
 /**
  * Generate Shadcn CSS variables string for light mode
- * Only emits shadcn-specific variables not already covered by semantic layer
  */
 export function generateShadcnLightCSS(colors: ShadcnColors, radius: string = "0.625rem"): string {
   const lines: string[] = [];

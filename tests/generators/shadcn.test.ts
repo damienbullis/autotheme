@@ -6,34 +6,7 @@ import {
   generateShadcnDarkCSS,
 } from "../../src/generators/shadcn";
 import { Color } from "../../src/core/color";
-import { generateFullPalette } from "../../src/core/palette";
-import type { GeneratedTheme } from "../../src/generators/types";
-import type { AutoThemeConfig } from "../../src/config/types";
-
-function createTestTheme(): GeneratedTheme {
-  const primaryColor = new Color("#6439FF");
-  const palette = generateFullPalette(primaryColor, "analogous");
-  const config: AutoThemeConfig = {
-    color: "#6439FF",
-    harmony: "analogous",
-    output: "./autotheme.css",
-    preview: false,
-    tailwind: false,
-    darkModeScript: false,
-    scalar: 1.618,
-    contrastTarget: 7,
-    radius: "0.625rem",
-    prefix: "color",
-    fontSize: 1,
-    gradients: true,
-    spacing: true,
-    noise: true,
-    shadcn: true,
-    utilities: true,
-  };
-
-  return { palette, config };
-}
+import { createTestTheme } from "../helpers/test-theme";
 
 describe("generateShadcnColors", () => {
   it("returns both light and dark color sets", () => {
@@ -116,7 +89,6 @@ describe("generateShadcnColors", () => {
     const theme = createTestTheme();
     const { light } = generateShadcnColors(theme);
 
-    // Light background should have high lightness
     expect(light.background.hsl.l).toBeGreaterThan(70);
   });
 
@@ -124,7 +96,6 @@ describe("generateShadcnColors", () => {
     const theme = createTestTheme();
     const { dark } = generateShadcnColors(theme);
 
-    // Dark background should have low lightness
     expect(dark.background.hsl.l).toBeLessThan(20);
   });
 
@@ -132,7 +103,6 @@ describe("generateShadcnColors", () => {
     const theme = createTestTheme();
     const { light } = generateShadcnColors(theme);
 
-    // Destructive should be reddish (hue 0-30 or 340-360)
     const hue = light.destructive.hsl.h;
     expect(hue < 40 || hue > 340).toBe(true);
   });

@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Color } from "../../src/core/color";
-import { generateFullPalette } from "../../src/core/palette";
-import type { GeneratedTheme } from "../../src/generators/types";
-import type { AutoThemeConfig } from "../../src/config/types";
+import { createTestTheme } from "../helpers/test-theme";
 
 // Import the individual generators to test their integration
 import { generateCSS } from "../../src/generators/css";
@@ -10,35 +7,9 @@ import { generateTailwindCSS } from "../../src/generators/tailwind";
 import { generatePreview } from "../../src/generators/preview";
 import { generateDarkModeScript } from "../../src/generators/script";
 
-function createTestTheme(config: Partial<AutoThemeConfig> = {}): GeneratedTheme {
-  const primaryColor = new Color("#6439FF");
-  const palette = generateFullPalette(primaryColor, "analogous");
-  const fullConfig: AutoThemeConfig = {
-    color: "#6439FF",
-    harmony: "analogous",
-    output: "./test-output/autotheme.css",
-    preview: false,
-    tailwind: false,
-    darkModeScript: false,
-    scalar: 1.618,
-    contrastTarget: 7,
-    radius: "0.625rem",
-    prefix: "color",
-    fontSize: 1,
-    gradients: true,
-    spacing: true,
-    noise: true,
-    shadcn: true,
-    utilities: true,
-    ...config,
-  };
-
-  return { palette, config: fullConfig };
-}
-
 describe("generators integration", () => {
   it("generates main CSS output", () => {
-    const theme = createTestTheme();
+    const theme = createTestTheme({ output: { path: "./test-output/autotheme.css" } });
     const result = generateCSS(theme);
 
     expect(result.filename).toBe("./test-output/autotheme.css");
@@ -46,7 +17,7 @@ describe("generators integration", () => {
   });
 
   it("generates Tailwind CSS output", () => {
-    const theme = createTestTheme({ tailwind: true });
+    const theme = createTestTheme({ output: { path: "./test-output/autotheme.css" } });
     const result = generateTailwindCSS(theme);
 
     expect(result.filename).toBe("./test-output/autotheme.tailwind.css");
@@ -54,7 +25,7 @@ describe("generators integration", () => {
   });
 
   it("generates preview HTML output", () => {
-    const theme = createTestTheme({ preview: true });
+    const theme = createTestTheme({ output: { path: "./test-output/autotheme.css" } });
     const result = generatePreview(theme);
 
     expect(result.filename).toBe("./test-output/autotheme.preview.html");
@@ -92,7 +63,6 @@ describe("generators integration", () => {
     const theme = createTestTheme();
     const result = generateTailwindCSS(theme);
 
-    // Should include the base CSS from generateCSS with Tailwind naming
     expect(result.content).toContain("--color-primary-500:");
     expect(result.content).toContain("--color-primary-50:");
     expect(result.content).toContain("--color-secondary-500:");

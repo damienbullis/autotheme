@@ -1,35 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generateTailwindCSS } from "../../src/generators/tailwind";
-import { Color } from "../../src/core/color";
-import { generateFullPalette } from "../../src/core/palette";
-import type { GeneratedTheme } from "../../src/generators/types";
-import type { AutoThemeConfig } from "../../src/config/types";
-
-function createTestTheme(overrides: Partial<AutoThemeConfig> = {}): GeneratedTheme {
-  const primaryColor = new Color("#6439FF");
-  const palette = generateFullPalette(primaryColor, "analogous");
-  const config: AutoThemeConfig = {
-    color: "#6439FF",
-    harmony: "analogous",
-    output: "./autotheme.css",
-    preview: false,
-    tailwind: false,
-    darkModeScript: false,
-    scalar: 1.618,
-    contrastTarget: 7,
-    radius: "0.625rem",
-    prefix: "color",
-    fontSize: 1,
-    gradients: true,
-    spacing: true,
-    noise: true,
-    shadcn: true,
-    utilities: true,
-    ...overrides,
-  };
-
-  return { palette, config };
-}
+import { createTestTheme } from "../helpers/test-theme";
 
 describe("generateTailwindCSS", () => {
   it("generates output with correct filename", () => {
@@ -55,16 +26,16 @@ describe("generateTailwindCSS", () => {
     expect(result.content).toContain("@theme {");
   });
 
-  it("maps Shadcn semantic colors", () => {
-    const theme = createTestTheme();
+  it("maps Shadcn semantic colors when enabled", () => {
+    const theme = createTestTheme({ shadcn: { enabled: true } });
     const result = generateTailwindCSS(theme);
 
     expect(result.content).toContain("--color-background: var(--background);");
     expect(result.content).toContain("--color-foreground: var(--foreground);");
   });
 
-  it("maps all Shadcn colors", () => {
-    const theme = createTestTheme();
+  it("maps all Shadcn colors when enabled", () => {
+    const theme = createTestTheme({ shadcn: { enabled: true } });
     const result = generateTailwindCSS(theme);
 
     expect(result.content).toContain("--color-card: var(--card);");
@@ -78,15 +49,14 @@ describe("generateTailwindCSS", () => {
     const theme = createTestTheme();
     const result = generateTailwindCSS(theme);
 
-    // Check that the :root section contains Tailwind-namespaced color variables
     expect(result.content).toContain("--color-primary-500:");
     expect(result.content).toContain("--color-primary-50:");
     expect(result.content).toContain("--color-primary-950:");
     expect(result.content).toContain("--color-secondary-500:");
   });
 
-  it("includes background image variables", () => {
-    const theme = createTestTheme();
+  it("includes background image variables when noise enabled", () => {
+    const theme = createTestTheme({ noise: true });
     const result = generateTailwindCSS(theme);
 
     expect(result.content).toContain("/* Background Images */");
@@ -106,8 +76,8 @@ describe("generateTailwindCSS", () => {
     expect(result.content).toContain("@utility gradient-to-* {");
   });
 
-  it("includes radius variables", () => {
-    const theme = createTestTheme();
+  it("includes radius variables when shadcn enabled", () => {
+    const theme = createTestTheme({ shadcn: { enabled: true } });
     const result = generateTailwindCSS(theme);
 
     expect(result.content).toContain("/* Radius */");
@@ -128,7 +98,7 @@ describe("generateTailwindCSS", () => {
   });
 
   it("includes spacing scale in @theme block when enabled", () => {
-    const theme = createTestTheme();
+    const theme = createTestTheme({ spacing: { enabled: true } });
     const result = generateTailwindCSS(theme);
     const themeBlock = result.content.split("@theme {")[1];
 
@@ -136,16 +106,16 @@ describe("generateTailwindCSS", () => {
     expect(themeBlock).toContain("--spacing-10:");
   });
 
-  it("omits spacing in @theme when spacing is false", () => {
-    const theme = createTestTheme({ spacing: false });
+  it("omits spacing in @theme when spacing is disabled", () => {
+    const theme = createTestTheme({ spacing: { enabled: false } });
     const result = generateTailwindCSS(theme);
     const themeBlock = result.content.split("@theme {")[1];
 
     expect(themeBlock).not.toContain("--spacing-1:");
   });
 
-  it("omits shadcn mappings when shadcn is false", () => {
-    const theme = createTestTheme({ shadcn: false });
+  it("omits shadcn mappings when shadcn is disabled", () => {
+    const theme = createTestTheme({ shadcn: { enabled: false } });
     const result = generateTailwindCSS(theme);
 
     expect(result.content).not.toContain("--color-background: var(--background);");
@@ -153,7 +123,7 @@ describe("generateTailwindCSS", () => {
   });
 
   it("adds prefix remapping when prefix is not 'color'", () => {
-    const theme = createTestTheme({ prefix: "at" });
+    const theme = createTestTheme({ palette: { prefix: "at" } });
     const result = generateTailwindCSS(theme);
     const themeBlock = result.content.split("@theme {")[1];
 

@@ -31,21 +31,21 @@ export async function runInit(skipPrompts: boolean = false): Promise<void> {
     },
     {
       type: "text",
-      name: "output",
+      name: "outputPath",
       message: "Output path:",
-      initial: DEFAULT_CONFIG.output,
+      initial: DEFAULT_CONFIG.output.path,
     },
     {
       type: "text",
       name: "prefix",
       message: "CSS variable prefix:",
-      initial: DEFAULT_CONFIG.prefix,
+      initial: DEFAULT_CONFIG.palette.prefix,
     },
     {
       type: "number",
       name: "fontSize",
       message: "Base font size (rem):",
-      initial: DEFAULT_CONFIG.fontSize,
+      initial: DEFAULT_CONFIG.typography.base,
       float: true,
       min: 0.1,
     },
@@ -68,7 +68,21 @@ export async function runInit(skipPrompts: boolean = false): Promise<void> {
     return;
   }
 
-  await writeConfig(response);
+  await writeConfig({
+    color: response.color,
+    harmony: response.harmony,
+    palette: {
+      prefix: response.prefix,
+    },
+    typography: {
+      base: response.fontSize,
+    },
+    output: {
+      path: response.outputPath,
+      preview: response.preview,
+      tailwind: response.tailwind,
+    },
+  });
 }
 
 async function writeConfig(config: Record<string, unknown>): Promise<void> {
@@ -85,7 +99,9 @@ async function writeDefaultConfig(): Promise<void> {
   await writeConfig({
     color: DEFAULT_CONFIG.color || "#6439FF",
     harmony: DEFAULT_CONFIG.harmony,
-    output: DEFAULT_CONFIG.output,
+    output: {
+      path: DEFAULT_CONFIG.output.path,
+    },
   });
 }
 

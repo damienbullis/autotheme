@@ -7,7 +7,7 @@ import { generateCSS, generateScaledValues, getHarmonyName } from "./css";
  */
 export function generateTailwindCSS(theme: GeneratedTheme): GeneratorOutput {
   const { config, palette } = theme;
-  const prefix = config.prefix;
+  const prefix = config.palette.prefix;
   const lines: string[] = [];
 
   // CSS variables first (includes Shadcn variables and Tailwind-namespaced colors)
@@ -21,48 +21,8 @@ export function generateTailwindCSS(theme: GeneratedTheme): GeneratorOutput {
   lines.push("   ======================================== */");
   lines.push("@theme {");
 
-  // Semantic token mappings (always emitted)
-  lines.push("    /* Semantic Design Tokens */");
-  lines.push("    --color-surface: var(--surface);");
-  lines.push("    --color-surface-foreground: var(--surface-foreground);");
-  lines.push("    --color-surface-dim: var(--surface-dim);");
-  lines.push("    --color-surface-bright: var(--surface-bright);");
-  lines.push("    --color-surface-container: var(--surface-container);");
-  lines.push("    --color-surface-container-foreground: var(--surface-container-foreground);");
-  lines.push("    --color-surface-container-high: var(--surface-container-high);");
-  lines.push("    --color-surface-container-low: var(--surface-container-low);");
-  lines.push("");
-  lines.push("    --color-primary-container: var(--primary-container);");
-  lines.push("    --color-primary-container-foreground: var(--primary-container-foreground);");
-  lines.push("");
-  lines.push("    --color-secondary-container: var(--secondary-container);");
-  lines.push("    --color-secondary-container-foreground: var(--secondary-container-foreground);");
-  lines.push("");
-  lines.push("    --color-tertiary: var(--tertiary);");
-  lines.push("    --color-tertiary-foreground: var(--tertiary-foreground);");
-  lines.push("    --color-tertiary-container: var(--tertiary-container);");
-  lines.push("    --color-tertiary-container-foreground: var(--tertiary-container-foreground);");
-  lines.push("");
-  lines.push("    --color-accent-container: var(--accent-container);");
-  lines.push("    --color-accent-container-foreground: var(--accent-container-foreground);");
-  lines.push("");
-  lines.push("    --color-error: var(--error);");
-  lines.push("    --color-error-foreground: var(--error-foreground);");
-  lines.push("    --color-error-container: var(--error-container);");
-  lines.push("    --color-error-container-foreground: var(--error-container-foreground);");
-  lines.push("");
-  lines.push("    --color-outline: var(--outline);");
-  lines.push("    --color-outline-variant: var(--outline-variant);");
-  lines.push("");
-  lines.push("    --color-inverse-surface: var(--inverse-surface);");
-  lines.push("    --color-inverse-surface-foreground: var(--inverse-surface-foreground);");
-  lines.push("    --color-inverse-primary: var(--inverse-primary);");
-  lines.push("");
-  lines.push("    --color-muted-container: var(--muted-container);");
-  lines.push("");
-
   // Shadcn UI semantic color mappings (only when shadcn is enabled)
-  if (config.shadcn) {
+  if (config.shadcn.enabled) {
     lines.push("    /* Shadcn UI Semantic Colors */");
     lines.push("    --color-background: var(--background);");
     lines.push("    --color-foreground: var(--foreground);");
@@ -115,17 +75,27 @@ export function generateTailwindCSS(theme: GeneratedTheme): GeneratorOutput {
 
   // Typography scale in @theme
   lines.push("    /* Typography Scale */");
-  const textSizes = generateScaledValues(config.fontSize, config.scalar, 8);
+  const textSizes = generateScaledValues(
+    config.typography.base,
+    config.typography.ratio,
+    config.typography.steps,
+  );
   const sizeNames = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"];
   textSizes.forEach((size, i) => {
-    lines.push(`    --text-${sizeNames[i]}: ${size.toFixed(3)}rem;`);
+    if (sizeNames[i]) {
+      lines.push(`    --text-${sizeNames[i]}: ${size.toFixed(3)}rem;`);
+    }
   });
   lines.push("");
 
   // Spacing scale in @theme (when enabled)
-  if (config.spacing) {
+  if (config.spacing.enabled) {
     lines.push("    /* Spacing Scale */");
-    const spacings = generateScaledValues(0.155, config.scalar, 10);
+    const spacings = generateScaledValues(
+      config.spacing.base,
+      config.spacing.ratio,
+      config.spacing.steps,
+    );
     spacings.forEach((space, i) => {
       lines.push(`    --spacing-${i + 1}: ${space.toFixed(3)}rem;`);
     });
@@ -183,7 +153,7 @@ export function generateTailwindCSS(theme: GeneratedTheme): GeneratorOutput {
   lines.push("    --gradient-to: *;");
   lines.push("}");
 
-  const outputPath = config.output.replace(".css", ".tailwind.css");
+  const outputPath = config.output.path.replace(".css", ".tailwind.css");
 
   return {
     filename: outputPath,

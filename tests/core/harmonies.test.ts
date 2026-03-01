@@ -352,7 +352,9 @@ describe("Harmony Generation", () => {
     });
 
     it("throws for unknown harmony when no custom match", () => {
-      expect(() => generateHarmony(primary, "nonexistent")).toThrow('Unknown harmony type: "nonexistent"');
+      expect(() => generateHarmony(primary, "nonexistent")).toThrow(
+        'Unknown harmony type: "nonexistent"',
+      );
     });
 
     it("throws for unknown harmony even with custom definitions", () => {

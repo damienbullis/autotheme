@@ -105,9 +105,7 @@ describe("loadConfig with URL", () => {
   });
 
   it("throws on HTTP error", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response("Not Found", { status: 404 }),
-    );
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("Not Found", { status: 404 }));
 
     await expect(loadConfig("https://example.com/config.json")).rejects.toThrow("HTTP 404");
   });

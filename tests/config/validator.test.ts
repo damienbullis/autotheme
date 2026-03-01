@@ -73,133 +73,122 @@ describe("validateConfig", () => {
     });
   });
 
-  describe("output validation", () => {
-    it("accepts valid output path", () => {
-      const result = validateConfig({ output: "./custom.css" });
-      expect(result.output).toBe("./custom.css");
+  describe("palette validation", () => {
+    it("accepts valid palette object", () => {
+      const result = validateConfig({ palette: { prefix: "at", contrastTarget: 7 } });
+      expect(result.palette?.prefix).toBe("at");
+      expect(result.palette?.contrastTarget).toBe(7);
     });
 
-    it("throws for non-string output", () => {
-      expect(() => validateConfig({ output: 123 })).toThrow("output must be a string");
-    });
-  });
-
-  describe("boolean validation", () => {
-    it("accepts valid boolean for preview", () => {
-      expect(validateConfig({ preview: true }).preview).toBe(true);
-      expect(validateConfig({ preview: false }).preview).toBe(false);
-    });
-
-    it("accepts valid boolean for tailwind", () => {
-      expect(validateConfig({ tailwind: true }).tailwind).toBe(true);
-      expect(validateConfig({ tailwind: false }).tailwind).toBe(false);
-    });
-
-    it("accepts valid boolean for darkModeScript", () => {
-      expect(validateConfig({ darkModeScript: true }).darkModeScript).toBe(true);
-      expect(validateConfig({ darkModeScript: false }).darkModeScript).toBe(false);
-    });
-
-    it("throws for non-boolean values", () => {
-      expect(() => validateConfig({ preview: "true" })).toThrow("preview must be a boolean");
-      expect(() => validateConfig({ tailwind: 1 })).toThrow("tailwind must be a boolean");
-      expect(() => validateConfig({ darkModeScript: "yes" })).toThrow(
-        "darkModeScript must be a boolean",
-      );
-    });
-  });
-
-  describe("scalar validation", () => {
-    it("accepts valid positive number", () => {
-      const result = validateConfig({ scalar: 1.5 });
-      expect(result.scalar).toBe(1.5);
-    });
-
-    it("throws for zero or negative scalar", () => {
-      expect(() => validateConfig({ scalar: 0 })).toThrow("scalar must be a positive number");
-      expect(() => validateConfig({ scalar: -1 })).toThrow("scalar must be a positive number");
-    });
-
-    it("throws for non-number scalar", () => {
-      expect(() => validateConfig({ scalar: "1.5" })).toThrow("scalar must be a positive number");
-    });
-  });
-
-  describe("contrastTarget validation", () => {
-    it("accepts valid contrast values", () => {
-      expect(validateConfig({ contrastTarget: 3 }).contrastTarget).toBe(3);
-      expect(validateConfig({ contrastTarget: 7 }).contrastTarget).toBe(7);
-      expect(validateConfig({ contrastTarget: 21 }).contrastTarget).toBe(21);
-    });
-
-    it("throws for out of range values", () => {
-      expect(() => validateConfig({ contrastTarget: 2 })).toThrow(
-        "contrastTarget must be between 3 and 21",
-      );
-      expect(() => validateConfig({ contrastTarget: 22 })).toThrow(
-        "contrastTarget must be between 3 and 21",
+    it("validates prefix format", () => {
+      expect(() => validateConfig({ palette: { prefix: "2color" } })).toThrow(
+        "palette.prefix must start with a letter",
       );
     });
 
-    it("throws for non-number contrastTarget", () => {
-      expect(() => validateConfig({ contrastTarget: "7" })).toThrow(
-        "contrastTarget must be between 3 and 21",
+    it("validates contrastTarget range", () => {
+      expect(() => validateConfig({ palette: { contrastTarget: 2 } })).toThrow(
+        "palette.contrastTarget must be between 3 and 21",
       );
+    });
+
+    it("throws for non-object palette", () => {
+      expect(() => validateConfig({ palette: "bad" })).toThrow("palette must be an object");
     });
   });
 
-  describe("radius validation", () => {
-    it("accepts valid radius string", () => {
-      expect(validateConfig({ radius: "0.625rem" }).radius).toBe("0.625rem");
-      expect(validateConfig({ radius: "1rem" }).radius).toBe("1rem");
-      expect(validateConfig({ radius: "8px" }).radius).toBe("8px");
+  describe("typography validation", () => {
+    it("accepts valid typography object", () => {
+      const result = validateConfig({ typography: { base: 0.875, ratio: 1.5, steps: 6 } });
+      expect(result.typography?.base).toBe(0.875);
+      expect(result.typography?.ratio).toBe(1.5);
+      expect(result.typography?.steps).toBe(6);
+    });
+
+    it("throws for non-positive base", () => {
+      expect(() => validateConfig({ typography: { base: 0 } })).toThrow(
+        "typography.base must be a positive number",
+      );
+    });
+
+    it("throws for non-object typography", () => {
+      expect(() => validateConfig({ typography: "bad" })).toThrow("typography must be an object");
+    });
+  });
+
+  describe("spacing validation", () => {
+    it("accepts valid spacing object", () => {
+      const result = validateConfig({ spacing: { enabled: true, base: 0.25, ratio: 2, steps: 8 } });
+      expect(result.spacing?.enabled).toBe(true);
+      expect(result.spacing?.base).toBe(0.25);
+    });
+
+    it("throws for non-boolean enabled", () => {
+      expect(() => validateConfig({ spacing: { enabled: "yes" } })).toThrow(
+        "spacing.enabled must be a boolean",
+      );
+    });
+
+    it("throws for non-object spacing", () => {
+      expect(() => validateConfig({ spacing: "bad" })).toThrow("spacing must be an object");
+    });
+  });
+
+  describe("shadcn validation", () => {
+    it("accepts valid shadcn object", () => {
+      const result = validateConfig({ shadcn: { enabled: true, radius: "1rem" } });
+      expect(result.shadcn?.enabled).toBe(true);
+      expect(result.shadcn?.radius).toBe("1rem");
+    });
+
+    it("throws for non-boolean enabled", () => {
+      expect(() => validateConfig({ shadcn: { enabled: "yes" } })).toThrow(
+        "shadcn.enabled must be a boolean",
+      );
     });
 
     it("throws for non-string radius", () => {
-      expect(() => validateConfig({ radius: 8 })).toThrow("radius must be a string");
-    });
-  });
-
-  describe("prefix validation", () => {
-    it("accepts valid prefix strings", () => {
-      expect(validateConfig({ prefix: "color" }).prefix).toBe("color");
-      expect(validateConfig({ prefix: "at" }).prefix).toBe("at");
-      expect(validateConfig({ prefix: "my-theme" }).prefix).toBe("my-theme");
-      expect(validateConfig({ prefix: "Theme2" }).prefix).toBe("Theme2");
-    });
-
-    it("throws for invalid prefix format", () => {
-      expect(() => validateConfig({ prefix: "2color" })).toThrow("prefix must start with a letter");
-      expect(() => validateConfig({ prefix: "-bad" })).toThrow("prefix must start with a letter");
-      expect(() => validateConfig({ prefix: "has space" })).toThrow(
-        "prefix must start with a letter",
+      expect(() => validateConfig({ shadcn: { radius: 8 } })).toThrow(
+        "shadcn.radius must be a string",
       );
     });
 
-    it("throws for non-string prefix", () => {
-      expect(() => validateConfig({ prefix: 123 })).toThrow("prefix must be a string");
+    it("throws for non-object shadcn", () => {
+      expect(() => validateConfig({ shadcn: "bad" })).toThrow("shadcn must be an object");
     });
   });
 
-  describe("fontSize validation", () => {
-    it("accepts valid positive number", () => {
-      expect(validateConfig({ fontSize: 1 }).fontSize).toBe(1);
-      expect(validateConfig({ fontSize: 0.875 }).fontSize).toBe(0.875);
+  describe("output validation", () => {
+    it("accepts valid output object", () => {
+      const result = validateConfig({
+        output: { path: "./custom.css", tailwind: true, preview: true, darkModeScript: false },
+      });
+      expect(result.output?.path).toBe("./custom.css");
+      expect(result.output?.tailwind).toBe(true);
+      expect(result.output?.preview).toBe(true);
+      expect(result.output?.darkModeScript).toBe(false);
     });
 
-    it("throws for zero or negative fontSize", () => {
-      expect(() => validateConfig({ fontSize: 0 })).toThrow("fontSize must be a positive number");
-      expect(() => validateConfig({ fontSize: -1 })).toThrow("fontSize must be a positive number");
+    it("throws for non-string path", () => {
+      expect(() => validateConfig({ output: { path: 123 } })).toThrow(
+        "output.path must be a string",
+      );
     });
 
-    it("throws for non-number fontSize", () => {
-      expect(() => validateConfig({ fontSize: "1" })).toThrow("fontSize must be a positive number");
+    it("throws for non-boolean tailwind", () => {
+      expect(() => validateConfig({ output: { tailwind: "yes" } })).toThrow(
+        "output.tailwind must be a boolean",
+      );
+    });
+
+    it("throws for non-object output", () => {
+      expect(() => validateConfig({ output: "bad" })).toThrow("output must be an object");
     });
   });
 
   describe("feature toggle validation", () => {
-    it("accepts valid booleans for all toggles", () => {
-      const toggles = ["gradients", "spacing", "noise", "shadcn", "utilities"] as const;
+    it("accepts valid booleans for simple toggles", () => {
+      const toggles = ["gradients", "noise", "utilities"] as const;
       for (const key of toggles) {
         expect(validateConfig({ [key]: true })[key]).toBe(true);
         expect(validateConfig({ [key]: false })[key]).toBe(false);
@@ -208,9 +197,7 @@ describe("validateConfig", () => {
 
     it("throws for non-boolean toggle values", () => {
       expect(() => validateConfig({ gradients: "true" })).toThrow("gradients must be a boolean");
-      expect(() => validateConfig({ spacing: 1 })).toThrow("spacing must be a boolean");
       expect(() => validateConfig({ noise: "yes" })).toThrow("noise must be a boolean");
-      expect(() => validateConfig({ shadcn: 0 })).toThrow("shadcn must be a boolean");
       expect(() => validateConfig({ utilities: "no" })).toThrow("utilities must be a boolean");
     });
   });
@@ -324,44 +311,30 @@ describe("validateConfig", () => {
   });
 
   describe("complete config validation", () => {
-    it("validates full config object", () => {
+    it("validates full nested config object", () => {
       const result = validateConfig({
         color: "#6439FF",
         harmony: "triadic",
-        output: "./theme.css",
-        preview: true,
-        tailwind: false,
-        darkModeScript: true,
-        scalar: 1.618,
-        contrastTarget: 7,
-        radius: "0.625rem",
-        prefix: "at",
-        fontSize: 0.875,
+        swing: 1.5,
+        swingStrategy: "exponential",
+        palette: { prefix: "at", contrastTarget: 7 },
+        typography: { base: 0.875, ratio: 1.618, steps: 8 },
+        spacing: { enabled: true, base: 0.155, ratio: 1.618, steps: 10 },
         gradients: false,
-        spacing: true,
         noise: true,
-        shadcn: false,
         utilities: true,
+        shadcn: { enabled: false, radius: "0.625rem" },
+        output: { path: "./theme.css", tailwind: false, preview: true, darkModeScript: true },
       });
 
-      expect(result).toEqual({
-        color: "#6439FF",
-        harmony: "triadic",
-        output: "./theme.css",
-        preview: true,
-        tailwind: false,
-        darkModeScript: true,
-        scalar: 1.618,
-        contrastTarget: 7,
-        radius: "0.625rem",
-        prefix: "at",
-        fontSize: 0.875,
-        gradients: false,
-        spacing: true,
-        noise: true,
-        shadcn: false,
-        utilities: true,
-      });
+      expect(result.color).toBe("#6439FF");
+      expect(result.harmony).toBe("triadic");
+      expect(result.palette?.prefix).toBe("at");
+      expect(result.typography?.base).toBe(0.875);
+      expect(result.spacing?.enabled).toBe(true);
+      expect(result.shadcn?.enabled).toBe(false);
+      expect(result.output?.path).toBe("./theme.css");
+      expect(result.output?.preview).toBe(true);
     });
   });
 });

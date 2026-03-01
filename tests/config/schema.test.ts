@@ -36,22 +36,22 @@ describe("CONFIG_SCHEMA", () => {
     expect(presetProp.enum).toContain("forest");
   });
 
-  it("has correct default values", () => {
+  it("has correct nested default values", () => {
     expect(CONFIG_SCHEMA.properties.harmony.default).toBe("analogous");
-    expect(CONFIG_SCHEMA.properties.output.default).toBe("./src/autotheme.css");
-    expect(CONFIG_SCHEMA.properties.preview.default).toBe(false);
-    expect(CONFIG_SCHEMA.properties.tailwind.default).toBe(false);
-    expect(CONFIG_SCHEMA.properties.darkModeScript.default).toBe(false);
-    expect(CONFIG_SCHEMA.properties.scalar.default).toBe(1.618);
-    expect(CONFIG_SCHEMA.properties.contrastTarget.default).toBe(7);
-    expect(CONFIG_SCHEMA.properties.radius.default).toBe("0.625rem");
-    expect(CONFIG_SCHEMA.properties.prefix.default).toBe("color");
-    expect(CONFIG_SCHEMA.properties.fontSize.default).toBe(1);
-    expect(CONFIG_SCHEMA.properties.gradients.default).toBe(true);
-    expect(CONFIG_SCHEMA.properties.spacing.default).toBe(true);
-    expect(CONFIG_SCHEMA.properties.noise.default).toBe(true);
-    expect(CONFIG_SCHEMA.properties.shadcn.default).toBe(true);
-    expect(CONFIG_SCHEMA.properties.utilities.default).toBe(true);
+    expect(CONFIG_SCHEMA.properties.palette.properties.prefix.default).toBe("color");
+    expect(CONFIG_SCHEMA.properties.palette.properties.contrastTarget.default).toBe(7);
+    expect(CONFIG_SCHEMA.properties.typography.properties.base.default).toBe(1);
+    expect(CONFIG_SCHEMA.properties.typography.properties.ratio.default).toBe(1.618);
+    expect(CONFIG_SCHEMA.properties.spacing.properties.enabled.default).toBe(false);
+    expect(CONFIG_SCHEMA.properties.gradients.default).toBe(false);
+    expect(CONFIG_SCHEMA.properties.noise.default).toBe(false);
+    expect(CONFIG_SCHEMA.properties.utilities.default).toBe(false);
+    expect(CONFIG_SCHEMA.properties.shadcn.properties.enabled.default).toBe(false);
+    expect(CONFIG_SCHEMA.properties.shadcn.properties.radius.default).toBe("0.625rem");
+    expect(CONFIG_SCHEMA.properties.output.properties.path.default).toBe("./src/autotheme.css");
+    expect(CONFIG_SCHEMA.properties.output.properties.preview.default).toBe(false);
+    expect(CONFIG_SCHEMA.properties.output.properties.tailwind.default).toBe(false);
+    expect(CONFIG_SCHEMA.properties.output.properties.darkModeScript.default).toBe(false);
   });
 
   it("has swing property with correct defaults", () => {
@@ -73,7 +73,7 @@ describe("CONFIG_SCHEMA", () => {
   });
 
   it("has correct contrastTarget constraints", () => {
-    const contrastProp = CONFIG_SCHEMA.properties.contrastTarget;
+    const contrastProp = CONFIG_SCHEMA.properties.palette.properties.contrastTarget;
     expect(contrastProp.minimum).toBe(3);
     expect(contrastProp.maximum).toBe(21);
   });

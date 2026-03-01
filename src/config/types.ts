@@ -6,62 +6,103 @@ export interface CustomHarmonyDefinition {
 }
 
 export interface AutoThemeConfig {
+  // Version
+  version?: 2;
+
   // Required
   color: string;
-  harmony: HarmonyType | string; // Built-in harmony name or custom harmony name
+  harmony: HarmonyType | string;
 
-  // Output options
-  output: string;
-  preview: boolean;
-  tailwind: boolean;
-  darkModeScript: boolean;
+  // Swing
+  swing: number;
+  swingStrategy: SwingStrategy;
 
-  // Swing options
-  swing: number; // Swing multiplier for harmony angular distance (default: 1)
-  swingStrategy: SwingStrategy; // Swing strategy (default: "linear")
+  // Palette config
+  palette: {
+    prefix: string;
+    contrastTarget: number;
+  };
 
-  // Advanced options
-  scalar: number; // Golden ratio multiplier for spacing/sizing
-  contrastTarget: number; // Target contrast ratio (default: 7)
-  radius: string; // Border radius for Shadcn components (default: "0.625rem")
-  prefix: string; // CSS variable prefix (default: "color")
-  fontSize: number; // Base font size in rem (default: 1)
+  // Typography (always generated)
+  typography: {
+    base: number;
+    ratio: number;
+    steps: number;
+  };
 
-  // Feature toggles (default: true)
-  gradients: boolean; // Toggle gradient variable generation
-  spacing: boolean; // Toggle spacing scale generation
-  noise: boolean; // Toggle noise texture generation
-  shadcn: boolean; // Toggle Shadcn UI variable generation
-  utilities: boolean; // Toggle utility class generation
+  // Spacing (defaults to off)
+  spacing: {
+    enabled: boolean;
+    base: number;
+    ratio: number;
+    steps: number;
+  };
 
-  // Custom harmonies (named map of hue offsets)
+  // Feature toggles (all default: false)
+  gradients: boolean;
+  noise: boolean;
+  utilities: boolean;
+
+  // Framework bindings
+  shadcn: {
+    enabled: boolean;
+    radius: string;
+  };
+
+  // Output
+  output: {
+    path: string;
+    tailwind: boolean;
+    preview: boolean;
+    darkModeScript: boolean;
+  };
+
+  // Custom harmonies
   harmonies?: Record<string, CustomHarmonyDefinition>;
 
-  // Preset (references a built-in preset by name)
+  // CLI-only
   preset?: string;
-
-  // CLI-only options (not in config file)
   silent?: boolean;
   config?: string;
 }
 
 export const DEFAULT_CONFIG: AutoThemeConfig = {
-  color: "", // Will be randomized if not provided
+  color: "",
   harmony: "analogous",
-  output: "./src/autotheme.css",
-  preview: false,
-  tailwind: false,
-  darkModeScript: false,
   swing: 1,
   swingStrategy: "linear",
-  scalar: 1.618,
-  contrastTarget: 7,
-  radius: "0.625rem",
-  prefix: "color",
-  fontSize: 1,
-  gradients: true,
-  spacing: true,
-  noise: true,
-  shadcn: true,
-  utilities: true,
+
+  palette: {
+    prefix: "color",
+    contrastTarget: 7,
+  },
+
+  typography: {
+    base: 1,
+    ratio: 1.618,
+    steps: 8,
+  },
+
+  spacing: {
+    enabled: false,
+    base: 0.155,
+    ratio: 1.618,
+    steps: 10,
+  },
+
+  gradients: false,
+  noise: false,
+  utilities: false,
+
+  shadcn: {
+    enabled: false,
+    radius: "0.625rem",
+  },
+
+  output: {
+    path: "./src/autotheme.css",
+    tailwind: false,
+    preview: false,
+    darkModeScript: false,
+  },
 };

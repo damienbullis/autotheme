@@ -4,7 +4,6 @@ import { generateNoiseSVG } from "./noise";
 import { generateDarkModeCSS } from "./dark-mode";
 import { generateUtilityClasses } from "./utilities";
 import { generateShadcnCSS } from "./shadcn";
-import { generateSemanticCSS } from "./semantic";
 
 /**
  * Semantic names for harmony colors by index
@@ -42,29 +41,23 @@ const SHADE_TO_SCALE: Record<number, number> = {
 
 /**
  * Generate the main CSS output with all variables
- * Includes Shadcn-compatible variables by default
  * Uses OKLCH color format and Tailwind v4 namespaces
  */
 export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   const { palette, config } = theme;
-  const prefix = config.prefix;
+  const prefix = config.palette.prefix;
   const lines: string[] = [];
 
   // Generate Shadcn-compatible CSS first (if enabled)
-  if (config.shadcn) {
+  if (config.shadcn.enabled) {
     lines.push("/* ========================================");
     lines.push("   Shadcn UI Compatible Theme Variables");
     lines.push("   ======================================== */");
     lines.push("");
-    lines.push(generateShadcnCSS(theme, config.radius));
+    lines.push(generateShadcnCSS(theme, config.shadcn.radius));
     lines.push("");
     lines.push("");
   }
-
-  // Semantic design tokens (always emitted)
-  lines.push(generateSemanticCSS(theme));
-  lines.push("");
-  lines.push("");
 
   // AutoTheme extended variables with Tailwind namespaces
   lines.push("/* ========================================");
@@ -120,18 +113,28 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   // Typography scale (Tailwind namespace)
   lines.push("");
   lines.push("    /* Typography Scale */");
-  const scalar = config.scalar;
-  const textSizes = generateScaledValues(config.fontSize, scalar, 8);
+  const typoRatio = config.typography.ratio;
+  const textSizes = generateScaledValues(
+    config.typography.base,
+    typoRatio,
+    config.typography.steps,
+  );
   const sizeNames = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"];
   textSizes.forEach((size, i) => {
-    lines.push(`    --text-${sizeNames[i]}: ${size.toFixed(3)}rem;`);
+    if (sizeNames[i]) {
+      lines.push(`    --text-${sizeNames[i]}: ${size.toFixed(3)}rem;`);
+    }
   });
 
   // Spacing scale (Tailwind namespace)
-  if (config.spacing) {
+  if (config.spacing.enabled) {
     lines.push("");
     lines.push("    /* Spacing Scale */");
-    const spacings = generateScaledValues(0.155, scalar, 10);
+    const spacings = generateScaledValues(
+      config.spacing.base,
+      config.spacing.ratio,
+      config.spacing.steps,
+    );
     spacings.forEach((space, i) => {
       lines.push(`    --spacing-${i + 1}: ${space.toFixed(3)}rem;`);
     });
@@ -185,7 +188,7 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   }
 
   return {
-    filename: config.output,
+    filename: config.output.path,
     content: lines.join("\n"),
   };
 }
@@ -207,7 +210,6 @@ export function generateScaledValues(base: number, scalar: number, count: number
  * Find a contrasting text color based on luminance
  */
 export function findContrastColor(bg: Color): Color {
-  // Return near-black or near-white based on luminance
   return bg.luminance > 0.5
     ? new Color({ h: bg.hsl.h, s: 100, l: 5, a: 1 })
     : new Color({ h: bg.hsl.h, s: 20, l: 95, a: 1 });

@@ -11,29 +11,29 @@ describe("DEFAULT_CONFIG", () => {
   });
 
   it("has correct default output path", () => {
-    expect(DEFAULT_CONFIG.output).toBe("./src/autotheme.css");
+    expect(DEFAULT_CONFIG.output.path).toBe("./src/autotheme.css");
   });
 
-  it("has all boolean options default to false", () => {
-    expect(DEFAULT_CONFIG.preview).toBe(false);
-    expect(DEFAULT_CONFIG.tailwind).toBe(false);
-    expect(DEFAULT_CONFIG.darkModeScript).toBe(false);
+  it("has all output options default to false", () => {
+    expect(DEFAULT_CONFIG.output.preview).toBe(false);
+    expect(DEFAULT_CONFIG.output.tailwind).toBe(false);
+    expect(DEFAULT_CONFIG.output.darkModeScript).toBe(false);
   });
 
-  it("has golden ratio as default scalar", () => {
-    expect(DEFAULT_CONFIG.scalar).toBeCloseTo(1.618, 3);
+  it("has golden ratio as default typography ratio", () => {
+    expect(DEFAULT_CONFIG.typography.ratio).toBeCloseTo(1.618, 3);
   });
 
   it("has WCAG AAA contrast as default target", () => {
-    expect(DEFAULT_CONFIG.contrastTarget).toBe(7);
+    expect(DEFAULT_CONFIG.palette.contrastTarget).toBe(7);
   });
 
   it("has 'color' as default prefix", () => {
-    expect(DEFAULT_CONFIG.prefix).toBe("color");
+    expect(DEFAULT_CONFIG.palette.prefix).toBe("color");
   });
 
-  it("has 1 as default fontSize", () => {
-    expect(DEFAULT_CONFIG.fontSize).toBe(1);
+  it("has 1 as default typography base", () => {
+    expect(DEFAULT_CONFIG.typography.base).toBe(1);
   });
 
   it("has 1 as default swing", () => {
@@ -44,11 +44,11 @@ describe("DEFAULT_CONFIG", () => {
     expect(DEFAULT_CONFIG.swingStrategy).toBe("linear");
   });
 
-  it("has all feature toggles default to true", () => {
-    expect(DEFAULT_CONFIG.gradients).toBe(true);
-    expect(DEFAULT_CONFIG.spacing).toBe(true);
-    expect(DEFAULT_CONFIG.noise).toBe(true);
-    expect(DEFAULT_CONFIG.shadcn).toBe(true);
-    expect(DEFAULT_CONFIG.utilities).toBe(true);
+  it("has all feature toggles default to false", () => {
+    expect(DEFAULT_CONFIG.gradients).toBe(false);
+    expect(DEFAULT_CONFIG.spacing.enabled).toBe(false);
+    expect(DEFAULT_CONFIG.noise).toBe(false);
+    expect(DEFAULT_CONFIG.shadcn.enabled).toBe(false);
+    expect(DEFAULT_CONFIG.utilities).toBe(false);
   });
 });

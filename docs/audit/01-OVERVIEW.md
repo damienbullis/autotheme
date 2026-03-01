@@ -67,21 +67,22 @@ Output: Clean CSS with only requested sections
 
 ## Document Index
 
-| Document | Description |
-|----------|-------------|
-| [02-BUGS.md](./02-BUGS.md) | Bugs and incorrect behavior that need fixing |
-| [03-REFACTORING.md](./03-REFACTORING.md) | Architecture and code quality improvements |
-| [04-FEATURES.md](./04-FEATURES.md) | New features needed |
-| [05-GAPS.md](./05-GAPS.md) | Design gaps and missing capabilities |
-| [06-RECOMMENDATIONS.md](./06-RECOMMENDATIONS.md) | Recommendations, tradeoffs, and design decisions |
-| [07-ROADMAP.md](./07-ROADMAP.md) | Phased implementation plan |
-| [08-INNOVATION.md](./08-INNOVATION.md) | Cutting-edge CSS features and creative possibilities |
+| Document                                         | Description                                          |
+| ------------------------------------------------ | ---------------------------------------------------- |
+| [02-BUGS.md](./02-BUGS.md)                       | Bugs and incorrect behavior that need fixing         |
+| [03-REFACTORING.md](./03-REFACTORING.md)         | Architecture and code quality improvements           |
+| [04-FEATURES.md](./04-FEATURES.md)               | New features needed                                  |
+| [05-GAPS.md](./05-GAPS.md)                       | Design gaps and missing capabilities                 |
+| [06-RECOMMENDATIONS.md](./06-RECOMMENDATIONS.md) | Recommendations, tradeoffs, and design decisions     |
+| [07-ROADMAP.md](./07-ROADMAP.md)                 | Phased implementation plan                           |
+| [08-INNOVATION.md](./08-INNOVATION.md)           | Cutting-edge CSS features and creative possibilities |
 
 ## Scope of Changes
 
 **Breaking changes are expected and welcome.** We are in active development. No backwards compatibility concerns. Old code paths should be removed, not shimmed.
 
 Key breaking changes anticipated:
+
 - MD3 semantic tokens removed as default (replaced with autotheme's own semantic system)
 - Shadcn off by default
 - Config shape changes (new options, renamed options, removed options)

@@ -22,7 +22,10 @@ describe("Presets", () => {
 
     it("all preset colors are valid", () => {
       for (const [key, preset] of Object.entries(PRESETS)) {
-        expect(() => new Color(preset.config.color!), `Invalid color in preset "${key}"`).not.toThrow();
+        expect(
+          () => new Color(preset.config.color!),
+          `Invalid color in preset "${key}"`,
+        ).not.toThrow();
       }
     });
 

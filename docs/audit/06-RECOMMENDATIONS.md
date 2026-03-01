@@ -15,12 +15,14 @@ Design decisions that require deliberate choice. Each section presents options w
 ```
 
 **Pros:**
+
 - Single source of truth - change the palette, semantics update
 - Transparent - you can see exactly which swatch maps to which role
 - Composable - users can remap by changing one reference
 - Smaller output - no duplicate color values
 
 **Cons:**
+
 - Requires palette to always be present (semantic layer can't work standalone)
 - Slightly more complex CSS (nested var references)
 - Not all semantic values map cleanly to a single palette swatch (e.g., surfaces need lightness adjustment)
@@ -33,11 +35,13 @@ Design decisions that require deliberate choice. Each section presents options w
 ```
 
 **Pros:**
+
 - Self-contained - works without palette layer
 - Simpler CSS
 - Each value is independently tunable
 
 **Cons:**
+
 - Palette and semantics can disagree
 - Harder to understand the relationship between layers
 - More CSS output (duplicated values)
@@ -53,11 +57,12 @@ Use `var()` references where the semantic token directly maps to a palette swatc
 ### Option A: Part of palette (per harmony color)
 
 ```css
---color-primary-bg:     oklch(0.695 0.152 293 / 7%);
+--color-primary-bg: oklch(0.695 0.152 293 / 7%);
 --color-primary-border: oklch(0.695 0.152 293 / 22%);
 ```
 
 **Pros:**
+
 - Available for all harmony colors automatically
 - Consistent naming with palette convention
 - Useful even without semantic layer
@@ -70,6 +75,7 @@ Use `var()` references where the semantic token directly maps to a palette swatc
 ```
 
 **Pros:**
+
 - More meaningful names tied to usage
 - Only generated for roles that need them
 
@@ -91,11 +97,13 @@ semantics: {
 ```
 
 **Pros:**
+
 - Maximum control
 - Clear what each mode does
 - No magic inversion logic
 
 **Cons:**
+
 - Double the config
 - Users must maintain both
 
@@ -109,10 +117,12 @@ semantics: {
 ```
 
 **Pros:**
+
 - Simpler config
 - Less to maintain
 
 **Cons:**
+
 - Inversion isn't always symmetric (dark mode isn't just "flip the scale")
 - Less control
 
@@ -141,6 +151,7 @@ AutoTheme generates `.gradient-linear`, `.bg-noise`, `.surface`, `.primary-surfa
 ### Recommendation: Remove utility classes from default output
 
 **Reasoning:**
+
 - Tailwind users don't need them (Tailwind generates its own utilities)
 - Non-Tailwind users may have different class naming conventions
 - They add output size with minimal value (most are 2-3 property definitions)
@@ -164,7 +175,9 @@ typography: { base: 1, ratio: 1.125, steps: 7 }
 ### Option B: Full manual override (maximum)
 
 ```typescript
-typography: { values: [0.55, 0.62, 0.70, 0.80, 0.90, 1.05, 1.60] }
+typography: {
+  values: [0.55, 0.62, 0.7, 0.8, 0.9, 1.05, 1.6];
+}
 ```
 
 **Pros:** Total control
@@ -195,6 +208,7 @@ Most users set `base`/`ratio`/`steps`. Power users override individual steps. `v
 ### Option A: Generic semantic tokens only
 
 Autotheme defines its own semantic vocabulary:
+
 ```
 --at-surface, --at-surface-elevated, --at-border, --at-text-primary, etc.
 ```
@@ -204,8 +218,12 @@ Consumers manually map to their framework.
 ### Option B: Framework-specific presets
 
 ```typescript
-semantics: { preset: "shadcn" }  // Generates Shadcn-compatible names
-semantics: { preset: "default" } // Generates autotheme's own names
+semantics: {
+  preset: "shadcn";
+} // Generates Shadcn-compatible names
+semantics: {
+  preset: "default";
+} // Generates autotheme's own names
 ```
 
 ### Recommendation: **Option B** with autotheme's vocab as the default
@@ -226,13 +244,13 @@ Generate variations by adjusting OKLCH lightness. Perceptually uniform - each st
 
 ### Tradeoff
 
-| Aspect | HSL | OKLCH |
-|--------|-----|-------|
-| Perceptual uniformity | Poor | Excellent |
-| Implementation complexity | Simple | Moderate (need OKLCH -> HSL roundtrip) |
-| Existing behavior | Current | New |
-| Hue shift | None | Can cause slight hue drift |
-| Gamut | Always in sRGB | May go out of gamut |
+| Aspect                    | HSL            | OKLCH                                  |
+| ------------------------- | -------------- | -------------------------------------- |
+| Perceptual uniformity     | Poor           | Excellent                              |
+| Implementation complexity | Simple         | Moderate (need OKLCH -> HSL roundtrip) |
+| Existing behavior         | Current        | New                                    |
+| Hue shift                 | None           | Can cause slight hue drift             |
+| Gamut                     | Always in sRGB | May go out of gamut                    |
 
 ### Recommendation: Default to OKLCH, offer HSL as fallback
 
@@ -249,6 +267,7 @@ Adding new options requires schema changes. Existing config files will fail vali
 ### Recommendation: Schema versioning
 
 Add a `version` field to config:
+
 ```json
 {
   "$schema": "./node_modules/autotheme/schema.json",
@@ -289,12 +308,13 @@ Presets only set `color` + `harmony`. With the new config shape, presets could b
 ### Recommendation: Expand presets to cover full config
 
 A preset like "dashboard-dark" could set:
+
 ```json
 {
   "color": "#1E6091",
   "harmony": "analogous",
   "mode": "dark",
-  "semantics": { "enabled": true, "darkness": 0.10, "textLevels": 5 },
+  "semantics": { "enabled": true, "darkness": 0.1, "textLevels": 5 },
   "typography": { "base": 0.875, "ratio": 1.125 },
   "spacing": { "base": 0.25 }
 }

@@ -112,22 +112,36 @@ class AutoThemeApp {
       config: {
         color: this.state.color,
         harmony: this.state.harmony,
-        output: "./autotheme.css",
-        preview: false,
-        tailwind: false,
-        darkModeScript: false,
-        scalar: this.state.scalar,
-        contrastTarget: this.state.contrastTarget,
-        radius: "0.625rem",
-        prefix: "color",
-        fontSize: 1,
         swing: 1,
         swingStrategy: "linear" as const,
+        palette: {
+          prefix: "color",
+          contrastTarget: this.state.contrastTarget,
+        },
+        typography: {
+          base: 1,
+          ratio: this.state.scalar,
+          steps: 8,
+        },
+        spacing: {
+          enabled: true,
+          base: 0.155,
+          ratio: this.state.scalar,
+          steps: 10,
+        },
         gradients: true,
-        spacing: true,
         noise: true,
-        shadcn: true,
         utilities: true,
+        shadcn: {
+          enabled: true,
+          radius: "0.625rem",
+        },
+        output: {
+          path: "./autotheme.css",
+          tailwind: false,
+          preview: false,
+          darkModeScript: false,
+        },
       },
     };
 

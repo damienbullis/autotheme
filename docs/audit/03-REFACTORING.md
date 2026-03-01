@@ -36,12 +36,14 @@ Currently `css.ts` calls into `semantic.ts` which recalculates colors from scrat
 **Location:** `src/generators/css.ts`
 
 **Problem:** Several sections always emit regardless of config:
+
 - Semantic tokens (no toggle)
 - Color scales (no toggle)
 - Typography scale (no toggle)
 - Dark mode `.dark` block (no toggle)
 
 **Proposed toggles:**
+
 ```typescript
 {
   colorScales: boolean,     // 50-950 scales per harmony color
@@ -58,17 +60,20 @@ Currently `css.ts` calls into `semantic.ts` which recalculates colors from scrat
 **Location:** `src/generators/css.ts`, `src/config/types.ts`
 
 **Problem:** Typography and spacing share the same `scalar` (1.618). These are fundamentally different concerns:
+
 - Typography: Major second (1.125) to perfect fourth (1.333) ratios are common
 - Spacing: Golden ratio (1.618) or powers of 2 are common
 
 **Current config:**
+
 ```typescript
-scalar: 1.618     // Used for BOTH typography and spacing
-fontSize: 1       // Typography base only
+scalar: 1.618; // Used for BOTH typography and spacing
+fontSize: 1; // Typography base only
 // spacing base: hardcoded 0.155rem
 ```
 
 **Proposed config:**
+
 ```typescript
 typography: {
   base: 1,          // rem
@@ -91,6 +96,7 @@ spacing: {
 **Location:** `src/generators/semantic.ts`, `src/generators/shadcn.ts`
 
 **Problem:** The current dependency chain is:
+
 ```
 Palette -> MD3 Semantic Tokens -> Shadcn Tokens
 ```
@@ -98,6 +104,7 @@ Palette -> MD3 Semantic Tokens -> Shadcn Tokens
 Shadcn tokens depend on MD3 tokens existing. But if a consumer wants Shadcn without MD3 (which is the common case), they still get all the MD3 baggage.
 
 **Proposed:**
+
 ```
 Palette -> AutoTheme Semantic Tokens
               |
@@ -113,10 +120,11 @@ AutoTheme's own semantic system replaces MD3 entirely. Shadcn binding maps direc
 **Location:** `src/core/variations.ts`
 
 **Problem:** Tints, shades, and tones have hardcoded counts and increments:
+
 ```typescript
-generateTints(color, steps = 5)   // +10% lightness per step
-generateShades(color, steps = 5)  // -10% lightness per step
-generateTones(color, steps = 4)   // -20% saturation per step
+generateTints(color, (steps = 5)); // +10% lightness per step
+generateShades(color, (steps = 5)); // -10% lightness per step
+generateTones(color, (steps = 4)); // -20% saturation per step
 ```
 
 The 10%/10%/20% increments are baked in. The mapping to scale numbers (50-950) is baked into `css.ts`. Neither is configurable.
@@ -130,6 +138,7 @@ The 10%/10%/20% increments are baked in. The mapping to scale numbers (50-950) i
 **Location:** `src/generators/tailwind.ts`
 
 **Problem:** The Tailwind generator:
+
 1. Embeds the entire CSS output at the top (duplicating all variables)
 2. Then wraps semantic tokens in `@theme { }`
 3. Has prefix-remapping logic that's redundant when prefix is "color"
@@ -144,6 +153,7 @@ The generator should be thinner: just the `@theme` directive wrapping whatever C
 **Location:** `src/generators/dark-mode.ts`, `src/generators/semantic.ts`, `src/generators/shadcn.ts`, `src/generators/css.ts`
 
 **Problem:** Dark mode logic is scattered across 4 files:
+
 - `dark-mode.ts`: Generates `.dark` overrides for foreground/contrast only
 - `semantic.ts`: Has its own `generateDarkSemanticColors()` with independent logic
 - `shadcn.ts`: Has dark-specific Shadcn mappings
@@ -162,6 +172,7 @@ Each file makes independent decisions about dark mode values. There's no single 
 **Problem:** `findAccessibleTextColor()` targets 7:1 (AAA) by default and only searches grayscale. This almost always returns pure white or pure black, which is technically accessible but visually boring. Many design systems use chromatic text (slight tint from the theme color) at AA (4.5:1) for a more cohesive feel.
 
 **Proposed:**
+
 - Default to AA (4.5:1) for general text, AAA (7:1) for small text
 - Search chromatic alternatives (same hue, adjusted lightness/saturation)
 - Make the target configurable (already exists as `contrastTarget` but only used in one place)
@@ -175,47 +186,48 @@ Each file makes independent decisions about dark mode values. There's no single 
 **Problem:** Current config is a flat namespace of boolean toggles and numeric values. As we add features (typography config, spacing config, semantic mapping config), it will become unwieldy.
 
 **Proposed:** Group related config into nested objects:
+
 ```typescript
 interface AutoThemeConfig {
-  color: string
-  harmony: HarmonyType | string
-  mode: "light" | "dark" | "both"
+  color: string;
+  harmony: HarmonyType | string;
+  mode: "light" | "dark" | "both";
 
   palette: {
-    tints: number      // count
-    shades: number     // count
-    tones: number      // count
-    alphaVariants: boolean
-  }
+    tints: number; // count
+    shades: number; // count
+    tones: number; // count
+    alphaVariants: boolean;
+  };
 
   semantics: {
-    enabled: boolean
-    preset: "default" | "shadcn" | "custom"
-    darkness: number        // anchor darkest surface (0-1)
-    textLevels: number      // text hierarchy depth
-  }
+    enabled: boolean;
+    preset: "default" | "shadcn" | "custom";
+    darkness: number; // anchor darkest surface (0-1)
+    textLevels: number; // text hierarchy depth
+  };
 
   typography: {
-    enabled: boolean
-    base: number
-    ratio: number
-    steps: number
-    values?: number[]
-  }
+    enabled: boolean;
+    base: number;
+    ratio: number;
+    steps: number;
+    values?: number[];
+  };
 
   spacing: {
-    enabled: boolean
-    base: number
-    ratio: number
-    steps: number
-    values?: number[]
-  }
+    enabled: boolean;
+    base: number;
+    ratio: number;
+    steps: number;
+    values?: number[];
+  };
 
   output: {
-    path: string
-    format: "css" | "tailwind"
-    preview: boolean
-    darkModeScript: boolean
-  }
+    path: string;
+    format: "css" | "tailwind";
+    preview: boolean;
+    darkModeScript: boolean;
+  };
 }
 ```
