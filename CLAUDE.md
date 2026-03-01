@@ -126,3 +126,13 @@ Uses Tailwind v4 variable namespaces with OKLCH color format:
 ### Shadcn UI Compatible Variables
 
 Also includes full Shadcn UI semantic variables (`--background`, `--foreground`, `--primary`, etc.) in OKLCH format.
+
+## Testing
+
+See [TESTING.md](./TESTING.md) for the full testing philosophy. Key rules:
+
+- **Test behavior, not structure.** Don't check string presence in output — verify the output is _correct_.
+- **Three tiers:** Integration tests (full pipeline) > Algorithm unit tests (math/logic) > Don't test glue code.
+- **Delete tests that restate source code** — checking defaults, exports, or string templates adds no value.
+- **Always add regression tests for bug fixes.**
+- **Don't test third-party libraries** (cac, prompts) — test our logic around them.

@@ -20,7 +20,7 @@ export const HARMONY_DEFINITIONS: Record<HarmonyType, HarmonyDefinition> = {
   },
   analogous: {
     count: 3,
-    offset: (i) => (i - 1) * 30,
+    offset: (i) => (i === 0 ? 0 : i === 1 ? -30 : 30),
   },
   triadic: {
     count: 3,

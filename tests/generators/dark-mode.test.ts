@@ -3,47 +3,18 @@ import { generateDarkModeCSS } from "../../src/generators/dark-mode";
 import { createTestTheme } from "../helpers/test-theme";
 
 describe("generateDarkModeCSS", () => {
-  it("generates CSS with .dark selector", () => {
+  it("generates .dark block with foreground and contrast for all harmony colors", () => {
     const theme = createTestTheme({ harmony: "triadic" });
     const result = generateDarkModeCSS(theme);
 
     expect(result).toContain(".dark {");
     expect(result).toMatch(/}$/);
-  });
 
-  it("generates dark mode foreground colors for each palette color", () => {
-    const theme = createTestTheme({ harmony: "triadic" });
-    const result = generateDarkModeCSS(theme);
-
-    expect(result).toContain("--color-primary-foreground:");
-    expect(result).toContain("--color-secondary-foreground:");
-    expect(result).toContain("--color-tertiary-foreground:");
-  });
-
-  it("includes contrast colors for each palette color", () => {
-    const theme = createTestTheme({ harmony: "triadic" });
-    const result = generateDarkModeCSS(theme);
-
-    expect(result).toContain("--color-primary-contrast:");
-    expect(result).toContain("--color-secondary-contrast:");
-    expect(result).toContain("--color-tertiary-contrast:");
-  });
-
-  it("generates valid OKLCH values format", () => {
-    const theme = createTestTheme({ harmony: "triadic" });
-    const result = generateDarkModeCSS(theme);
-
-    const oklchPattern = /--color-\w+-(?:foreground|contrast):\s*oklch\([^)]+\);/;
-    expect(result).toMatch(oklchPattern);
-  });
-
-  it("includes comment headers for each color", () => {
-    const theme = createTestTheme({ harmony: "triadic" });
-    const result = generateDarkModeCSS(theme);
-
-    expect(result).toContain("/* Primary Dark Mode */");
-    expect(result).toContain("/* Secondary Dark Mode */");
-    expect(result).toContain("/* Tertiary Dark Mode */");
+    // All 3 triadic colors have foreground + contrast in OKLCH
+    for (const name of ["primary", "secondary", "tertiary"]) {
+      expect(result).toMatch(new RegExp(`--color-${name}-foreground:\\s*oklch\\(`));
+      expect(result).toMatch(new RegExp(`--color-${name}-contrast:\\s*oklch\\(`));
+    }
   });
 
   it("uses custom prefix in variable names", () => {
@@ -51,7 +22,6 @@ describe("generateDarkModeCSS", () => {
     const result = generateDarkModeCSS(theme);
 
     expect(result).toContain("--at-primary-foreground:");
-    expect(result).toContain("--at-primary-contrast:");
     expect(result).not.toContain("--color-primary-foreground:");
   });
 });

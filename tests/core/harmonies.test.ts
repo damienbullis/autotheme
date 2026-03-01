@@ -53,10 +53,9 @@ describe("Harmony Generation", () => {
       expect(result.type).toBe("analogous");
       expect(result.colors).toHaveLength(3);
 
-      // Colors should be at -30, 0, +30 from primary
+      // First color should be primary (offset 0), neighbors at -30 and +30
       const hues = result.colors.map((c) => c.hsl.h);
-      // Middle color should be primary
-      expect(hues[1]).toBeCloseTo(primary.hsl.h, 0);
+      expect(hues[0]).toBeCloseTo(primary.hsl.h, 0);
     });
 
     it("generates triadic harmony (3 colors, 120° apart)", () => {

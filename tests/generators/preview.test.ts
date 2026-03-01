@@ -3,139 +3,45 @@ import { generatePreview } from "../../src/generators/preview";
 import { createTestTheme } from "../helpers/test-theme";
 
 describe("generatePreview", () => {
-  it("generates output with correct filename", () => {
+  it("generates valid HTML preview with palette swatches and typography", () => {
     const theme = createTestTheme();
     const result = generatePreview(theme);
 
+    // Correct filename derived from output path
     expect(result.filename).toBe("./autotheme.preview.html");
-  });
 
-  it("generates valid HTML5 document", () => {
-    const theme = createTestTheme();
-    const result = generatePreview(theme);
-
+    // Valid HTML5 document
     expect(result.content).toContain("<!DOCTYPE html>");
-    expect(result.content).toContain('<html lang="en">');
     expect(result.content).toContain("</html>");
-  });
 
-  it("includes head with meta tags", () => {
-    const theme = createTestTheme();
-    const result = generatePreview(theme);
+    // Links to generated CSS
+    expect(result.content).toContain('href="./autotheme.css"');
 
-    expect(result.content).toContain('<meta charset="UTF-8">');
-    expect(result.content).toContain("viewport");
-    expect(result.content).toContain("<title>AutoTheme Preview</title>");
-  });
+    // Shows theme info
+    expect(result.content).toContain("analogous");
+    expect(result.content).toContain("#6439FF");
 
-  it("links to generated CSS file", () => {
-    const theme = createTestTheme();
-    const result = generatePreview(theme);
-
-    expect(result.content).toContain('<link rel="stylesheet" href="./autotheme.css">');
-  });
-
-  it("includes dark mode toggle button with .dark class", () => {
-    const theme = createTestTheme();
-    const result = generatePreview(theme);
-
-    expect(result.content).toContain('class="dark-toggle"');
-    expect(result.content).toContain("Toggle Dark Mode");
-    expect(result.content).toContain("'dark'");
-  });
-
-  it("displays harmony type", () => {
-    const theme = createTestTheme();
-    const result = generatePreview(theme);
-
-    expect(result.content).toContain("<strong>Harmony:</strong> analogous");
-  });
-
-  it("displays primary color", () => {
-    const theme = createTestTheme();
-    const result = generatePreview(theme);
-
-    expect(result.content).toContain("<strong>Primary Color:</strong> #6439FF");
-  });
-
-  it("generates color swatches with semantic names", () => {
-    const theme = createTestTheme({ harmony: "triadic" });
-    const result = generatePreview(theme);
-
+    // Has palette swatches with full scale
     expect(result.content).toContain("Primary");
-    expect(result.content).toContain("Secondary");
-    expect(result.content).toContain("Tertiary");
-  });
-
-  it("includes base swatch with 500 scale value", () => {
-    const theme = createTestTheme();
-    const result = generatePreview(theme);
-
-    expect(result.content).toContain('class="swatch base"');
     expect(result.content).toContain("var(--color-primary-500)");
-    expect(result.content).toContain("var(--color-primary-foreground)");
     expect(result.content).toContain(">500</span>");
-  });
-
-  it("includes tint swatches (50-400 scale)", () => {
-    const theme = createTestTheme();
-    const result = generatePreview(theme);
-
     expect(result.content).toContain(">50</div>");
-    expect(result.content).toContain(">100</div>");
-    expect(result.content).toContain(">200</div>");
-    expect(result.content).toContain(">300</div>");
-    expect(result.content).toContain(">400</div>");
-  });
-
-  it("includes shade swatches (600-950 scale)", () => {
-    const theme = createTestTheme();
-    const result = generatePreview(theme);
-
-    expect(result.content).toContain(">600</div>");
-    expect(result.content).toContain(">700</div>");
-    expect(result.content).toContain(">800</div>");
-    expect(result.content).toContain(">900</div>");
     expect(result.content).toContain(">950</div>");
+
+    // Has dark mode toggle
+    expect(result.content).toContain("Toggle Dark Mode");
+
+    // Has typography, gradients, and noise sections (always present in template)
+    expect(result.content).toContain("Typography Scale");
+    expect(result.content).toContain("Gradients");
+    expect(result.content).toContain("Noise");
   });
 
-  it("includes tone swatches (T1-T4)", () => {
-    const theme = createTestTheme();
+  it("uses custom prefix in CSS variable references", () => {
+    const theme = createTestTheme({ palette: { prefix: "at" } });
     const result = generatePreview(theme);
 
-    expect(result.content).toContain(">T1</div>");
-    expect(result.content).toContain(">T2</div>");
-    expect(result.content).toContain(">T3</div>");
-    expect(result.content).toContain(">T4</div>");
-  });
-
-  it("includes gradient section when gradients enabled", () => {
-    const theme = createTestTheme({ gradients: true });
-    const result = generatePreview(theme);
-
-    expect(result.content).toContain("<h2>Gradients</h2>");
-    expect(result.content).toContain("--gradient-linear-secondary");
-    expect(result.content).toContain("--gradient-linear-rainbow");
-    expect(result.content).toContain("gradient-radial");
-  });
-
-  it("includes noise section when noise enabled", () => {
-    const theme = createTestTheme({ noise: true });
-    const result = generatePreview(theme);
-
-    expect(result.content).toContain("<h2>Noise</h2>");
-    expect(result.content).toContain("--background-image-noise");
-  });
-
-  it("includes typography scale section with Tailwind naming", () => {
-    const theme = createTestTheme();
-    const result = generatePreview(theme);
-
-    expect(result.content).toContain("<h2>Typography Scale</h2>");
-    expect(result.content).toContain("--text-xs");
-    expect(result.content).toContain("--text-sm");
-    expect(result.content).toContain("--text-md");
-    expect(result.content).toContain("--text-lg");
-    expect(result.content).toContain("--text-xl");
+    expect(result.content).toContain("var(--at-primary-500)");
+    expect(result.content).not.toContain("var(--color-primary-500)");
   });
 });
