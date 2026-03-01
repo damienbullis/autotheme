@@ -10,12 +10,35 @@ export interface SemanticMapping {
   accentSecondary: string;
 }
 
+export interface AlphaSteps {
+  bg: number;
+  border: number;
+  glow: number;
+  hover: number;
+}
+
+export interface StatesConfig {
+  enabled: boolean;
+  hoverShift: number;
+  activeShift: number;
+  focusRingAlpha: number;
+  disabledAlpha: number;
+  disabledDesat: number;
+}
+
+export interface ElevationConfig {
+  enabled: boolean;
+  levels: number;
+}
+
 export interface SemanticsConfig {
   enabled: boolean;
   surfaceDepth: number;
   textLevels: number;
   mapping: SemanticMapping;
   overrides?: Record<string, string>;
+  states: StatesConfig;
+  elevation: ElevationConfig;
 }
 
 export type ThemeMode = "light" | "dark" | "both";
@@ -45,6 +68,8 @@ export interface AutoThemeConfig {
     tintIncrement: number;
     shadeIncrement: number;
     toneIncrement: number;
+    alphaVariants: boolean;
+    alphaSteps: AlphaSteps;
   };
 
   // Typography (always generated)
@@ -113,6 +138,8 @@ export const DEFAULT_CONFIG: AutoThemeConfig = {
     tintIncrement: 10,
     shadeIncrement: 10,
     toneIncrement: 20,
+    alphaVariants: false,
+    alphaSteps: { bg: 10, border: 20, glow: 15, hover: 8 },
   },
 
   typography: {
@@ -134,6 +161,15 @@ export const DEFAULT_CONFIG: AutoThemeConfig = {
     surfaceDepth: 4,
     textLevels: 3,
     mapping: { accent: "primary", accentSecondary: "secondary" },
+    states: {
+      enabled: false,
+      hoverShift: 5,
+      activeShift: 10,
+      focusRingAlpha: 50,
+      disabledAlpha: 40,
+      disabledDesat: 60,
+    },
+    elevation: { enabled: false, levels: 4 },
   },
 
   gradients: false,

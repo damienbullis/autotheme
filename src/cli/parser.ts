@@ -20,6 +20,9 @@ export interface CLIArgs {
   semantics?: boolean | undefined;
   shadcn?: boolean | undefined;
   utilities?: boolean | undefined;
+  alphaVariants?: boolean | undefined;
+  states?: boolean | undefined;
+  elevation?: boolean | undefined;
   swing?: number | undefined;
   swingStrategy?: string | undefined;
   stdout?: boolean | undefined;
@@ -49,6 +52,12 @@ export function parseArgs(args: string[]): CLIArgs {
     .option("--semantics", "Generate semantic token variables (use --no-semantics to disable)")
     .option("--shadcn", "Generate Shadcn UI variables (use --no-shadcn to disable)")
     .option("--utilities", "Generate utility classes (use --no-utilities to disable)")
+    .option(
+      "--alpha-variants",
+      "Generate alpha-transparent color variants (use --no-alpha-variants to disable)",
+    )
+    .option("--states", "Generate interactive state tokens (use --no-states to disable)")
+    .option("--elevation", "Generate elevation system tokens (use --no-elevation to disable)")
     .option("--swing <value>", "Swing multiplier for harmony angular distance (default: 1)")
     .option("--swing-strategy <strategy>", "Swing strategy: linear, exponential, alternating")
     .option("--stdout", "Output CSS to stdout instead of writing files")
@@ -76,6 +85,9 @@ export function parseArgs(args: string[]): CLIArgs {
     semantics: parsed.options.semantics as boolean | undefined,
     shadcn: parsed.options.shadcn as boolean | undefined,
     utilities: parsed.options.utilities as boolean | undefined,
+    alphaVariants: parsed.options.alphaVariants as boolean | undefined,
+    states: parsed.options.states as boolean | undefined,
+    elevation: parsed.options.elevation as boolean | undefined,
     swing: parsed.options.swing !== undefined ? Number(parsed.options.swing) : undefined,
     swingStrategy: parsed.options.swingStrategy as string | undefined,
     stdout: parsed.options.stdout as boolean | undefined,

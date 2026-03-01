@@ -5,6 +5,7 @@ import { generateDarkModeCSS } from "./dark-mode";
 import { generateUtilityClasses } from "./utilities";
 import { generateShadcnCSS } from "./shadcn";
 import { generateSemanticCSS } from "./semantic";
+import { generateAlphaVariants } from "./alpha";
 
 /**
  * Semantic names for harmony colors by index
@@ -130,6 +131,15 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     p.tones.forEach((tone, j) => {
       lines.push(`    --${prefix}-${name}-tone-${j + 1}: ${tone.toOKLCH()};`);
     });
+
+    // Alpha variants (transparent overlays)
+    if (config.palette.alphaVariants) {
+      const av = generateAlphaVariants(p.base, config.palette.alphaSteps);
+      lines.push(`    --${prefix}-${name}-bg: ${av.bg.toOKLCH()};`);
+      lines.push(`    --${prefix}-${name}-border: ${av.border.toOKLCH()};`);
+      lines.push(`    --${prefix}-${name}-glow: ${av.glow.toOKLCH()};`);
+      lines.push(`    --${prefix}-${name}-hover: ${av.hover.toOKLCH()};`);
+    }
   });
 
   // Typography scale (Tailwind namespace)

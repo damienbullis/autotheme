@@ -84,9 +84,24 @@ function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
   if (args.noise !== undefined) config.noise = args.noise;
   if (args.utilities !== undefined) config.utilities = args.utilities;
 
+  // Alpha variants
+  if (args.alphaVariants !== undefined) {
+    config.palette = { ...config.palette, alphaVariants: args.alphaVariants };
+  }
+
   // Semantics
   if (args.semantics !== undefined) {
     config.semantics = { ...config.semantics, enabled: args.semantics };
+  }
+
+  // States
+  if (args.states !== undefined) {
+    config.semantics = { ...config.semantics, states: { enabled: args.states } };
+  }
+
+  // Elevation
+  if (args.elevation !== undefined) {
+    config.semantics = { ...config.semantics, elevation: { enabled: args.elevation } };
   }
 
   // Shadcn

@@ -4,11 +4,14 @@ import type { FullPalette } from "../core/types";
 import type { AutoThemeConfig } from "../config/types";
 import type { GeneratedTheme } from "./types";
 import { getHarmonyName } from "./css";
+import { generateStateTokens } from "./states";
+import { generateElevationTokens } from "./elevation";
 
 export interface SemanticToken {
   name: string;
   ref?: string;
   value: Color;
+  rawCSS?: string;
 }
 
 export interface SemanticTokenSet {
@@ -16,6 +19,8 @@ export interface SemanticTokenSet {
   borders: SemanticToken[];
   text: SemanticToken[];
   accents: SemanticToken[];
+  states?: SemanticToken[];
+  elevation?: SemanticToken[];
 }
 
 /**
@@ -47,6 +52,21 @@ export function generateSemanticTokens(
   const accents = generateAccents(palette, config.semantics.mapping, config.palette.prefix, isDark);
 
   const tokens: SemanticTokenSet = { surfaces, borders, text, accents };
+
+  if (config.semantics.states.enabled) {
+    tokens.states = generateStateTokens(tokens, config.semantics.states, mode);
+  }
+
+  if (config.semantics.elevation.enabled) {
+    const surfaceColor = surfaces[0]!.value;
+    const primaryHue = primaryHsl.h;
+    tokens.elevation = generateElevationTokens(
+      surfaceColor,
+      primaryHue,
+      config.semantics.elevation.levels,
+      isDark,
+    );
+  }
 
   if (config.semantics.overrides) {
     applyOverrides(tokens, config.semantics.overrides);
@@ -246,11 +266,14 @@ export function generateSemanticCSS(theme: GeneratedTheme): string {
  */
 export function applyOverrides(tokens: SemanticTokenSet, overrides: Record<string, string>): void {
   const allGroups = [tokens.surfaces, tokens.borders, tokens.text, tokens.accents];
+  if (tokens.states) allGroups.push(tokens.states);
+  if (tokens.elevation) allGroups.push(tokens.elevation);
   for (const group of allGroups) {
     for (const token of group) {
       if (overrides[token.name] !== undefined) {
         token.value = new Color(overrides[token.name]!);
         delete token.ref;
+        delete token.rawCSS;
       }
     }
   }
@@ -281,9 +304,28 @@ function writeTokenBlock(lines: string[], tokens: SemanticTokenSet): void {
   for (const t of tokens.accents) {
     lines.push(`    --${t.name}: ${formatTokenValue(t)};`);
   }
+
+  if (tokens.states && tokens.states.length > 0) {
+    lines.push("");
+    lines.push("    /* States */");
+    for (const t of tokens.states) {
+      lines.push(`    --${t.name}: ${formatTokenValue(t)};`);
+    }
+  }
+
+  if (tokens.elevation && tokens.elevation.length > 0) {
+    lines.push("");
+    lines.push("    /* Elevation */");
+    for (const t of tokens.elevation) {
+      lines.push(`    --${t.name}: ${formatTokenValue(t)};`);
+    }
+  }
 }
 
 function formatTokenValue(token: SemanticToken): string {
+  if (token.rawCSS) {
+    return token.rawCSS;
+  }
   if (token.ref) {
     return `var(${token.ref})`;
   }

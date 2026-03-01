@@ -35,6 +35,13 @@ export function createTestTheme(
       tintIncrement: overrides.palette?.tintIncrement ?? 10,
       shadeIncrement: overrides.palette?.shadeIncrement ?? 10,
       toneIncrement: overrides.palette?.toneIncrement ?? 20,
+      alphaVariants: overrides.palette?.alphaVariants ?? false,
+      alphaSteps: {
+        bg: overrides.palette?.alphaSteps?.bg ?? 10,
+        border: overrides.palette?.alphaSteps?.border ?? 20,
+        glow: overrides.palette?.alphaSteps?.glow ?? 15,
+        hover: overrides.palette?.alphaSteps?.hover ?? 8,
+      },
     },
     typography: {
       enabled: overrides.typography?.enabled ?? true,
@@ -63,6 +70,18 @@ export function createTestTheme(
         accentSecondary: overrides.semantics?.mapping?.accentSecondary ?? "secondary",
       },
       ...(overrides.semantics?.overrides && { overrides: overrides.semantics.overrides }),
+      states: {
+        enabled: overrides.semantics?.states?.enabled ?? false,
+        hoverShift: overrides.semantics?.states?.hoverShift ?? 5,
+        activeShift: overrides.semantics?.states?.activeShift ?? 10,
+        focusRingAlpha: overrides.semantics?.states?.focusRingAlpha ?? 50,
+        disabledAlpha: overrides.semantics?.states?.disabledAlpha ?? 40,
+        disabledDesat: overrides.semantics?.states?.disabledDesat ?? 60,
+      },
+      elevation: {
+        enabled: overrides.semantics?.elevation?.enabled ?? false,
+        levels: overrides.semantics?.elevation?.levels ?? 4,
+      },
     },
     shadcn: {
       enabled: overrides.shadcn?.enabled ?? false,

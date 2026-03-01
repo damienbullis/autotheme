@@ -301,4 +301,47 @@ describe("generateCSS", () => {
     expect(result.content).toMatch(/--background:\s*oklch\(/);
     expect(result.content).toMatch(/--primary:\s*oklch\(/);
   });
+
+  it("Phase 3 features disabled by default produce no extra output", () => {
+    const theme = createTestTheme();
+    const result = generateCSS(theme);
+
+    // No alpha variants
+    expect(result.content).not.toContain("-bg:");
+    expect(result.content).not.toContain("-glow:");
+
+    // No state tokens
+    expect(result.content).not.toContain("accent-hover");
+    expect(result.content).not.toContain("accent-disabled");
+
+    // No elevation tokens
+    expect(result.content).not.toContain("elevation-");
+  });
+
+  it("all Phase 3 features enabled together produce complete CSS", () => {
+    const theme = createTestTheme({
+      palette: { alphaVariants: true },
+      semantics: {
+        enabled: true,
+        states: { enabled: true },
+        elevation: { enabled: true, levels: 4 },
+      },
+    });
+    const result = generateCSS(theme);
+
+    // Alpha variants in palette block
+    expect(result.content).toContain("--color-primary-bg:");
+    expect(result.content).toContain("--color-primary-glow:");
+    expect(result.content).toContain("--color-secondary-border:");
+
+    // State tokens in semantic block
+    expect(result.content).toContain("--accent-hover:");
+    expect(result.content).toContain("--accent-focus-ring:");
+    expect(result.content).toContain("--surface-hover:");
+
+    // Elevation tokens in semantic block
+    expect(result.content).toContain("--elevation-1-surface:");
+    expect(result.content).toContain("--elevation-4-shadow:");
+    expect(result.content).toContain("--elevation-4-border:");
+  });
 });
