@@ -5,6 +5,7 @@ const { version } = require("../../package.json");
 export interface CLIArgs {
   color?: string | undefined;
   harmony?: string | undefined;
+  mode?: string | undefined;
   output?: string | undefined;
   config?: string | undefined;
   preset?: string | undefined;
@@ -32,6 +33,7 @@ export function parseArgs(args: string[]): CLIArgs {
   cli
     .option("-c, --color <color>", "Primary color (hex, rgb, hsl)")
     .option("-a, --harmony <type>", "Color harmony type")
+    .option("-m, --mode <mode>", "Theme mode: light, dark, or both (default: both)")
     .option("-o, --output <path>", "Output file path")
     .option("--config <path>", "Path to config file or URL")
     .option("-p, --preset <name>", "Use a built-in preset (e.g., ocean, sunset, forest)")
@@ -57,6 +59,7 @@ export function parseArgs(args: string[]): CLIArgs {
   return {
     color: parsed.options.color as string | undefined,
     harmony: parsed.options.harmony as string | undefined,
+    mode: parsed.options.mode as string | undefined,
     output: parsed.options.output as string | undefined,
     config: parsed.options.config as string | undefined,
     preset: parsed.options.preset as string | undefined,

@@ -48,6 +48,23 @@ describe("Color Parsing", () => {
         const result = parseColor("rgb( 255 , 128 , 64 )");
         expect(result.a).toBe(1);
       });
+
+      it("parses space-separated rgb()", () => {
+        const result = parseColor("rgb(255 128 64)");
+        expect(result.h).toBeCloseTo(20, 0);
+        expect(result.a).toBe(1);
+      });
+
+      it("parses rgb() with slash alpha", () => {
+        const result = parseColor("rgb(255 128 64 / 0.5)");
+        expect(result.h).toBeCloseTo(20, 0);
+        expect(result.a).toBe(0.5);
+      });
+
+      it("parses rgb() with percentage alpha", () => {
+        const result = parseColor("rgb(255 0 0 / 50%)");
+        expect(result.a).toBeCloseTo(0.5);
+      });
     });
 
     describe("hsl strings", () => {
@@ -72,6 +89,22 @@ describe("Color Parsing", () => {
         expect(result.h).toBe(180);
         expect(result.s).toBe(50);
         expect(result.l).toBe(50);
+      });
+
+      it("parses space-separated hsl()", () => {
+        const result = parseColor("hsl(255 100% 61%)");
+        expect(result.h).toBe(255);
+        expect(result.s).toBe(100);
+        expect(result.l).toBe(61);
+        expect(result.a).toBe(1);
+      });
+
+      it("parses hsl() with slash alpha", () => {
+        const result = parseColor("hsl(180 50% 50% / 0.5)");
+        expect(result.h).toBe(180);
+        expect(result.s).toBe(50);
+        expect(result.l).toBe(50);
+        expect(result.a).toBe(0.5);
       });
     });
 

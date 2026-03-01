@@ -59,6 +59,7 @@ function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
 
   if (args.color) config.color = args.color;
   if (args.harmony) config.harmony = args.harmony as AutoThemeConfig["harmony"];
+  if (args.mode) config.mode = args.mode as AutoThemeConfig["mode"];
   if (args.swing !== undefined) config.swing = args.swing;
   if (args.swingStrategy)
     config.swingStrategy = args.swingStrategy as AutoThemeConfig["swingStrategy"];

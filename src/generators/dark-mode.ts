@@ -9,9 +9,12 @@ import { getHarmonyName } from "./css";
 export function generateDarkModeCSS(theme: GeneratedTheme): string {
   const { palette, config } = theme;
   const prefix = config.palette.prefix;
+  const mode = config.mode;
   const lines: string[] = [];
 
-  lines.push(".dark {");
+  // When mode is "dark", emit under :root; when "both", emit under .dark
+  const selector = mode === "dark" ? ":root" : ".dark";
+  lines.push(`${selector} {`);
   lines.push("    /* Dark Mode Color Overrides */");
 
   // Inverted text/contrast colors for dark mode

@@ -32,7 +32,7 @@ export const HARMONY_DEFINITIONS: Record<HarmonyType, HarmonyDefinition> = {
   },
   drift: {
     count: 4,
-    offset: (i) => ((i * Math.PI) / 6) * 90,
+    offset: (i) => (i * 137.508) / 4,
   },
   square: {
     count: 4,
@@ -77,6 +77,7 @@ export function applySwing(
   swing: number,
   strategy: SwingStrategy,
 ): number {
+  if (index === 0) return offset;
   if (swing === 1.0) return offset;
 
   switch (strategy) {

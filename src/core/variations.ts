@@ -1,27 +1,28 @@
 import { Color } from "./color";
 import type { PaletteVariations } from "./types";
 
-const TINT_STEPS = 5;
-const TINT_INCREMENT = 10; // Lightness increase per step
+const DEFAULT_TINT_STEPS = 5;
+const DEFAULT_TINT_INCREMENT = 10;
 
-const SHADE_STEPS = 5;
-const SHADE_INCREMENT = 10; // Lightness decrease per step
+const DEFAULT_SHADE_STEPS = 5;
+const DEFAULT_SHADE_INCREMENT = 10;
 
-const TONE_STEPS = 4;
-const TONE_INCREMENT = 20; // Saturation decrease per step
+const DEFAULT_TONE_STEPS = 4;
+const DEFAULT_TONE_INCREMENT = 20;
 
 /**
  * Generate tints (lighter versions) of a color
- * @param color - The base color
- * @param steps - Number of tints to generate (default 5)
- * @returns Array of progressively lighter colors (L1-L5)
  */
-export function generateTints(color: Color, steps: number = TINT_STEPS): Color[] {
+export function generateTints(
+  color: Color,
+  steps: number = DEFAULT_TINT_STEPS,
+  increment: number = DEFAULT_TINT_INCREMENT,
+): Color[] {
   const hsl = color.hsl;
   const tints: Color[] = [];
 
   for (let i = 1; i <= steps; i++) {
-    const newLightness = Math.min(100, hsl.l + TINT_INCREMENT * i);
+    const newLightness = Math.min(100, hsl.l + increment * i);
     tints.push(
       new Color({
         h: hsl.h,
@@ -37,16 +38,17 @@ export function generateTints(color: Color, steps: number = TINT_STEPS): Color[]
 
 /**
  * Generate shades (darker versions) of a color
- * @param color - The base color
- * @param steps - Number of shades to generate (default 5)
- * @returns Array of progressively darker colors (D1-D5)
  */
-export function generateShades(color: Color, steps: number = SHADE_STEPS): Color[] {
+export function generateShades(
+  color: Color,
+  steps: number = DEFAULT_SHADE_STEPS,
+  increment: number = DEFAULT_SHADE_INCREMENT,
+): Color[] {
   const hsl = color.hsl;
   const shades: Color[] = [];
 
   for (let i = 1; i <= steps; i++) {
-    const newLightness = Math.max(0, hsl.l - SHADE_INCREMENT * i);
+    const newLightness = Math.max(0, hsl.l - increment * i);
     shades.push(
       new Color({
         h: hsl.h,
@@ -62,16 +64,17 @@ export function generateShades(color: Color, steps: number = SHADE_STEPS): Color
 
 /**
  * Generate tones (desaturated versions) of a color
- * @param color - The base color
- * @param steps - Number of tones to generate (default 4)
- * @returns Array of progressively desaturated colors (G1-G4)
  */
-export function generateTones(color: Color, steps: number = TONE_STEPS): Color[] {
+export function generateTones(
+  color: Color,
+  steps: number = DEFAULT_TONE_STEPS,
+  increment: number = DEFAULT_TONE_INCREMENT,
+): Color[] {
   const hsl = color.hsl;
   const tones: Color[] = [];
 
   for (let i = 1; i <= steps; i++) {
-    const newSaturation = Math.max(0, hsl.s - TONE_INCREMENT * i);
+    const newSaturation = Math.max(0, hsl.s - increment * i);
     tones.push(
       new Color({
         h: hsl.h,
@@ -85,16 +88,27 @@ export function generateTones(color: Color, steps: number = TONE_STEPS): Color[]
   return tones;
 }
 
+/** Options for palette variation generation */
+export interface PaletteVariationOptions {
+  tints?: number;
+  shades?: number;
+  tones?: number;
+  tintIncrement?: number;
+  shadeIncrement?: number;
+  toneIncrement?: number;
+}
+
 /**
  * Generate all variations (tints, shades, tones) for a color
- * @param color - The base color
- * @returns Object containing base color and all variations
  */
-export function generatePaletteVariations(color: Color): PaletteVariations {
+export function generatePaletteVariations(
+  color: Color,
+  options?: PaletteVariationOptions,
+): PaletteVariations {
   return {
     base: color,
-    tints: generateTints(color),
-    shades: generateShades(color),
-    tones: generateTones(color),
+    tints: generateTints(color, options?.tints, options?.tintIncrement),
+    shades: generateShades(color, options?.shades, options?.shadeIncrement),
+    tones: generateTones(color, options?.tones, options?.toneIncrement),
   };
 }

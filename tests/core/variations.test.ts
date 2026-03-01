@@ -69,6 +69,15 @@ describe("Palette Variations", () => {
       expect(tints[0]!.hsl.l).toBeCloseTo(baseL + 10, 0);
       expect(tints[1]!.hsl.l).toBeCloseTo(baseL + 20, 0);
     });
+
+    it("accepts custom increment", () => {
+      const dark = new Color({ h: 250, s: 100, l: 30, a: 1 });
+      const tints = generateTints(dark, 3, 15);
+      expect(tints).toHaveLength(3);
+      expect(tints[0]!.hsl.l).toBeCloseTo(45, 0);
+      expect(tints[1]!.hsl.l).toBeCloseTo(60, 0);
+      expect(tints[2]!.hsl.l).toBeCloseTo(75, 0);
+    });
   });
 
   describe("generateShades", () => {
@@ -119,6 +128,14 @@ describe("Palette Variations", () => {
       const baseL = primary.hsl.l;
       expect(shades[0]!.hsl.l).toBeCloseTo(baseL - 10, 0);
       expect(shades[1]!.hsl.l).toBeCloseTo(baseL - 20, 0);
+    });
+
+    it("accepts custom increment", () => {
+      const shades = generateShades(primary, 3, 15);
+      const baseL = primary.hsl.l;
+      expect(shades).toHaveLength(3);
+      expect(shades[0]!.hsl.l).toBeCloseTo(baseL - 15, 0);
+      expect(shades[1]!.hsl.l).toBeCloseTo(baseL - 30, 0);
     });
   });
 
@@ -171,6 +188,14 @@ describe("Palette Variations", () => {
       expect(tones[0]!.hsl.s).toBeCloseTo(baseS - 20, 0);
       expect(tones[1]!.hsl.s).toBeCloseTo(baseS - 40, 0);
     });
+
+    it("accepts custom increment", () => {
+      const tones = generateTones(primary, 3, 10);
+      const baseS = primary.hsl.s;
+      expect(tones).toHaveLength(3);
+      expect(tones[0]!.hsl.s).toBeCloseTo(baseS - 10, 0);
+      expect(tones[1]!.hsl.s).toBeCloseTo(baseS - 20, 0);
+    });
   });
 
   describe("generatePaletteVariations", () => {
@@ -216,6 +241,27 @@ describe("Palette Variations", () => {
       for (const tone of variations.tones) {
         expect(tone.hsl.s).toBeLessThan(baseS);
       }
+    });
+
+    it("respects custom step counts via options", () => {
+      const variations = generatePaletteVariations(primary, {
+        tints: 3,
+        shades: 7,
+        tones: 2,
+      });
+      expect(variations.tints).toHaveLength(3);
+      expect(variations.shades).toHaveLength(7);
+      expect(variations.tones).toHaveLength(2);
+    });
+
+    it("respects custom increments via options", () => {
+      const dark = new Color({ h: 250, s: 100, l: 30, a: 1 });
+      const variations = generatePaletteVariations(dark, {
+        tints: 2,
+        tintIncrement: 15,
+      });
+      expect(variations.tints[0]!.hsl.l).toBeCloseTo(45, 0);
+      expect(variations.tints[1]!.hsl.l).toBeCloseTo(60, 0);
     });
   });
 });

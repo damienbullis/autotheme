@@ -18,6 +18,13 @@ export const CONFIG_SCHEMA = {
       description: "Primary color in hex, rgb, or hsl format",
       examples: ["#6439FF", "rgb(100, 57, 255)", "hsl(255, 100%, 61%)"],
     },
+    mode: {
+      type: "string",
+      enum: ["light", "dark", "both"],
+      default: "both",
+      description:
+        "Theme mode: 'light' generates only light mode, 'dark' generates only dark mode under :root, 'both' generates light :root + dark .dark",
+    },
     harmony: {
       type: "string",
       default: "analogous",
@@ -86,6 +93,42 @@ export const CONFIG_SCHEMA = {
           maximum: 21,
           description: "Target contrast ratio for accessible text (7 = AAA, 4.5 = AA)",
         },
+        tints: {
+          type: "number",
+          default: 5,
+          minimum: 0,
+          description: "Number of tint (lighter) variations per color",
+        },
+        shades: {
+          type: "number",
+          default: 5,
+          minimum: 0,
+          description: "Number of shade (darker) variations per color",
+        },
+        tones: {
+          type: "number",
+          default: 4,
+          minimum: 0,
+          description: "Number of tone (desaturated) variations per color",
+        },
+        tintIncrement: {
+          type: "number",
+          default: 10,
+          exclusiveMinimum: 0,
+          description: "Lightness increase per tint step",
+        },
+        shadeIncrement: {
+          type: "number",
+          default: 10,
+          exclusiveMinimum: 0,
+          description: "Lightness decrease per shade step",
+        },
+        toneIncrement: {
+          type: "number",
+          default: 20,
+          exclusiveMinimum: 0,
+          description: "Saturation decrease per tone step",
+        },
       },
       additionalProperties: false,
     },
@@ -93,6 +136,11 @@ export const CONFIG_SCHEMA = {
       type: "object",
       description: "Typography scale options",
       properties: {
+        enabled: {
+          type: "boolean",
+          default: true,
+          description: "Generate typography scale CSS variables",
+        },
         base: {
           type: "number",
           default: 1,
@@ -101,15 +149,25 @@ export const CONFIG_SCHEMA = {
         },
         ratio: {
           type: "number",
-          default: 1.618,
+          default: 1.25,
           exclusiveMinimum: 0,
-          description: "Scale factor for typography (golden ratio)",
+          description: "Scale factor for typography (major third)",
         },
         steps: {
           type: "number",
-          default: 8,
+          default: 7,
           minimum: 1,
-          description: "Number of typography scale steps",
+          description: "Total number of typography scale steps",
+        },
+        names: {
+          type: "array",
+          items: { type: "string" },
+          description: "Custom names for typography scale steps (e.g., ['xs', 'sm', 'base', 'lg'])",
+        },
+        values: {
+          type: "array",
+          items: { type: "number" },
+          description: "Manual typography values in rem (overrides base/ratio/steps generation)",
         },
       },
       additionalProperties: false,
@@ -125,13 +183,13 @@ export const CONFIG_SCHEMA = {
         },
         base: {
           type: "number",
-          default: 0.155,
+          default: 0.25,
           exclusiveMinimum: 0,
           description: "Base spacing value in rem",
         },
         ratio: {
           type: "number",
-          default: 1.618,
+          default: 2,
           exclusiveMinimum: 0,
           description: "Scale factor for spacing",
         },
@@ -140,6 +198,11 @@ export const CONFIG_SCHEMA = {
           default: 10,
           minimum: 1,
           description: "Number of spacing scale steps",
+        },
+        values: {
+          type: "array",
+          items: { type: "number" },
+          description: "Manual spacing values in rem (overrides base/ratio/steps generation)",
         },
       },
       additionalProperties: false,

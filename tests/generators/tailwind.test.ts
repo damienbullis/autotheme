@@ -11,10 +11,10 @@ describe("generateTailwindCSS", () => {
     expect(result.content).toContain(":root {");
     expect(result.content).toContain("@theme {");
 
-    // @theme block has typography
+    // @theme block has typography (centered scale, 7 steps default)
     const themeBlock = result.content.split("@theme {")[1];
-    expect(themeBlock).toContain("--text-xs:");
-    expect(themeBlock).toContain("--text-4xl:");
+    expect(themeBlock).toContain("--text-base:");
+    expect(themeBlock).toContain("--text-xl:");
 
     // Has custom utility definitions
     expect(result.content).toContain("@utility radial-position-*");

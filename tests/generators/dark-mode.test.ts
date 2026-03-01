@@ -24,4 +24,20 @@ describe("generateDarkModeCSS", () => {
     expect(result).toContain("--at-primary-foreground:");
     expect(result).not.toContain("--color-primary-foreground:");
   });
+
+  it("emits under :root when mode is 'dark'", () => {
+    const theme = createTestTheme({ mode: "dark" });
+    const result = generateDarkModeCSS(theme);
+
+    expect(result).toContain(":root {");
+    expect(result).not.toContain(".dark {");
+  });
+
+  it("emits under .dark when mode is 'both'", () => {
+    const theme = createTestTheme({ mode: "both" });
+    const result = generateDarkModeCSS(theme);
+
+    expect(result).toContain(".dark {");
+    expect(result).not.toContain(":root {");
+  });
 });

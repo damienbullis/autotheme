@@ -24,6 +24,14 @@ export function generateTheme(config: AutoThemeConfig): GeneratedTheme {
     swing: config.swing,
     swingStrategy: config.swingStrategy,
     ...(customDefinitions && { customDefinitions }),
+    variations: {
+      tints: config.palette.tints,
+      shades: config.palette.shades,
+      tones: config.palette.tones,
+      tintIncrement: config.palette.tintIncrement,
+      shadeIncrement: config.palette.shadeIncrement,
+      toneIncrement: config.palette.toneIncrement,
+    },
   });
   return { palette, config };
 }

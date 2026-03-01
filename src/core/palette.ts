@@ -7,18 +7,16 @@ import type {
   HarmonyDefinition,
 } from "./types";
 import { generateHarmony } from "./harmonies";
-import { generatePaletteVariations } from "./variations";
+import { generatePaletteVariations, type PaletteVariationOptions } from "./variations";
 import { findAccessibleTextColor } from "./contrast";
 
 export interface PaletteOptions extends HarmonyOptions {
   customDefinitions?: Record<string, HarmonyDefinition>;
+  variations?: PaletteVariationOptions;
 }
 
 /**
  * Generate a complete palette with harmony colors and accessible text colors
- * @param primaryColor - The base color for the palette
- * @param harmonyType - The type of harmony to generate
- * @returns Full palette with all variations and accessible text colors
  */
 export function generateFullPalette(
   primaryColor: Color,
@@ -31,7 +29,7 @@ export function generateFullPalette(
 
   for (let colorIndex = 0; colorIndex < harmony.colors.length; colorIndex++) {
     const color = harmony.colors[colorIndex]!;
-    const variations = generatePaletteVariations(color);
+    const variations = generatePaletteVariations(color, options?.variations);
     palettes.push(variations);
 
     // Generate accessible text colors for base and all variations

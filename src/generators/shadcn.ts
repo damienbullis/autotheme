@@ -91,12 +91,29 @@ function generateContainer(
 }
 
 /**
- * Generate a destructive/error color independent of the palette
+ * Generate a destructive/error color independent of the palette.
+ * Uses hue-distance algorithm to pick a red-ish hue maximally distant from primary.
  */
-function generateErrorColor(primaryHue: number): Color {
-  const isNearRed = primaryHue < 40 || primaryHue > 340;
-  const errorHue = isNearRed ? 0 : 15;
-  return new Color({ h: errorHue, s: 85, l: 45, a: 1 });
+export function generateErrorColor(primaryHue: number): Color {
+  const candidates = [0, 10, 350];
+
+  let bestHue = 0;
+  let maxDist = -1;
+  for (const h of candidates) {
+    const diff = Math.abs(primaryHue - h);
+    const dist = Math.min(diff, 360 - diff);
+    if (dist > maxDist) {
+      maxDist = dist;
+      bestHue = h;
+    }
+  }
+
+  // If all candidates are too close (< 30° from primary), shift to orange
+  if (maxDist < 30) {
+    bestHue = 25;
+  }
+
+  return new Color({ h: bestHue, s: 85, l: 45, a: 1 });
 }
 
 /**
@@ -420,15 +437,26 @@ export function generateShadcnDarkCSS(colors: ShadcnColors): string {
 }
 
 /**
- * Generate complete Shadcn CSS (light + dark)
+ * Generate complete Shadcn CSS respecting the configured mode
  */
 export function generateShadcnCSS(theme: GeneratedTheme, radius: string = "0.625rem"): string {
   const colors = generateShadcnColors(theme);
-
+  const mode = theme.config.mode;
   const lines: string[] = [];
-  lines.push(generateShadcnLightCSS(colors.light, radius));
-  lines.push("");
-  lines.push(generateShadcnDarkCSS(colors.dark));
+
+  if (mode === "light" || mode === "both") {
+    lines.push(generateShadcnLightCSS(colors.light, radius));
+  }
+
+  if (mode === "dark") {
+    // Dark-only mode: emit dark values under :root
+    lines.push(generateShadcnLightCSS(colors.dark, radius));
+  }
+
+  if (mode === "both") {
+    lines.push("");
+    lines.push(generateShadcnDarkCSS(colors.dark));
+  }
 
   return lines.join("\n");
 }

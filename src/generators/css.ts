@@ -18,26 +18,41 @@ export function getHarmonyName(index: number): string {
 }
 
 /**
- * Mapping from tint/shade index to Tailwind scale values
- * Tints: L5=50, L4=100, L3=200, L2=300, L1=400
- * Base: 500
- * Shades: D1=600, D2=700, D3=800, D4=900, D5=950
+ * Default Tailwind scale points for tints and shades
  */
-const TINT_TO_SCALE: Record<number, number> = {
-  5: 50,
-  4: 100,
-  3: 200,
-  2: 300,
-  1: 400,
-};
+const DEFAULT_TINT_SCALE_POINTS = [50, 100, 200, 300, 400];
+const DEFAULT_SHADE_SCALE_POINTS = [600, 700, 800, 900, 950];
 
-const SHADE_TO_SCALE: Record<number, number> = {
-  1: 600,
-  2: 700,
-  3: 800,
-  4: 900,
-  5: 950,
-};
+/**
+ * Build a mapping from 1-based variation index to scale number.
+ * When count matches the predefined length, uses exact mapping.
+ * When count differs, evenly distributes across the predefined range.
+ * Index is 1-based from lightest/darkest end (tints reversed, shades forward).
+ */
+export function buildScaleMapping(count: number, scalePoints: number[]): Record<number, number> {
+  const mapping: Record<number, number> = {};
+  if (count === 0) return mapping;
+  if (count === 1) {
+    // Single variation gets the middle scale point
+    mapping[1] = scalePoints[Math.floor(scalePoints.length / 2)]!;
+    return mapping;
+  }
+  if (count === scalePoints.length) {
+    // Exact match: direct mapping
+    for (let i = 0; i < count; i++) {
+      mapping[i + 1] = scalePoints[i]!;
+    }
+    return mapping;
+  }
+  // Distribute evenly across the range
+  const min = scalePoints[0]!;
+  const max = scalePoints[scalePoints.length - 1]!;
+  for (let i = 0; i < count; i++) {
+    const t = count === 1 ? 0.5 : i / (count - 1);
+    mapping[i + 1] = Math.round(min + t * (max - min));
+  }
+  return mapping;
+}
 
 /**
  * Generate the main CSS output with all variables
@@ -67,17 +82,23 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   lines.push("");
   lines.push(":root {");
 
+  // Build dynamic scale mappings
+  const tintCount = palette.palettes[0]?.tints.length ?? 5;
+  const shadeCount = palette.palettes[0]?.shades.length ?? 5;
+  const tintScaleMap = buildScaleMapping(tintCount, DEFAULT_TINT_SCALE_POINTS);
+  const shadeScaleMap = buildScaleMapping(shadeCount, DEFAULT_SHADE_SCALE_POINTS);
+
   // Palette colors with Tailwind naming
   palette.palettes.forEach((p, i) => {
     const name = getHarmonyName(i);
     lines.push("");
     lines.push(`    /* ${name.charAt(0).toUpperCase() + name.slice(1)} Color Scale */`);
 
-    // Tints (lighter): L5=50, L4=100, L3=200, L2=300, L1=400
-    for (let j = 5; j >= 1; j--) {
+    // Tints (lighter): reversed so lightest (highest index) gets smallest scale number
+    for (let j = p.tints.length; j >= 1; j--) {
       const tint = p.tints[j - 1];
       if (tint) {
-        const scale = TINT_TO_SCALE[j];
+        const scale = tintScaleMap[p.tints.length - j + 1];
         lines.push(`    --${prefix}-${name}-${scale}: ${tint.toOKLCH()};`);
       }
     }
@@ -85,11 +106,11 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     // Base color (500)
     lines.push(`    --${prefix}-${name}-500: ${p.base.toOKLCH()};`);
 
-    // Shades (darker): D1=600, D2=700, D3=800, D4=900, D5=950
-    for (let j = 1; j <= 5; j++) {
+    // Shades (darker)
+    for (let j = 1; j <= p.shades.length; j++) {
       const shade = p.shades[j - 1];
       if (shade) {
-        const scale = SHADE_TO_SCALE[j];
+        const scale = shadeScaleMap[j];
         lines.push(`    --${prefix}-${name}-${scale}: ${shade.toOKLCH()};`);
       }
     }
@@ -111,30 +132,30 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   });
 
   // Typography scale (Tailwind namespace)
-  lines.push("");
-  lines.push("    /* Typography Scale */");
-  const typoRatio = config.typography.ratio;
-  const textSizes = generateScaledValues(
-    config.typography.base,
-    typoRatio,
-    config.typography.steps,
-  );
-  const sizeNames = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"];
-  textSizes.forEach((size, i) => {
-    if (sizeNames[i]) {
-      lines.push(`    --text-${sizeNames[i]}: ${size.toFixed(3)}rem;`);
-    }
-  });
+  if (config.typography.enabled) {
+    lines.push("");
+    lines.push("    /* Typography Scale */");
+    const typoValues = config.typography.values
+      ? config.typography.values
+      : generateCenteredScale(
+          config.typography.base,
+          config.typography.ratio,
+          config.typography.steps,
+        );
+    const typoNames = config.typography.names ?? generateTypographyNames(typoValues.length);
+    typoValues.forEach((size, i) => {
+      const name = typoNames[i] ?? `size-${i + 1}`;
+      lines.push(`    --text-${name}: ${size.toFixed(3)}rem;`);
+    });
+  }
 
   // Spacing scale (Tailwind namespace)
   if (config.spacing.enabled) {
     lines.push("");
     lines.push("    /* Spacing Scale */");
-    const spacings = generateScaledValues(
-      config.spacing.base,
-      config.spacing.ratio,
-      config.spacing.steps,
-    );
+    const spacings = config.spacing.values
+      ? config.spacing.values
+      : generateScaledValues(config.spacing.base, config.spacing.ratio, config.spacing.steps);
     spacings.forEach((space, i) => {
       lines.push(`    --spacing-${i + 1}: ${space.toFixed(3)}rem;`);
     });
@@ -178,8 +199,10 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   lines.push("}");
 
   // Dark mode
-  lines.push("");
-  lines.push(generateDarkModeCSS(theme));
+  if (config.mode === "both" || config.mode === "dark") {
+    lines.push("");
+    lines.push(generateDarkModeCSS(theme));
+  }
 
   // Utility classes
   if (config.utilities) {
@@ -191,6 +214,58 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     filename: config.output.path,
     content: lines.join("\n"),
   };
+}
+
+/**
+ * Generate a centered scale around a base value.
+ * Produces steps below and above the base using the ratio.
+ */
+export function generateCenteredScale(base: number, ratio: number, steps: number): number[] {
+  const stepsBelow = Math.floor(steps / 2);
+  const stepsAbove = steps - 1 - stepsBelow;
+  const values: number[] = [];
+
+  // Steps below base (smallest first)
+  for (let i = stepsBelow; i >= 1; i--) {
+    values.push(base / Math.pow(ratio, i));
+  }
+
+  // Base
+  values.push(base);
+
+  // Steps above base
+  for (let i = 1; i <= stepsAbove; i++) {
+    values.push(base * Math.pow(ratio, i));
+  }
+
+  return values;
+}
+
+/**
+ * Generate default typography names based on step count.
+ * Centered around "base", with smaller sizes below and larger above.
+ */
+export function generateTypographyNames(count: number): string[] {
+  const below = Math.floor(count / 2);
+  const above = count - 1 - below;
+  const names: string[] = [];
+
+  const smallNames = ["4xs", "3xs", "2xs", "xs", "sm"];
+  const largeNames = ["md", "lg", "xl", "2xl", "3xl", "4xl"];
+
+  // Pick from the end of smallNames
+  for (let i = 0; i < below; i++) {
+    const idx = smallNames.length - below + i;
+    names.push(smallNames[idx] ?? `size-${i + 1}`);
+  }
+
+  names.push("base");
+
+  for (let i = 0; i < above; i++) {
+    names.push(largeNames[i] ?? `size-${below + 2 + i}`);
+  }
+
+  return names;
 }
 
 /**

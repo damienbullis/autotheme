@@ -75,10 +75,18 @@ describe("Harmony Generation", () => {
       expect(result.colors).toHaveLength(3);
     });
 
-    it("generates tetradic harmony (4 colors)", () => {
+    it("generates drift harmony with golden-angle-based tighter spread", () => {
       const result = generateHarmony(primary, "drift");
       expect(result.type).toBe("drift");
       expect(result.colors).toHaveLength(4);
+
+      // Drift uses golden angle / count: offsets are [0, 34.377, 68.754, 103.131]
+      const hues = result.colors.map((c) => c.hsl.h);
+      const baseHue = primary.hsl.h;
+      expect(hues[0]).toBeCloseTo(baseHue, 0);
+      expect(normalizeHue(hues[1]! - baseHue)).toBeCloseTo(34.4, 0);
+      expect(normalizeHue(hues[2]! - baseHue)).toBeCloseTo(68.8, 0);
+      expect(normalizeHue(hues[3]! - baseHue)).toBeCloseTo(103.1, 0);
     });
 
     it("generates square harmony (4 colors, 90° apart)", () => {
@@ -218,6 +226,13 @@ describe("Harmony Generation", () => {
       expect(applySwing(45, 3, 1.0, "alternating")).toBe(45);
     });
 
+    it("never modifies offset for index 0 regardless of swing or strategy", () => {
+      expect(applySwing(90, 0, 2.0, "linear")).toBe(90);
+      expect(applySwing(90, 0, 0.5, "linear")).toBe(90);
+      expect(applySwing(90, 0, 3.0, "exponential")).toBe(90);
+      expect(applySwing(90, 0, 2.0, "alternating")).toBe(90);
+    });
+
     it("linear strategy multiplies offset by swing", () => {
       expect(applySwing(90, 1, 1.5, "linear")).toBe(135);
       expect(applySwing(90, 1, 0.5, "linear")).toBe(45);
@@ -230,7 +245,7 @@ describe("Harmony Generation", () => {
     });
 
     it("alternating strategy divides even indices and multiplies odd", () => {
-      expect(applySwing(90, 0, 2, "alternating")).toBe(45); // even: 90 / 2
+      expect(applySwing(90, 0, 2, "alternating")).toBe(90); // index 0: never modified
       expect(applySwing(90, 1, 2, "alternating")).toBe(180); // odd: 90 * 2
       expect(applySwing(90, 2, 2, "alternating")).toBe(45); // even: 90 / 2
       expect(applySwing(90, 3, 2, "alternating")).toBe(180); // odd: 90 * 2

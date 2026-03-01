@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { generateShadcnColors, generateShadcnCSS } from "../../src/generators/shadcn";
+import {
+  generateShadcnColors,
+  generateShadcnCSS,
+  generateErrorColor,
+} from "../../src/generators/shadcn";
 import { Color } from "../../src/core/color";
 import { createTestTheme } from "../helpers/test-theme";
 
@@ -73,6 +77,35 @@ describe("generateShadcnColors", () => {
     const { light } = generateShadcnColors(theme);
     const primaryBase = theme.palette.palettes[0]?.base;
     expect(light.primary.hex).toBe(primaryBase?.hex);
+  });
+});
+
+describe("generateErrorColor", () => {
+  it("falls back to orange when primary is red (~0°)", () => {
+    // Primary at 5°: all red candidates are within 30°, so falls back to 25° (orange)
+    const error = generateErrorColor(5);
+    expect(error.hsl.h).toBe(25);
+  });
+
+  it("picks a red candidate when primary is far from red (~180°)", () => {
+    const error = generateErrorColor(180);
+    // All candidates are far from 180°; the algorithm picks the most distant
+    expect([0, 10, 350]).toContain(error.hsl.h);
+  });
+
+  it("falls back to orange when primary is near 350°", () => {
+    // Primary at 350°: candidate 10 is 20° away (max), which is < 30 → fallback
+    const error = generateErrorColor(350);
+    expect(error.hsl.h).toBe(25);
+  });
+
+  it("picks standard red when primary is distant enough", () => {
+    // Primary at 120° (green): all red candidates are far enough (>30°)
+    const error = generateErrorColor(120);
+    expect([0, 10, 350]).toContain(error.hsl.h);
+    // Should pick the most distant: 350 is 130° away from 120
+    // 0 is 120° away, 10 is 110° away → picks 350
+    expect(error.hsl.h).toBe(350);
   });
 });
 

@@ -5,6 +5,8 @@ export interface CustomHarmonyDefinition {
   offsets: number[];
 }
 
+export type ThemeMode = "light" | "dark" | "both";
+
 export interface AutoThemeConfig {
   // Version
   version?: 2;
@@ -12,6 +14,9 @@ export interface AutoThemeConfig {
   // Required
   color: string;
   harmony: HarmonyType | string;
+
+  // Mode
+  mode: ThemeMode;
 
   // Swing
   swing: number;
@@ -21,13 +26,22 @@ export interface AutoThemeConfig {
   palette: {
     prefix: string;
     contrastTarget: number;
+    tints: number;
+    shades: number;
+    tones: number;
+    tintIncrement: number;
+    shadeIncrement: number;
+    toneIncrement: number;
   };
 
   // Typography (always generated)
   typography: {
+    enabled: boolean;
     base: number;
     ratio: number;
     steps: number;
+    names?: string[];
+    values?: number[];
   };
 
   // Spacing (defaults to off)
@@ -36,6 +50,7 @@ export interface AutoThemeConfig {
     base: number;
     ratio: number;
     steps: number;
+    values?: number[];
   };
 
   // Feature toggles (all default: false)
@@ -69,24 +84,32 @@ export interface AutoThemeConfig {
 export const DEFAULT_CONFIG: AutoThemeConfig = {
   color: "",
   harmony: "analogous",
+  mode: "both",
   swing: 1,
   swingStrategy: "linear",
 
   palette: {
     prefix: "color",
     contrastTarget: 7,
+    tints: 5,
+    shades: 5,
+    tones: 4,
+    tintIncrement: 10,
+    shadeIncrement: 10,
+    toneIncrement: 20,
   },
 
   typography: {
+    enabled: true,
     base: 1,
-    ratio: 1.618,
-    steps: 8,
+    ratio: 1.25,
+    steps: 7,
   },
 
   spacing: {
     enabled: false,
-    base: 0.155,
-    ratio: 1.618,
+    base: 0.25,
+    ratio: 2,
     steps: 10,
   },
 

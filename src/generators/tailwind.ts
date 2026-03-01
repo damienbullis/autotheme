@@ -1,5 +1,11 @@
 import type { GeneratedTheme, GeneratorOutput } from "./types";
-import { generateCSS, generateScaledValues, getHarmonyName } from "./css";
+import {
+  generateCSS,
+  generateScaledValues,
+  generateCenteredScale,
+  generateTypographyNames,
+  getHarmonyName,
+} from "./css";
 
 /**
  * Generate Tailwind v4 compatible CSS with @theme directive
@@ -74,28 +80,29 @@ export function generateTailwindCSS(theme: GeneratedTheme): GeneratorOutput {
   }
 
   // Typography scale in @theme
-  lines.push("    /* Typography Scale */");
-  const textSizes = generateScaledValues(
-    config.typography.base,
-    config.typography.ratio,
-    config.typography.steps,
-  );
-  const sizeNames = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"];
-  textSizes.forEach((size, i) => {
-    if (sizeNames[i]) {
-      lines.push(`    --text-${sizeNames[i]}: ${size.toFixed(3)}rem;`);
-    }
-  });
-  lines.push("");
+  if (config.typography.enabled) {
+    lines.push("    /* Typography Scale */");
+    const textSizes = config.typography.values
+      ? config.typography.values
+      : generateCenteredScale(
+          config.typography.base,
+          config.typography.ratio,
+          config.typography.steps,
+        );
+    const sizeNames = config.typography.names ?? generateTypographyNames(textSizes.length);
+    textSizes.forEach((size, i) => {
+      const name = sizeNames[i] ?? `size-${i + 1}`;
+      lines.push(`    --text-${name}: ${size.toFixed(3)}rem;`);
+    });
+    lines.push("");
+  }
 
   // Spacing scale in @theme (when enabled)
   if (config.spacing.enabled) {
     lines.push("    /* Spacing Scale */");
-    const spacings = generateScaledValues(
-      config.spacing.base,
-      config.spacing.ratio,
-      config.spacing.steps,
-    );
+    const spacings = config.spacing.values
+      ? config.spacing.values
+      : generateScaledValues(config.spacing.base, config.spacing.ratio, config.spacing.steps);
     spacings.forEach((space, i) => {
       lines.push(`    --spacing-${i + 1}: ${space.toFixed(3)}rem;`);
     });

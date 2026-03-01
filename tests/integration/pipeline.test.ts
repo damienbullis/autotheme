@@ -122,7 +122,7 @@ describe("full pipeline: config → theme → CSS", () => {
     // Present: palette, typography, dark mode
     expect(result.content).toContain(":root {");
     expect(result.content).toContain("--color-primary-500:");
-    expect(result.content).toContain("--text-xs:");
+    expect(result.content).toContain("--text-base:");
     expect(result.content).toContain(".dark {");
 
     // Absent: all optional features
@@ -153,21 +153,23 @@ describe("full pipeline: config → theme → CSS", () => {
     expect(result.content).toContain("Utility Classes");
   });
 
-  it("typography scale follows exponential growth", () => {
+  it("typography scale follows centered growth around base", () => {
     const config = {
       ...DEFAULT_CONFIG,
       color: "#000000",
-      typography: { base: 1, ratio: 2, steps: 4 },
+      typography: { enabled: true, base: 1, ratio: 2, steps: 5 },
     };
     const theme = generateTheme(config);
     const result = generateCSS(theme);
     const vars = extractCSSVars(result.content);
 
-    // base=1, ratio=2 → 1, 2, 4, 8
-    expect(vars.get("--text-xs")).toBe("1.000rem");
-    expect(vars.get("--text-sm")).toBe("2.000rem");
-    expect(vars.get("--text-md")).toBe("4.000rem");
-    expect(vars.get("--text-lg")).toBe("8.000rem");
+    // Centered: 5 steps, 2 below base, 2 above base
+    // 1/2^2=0.25, 1/2^1=0.5, 1, 1*2^1=2, 1*2^2=4
+    expect(vars.get("--text-xs")).toBe("0.250rem");
+    expect(vars.get("--text-sm")).toBe("0.500rem");
+    expect(vars.get("--text-base")).toBe("1.000rem");
+    expect(vars.get("--text-md")).toBe("2.000rem");
+    expect(vars.get("--text-lg")).toBe("4.000rem");
   });
 });
 

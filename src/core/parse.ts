@@ -21,7 +21,10 @@ export function isHSLColor(input: ColorInput): input is HSLColor {
  * Parse an RGB string like "rgb(255, 128, 64)" or "rgba(255, 128, 64, 0.5)"
  */
 function parseRgbString(str: string): HSLColor {
-  const match = str.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/);
+  // Matches: rgb(255, 128, 64) OR rgb(255 128 64) OR rgb(255 128 64 / 0.5)
+  const match = str.match(
+    /rgba?\s*\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)/,
+  );
 
   if (!match || !match[1] || !match[2] || !match[3]) {
     throw new Error(`Invalid RGB format: ${str}`);
@@ -30,7 +33,10 @@ function parseRgbString(str: string): HSLColor {
   const r = parseInt(match[1], 10);
   const g = parseInt(match[2], 10);
   const b = parseInt(match[3], 10);
-  const a = match[4] !== undefined ? parseFloat(match[4]) : 1;
+  let a = 1;
+  if (match[4] !== undefined) {
+    a = match[4].endsWith("%") ? parseFloat(match[4]) / 100 : parseFloat(match[4]);
+  }
 
   return rgbToHsl({ r, g, b, a });
 }
@@ -39,8 +45,9 @@ function parseRgbString(str: string): HSLColor {
  * Parse an HSL string like "hsl(180, 50%, 50%)" or "hsla(180, 50%, 50%, 0.5)"
  */
 function parseHslString(str: string): HSLColor {
+  // Matches: hsl(180, 50%, 50%) OR hsl(180 50% 50%) OR hsl(180 50% 50% / 0.5)
   const match = str.match(
-    /hsla?\s*\(\s*([\d.]+)\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*(?:,\s*([\d.]+))?\s*\)/,
+    /hsla?\s*\(\s*([\d.]+)[\s,]+([\d.]+)%?[\s,]+([\d.]+)%?(?:\s*[,/]\s*([\d.]+%?))?\s*\)/,
   );
 
   if (!match || !match[1] || !match[2] || !match[3]) {
@@ -50,7 +57,10 @@ function parseHslString(str: string): HSLColor {
   const h = parseFloat(match[1]);
   const s = parseFloat(match[2]);
   const l = parseFloat(match[3]);
-  const a = match[4] !== undefined ? parseFloat(match[4]) : 1;
+  let a = 1;
+  if (match[4] !== undefined) {
+    a = match[4].endsWith("%") ? parseFloat(match[4]) / 100 : parseFloat(match[4]);
+  }
 
   return { h, s, l, a };
 }
