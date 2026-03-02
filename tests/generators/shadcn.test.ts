@@ -1,27 +1,38 @@
 import { describe, it, expect } from "vitest";
-import { generateShadcnCSS, generateErrorColor, selectAccentColor } from "../../src/generators/shadcn";
+import {
+  generateShadcnCSS,
+  generateErrorColor,
+  selectAccentColor,
+} from "../../src/generators/shadcn";
 import { createTestTheme } from "../helpers/test-theme";
 
 describe("generateErrorColor", () => {
   it("falls back to orange when primary is red (~0°)", () => {
     const error = generateErrorColor(5);
-    expect(error.hsl.h).toBe(25);
+    // OKLCH round-trip may shift hue slightly from the input 25
+    expect(error.hsl.h).toBeCloseTo(25, 0);
   });
 
   it("picks a red candidate when primary is far from red (~180°)", () => {
     const error = generateErrorColor(180);
-    expect([0, 10, 350]).toContain(error.hsl.h);
+    // Should pick one of the red candidates (0, 10, or 350), allow ±2 for OKLCH round-trip
+    const hue = error.hsl.h;
+    const isNearCandidate = [0, 10, 350].some(
+      (c) => Math.abs(hue - c) <= 2 || Math.abs(hue - c) >= 358,
+    );
+    expect(isNearCandidate).toBe(true);
   });
 
   it("falls back to orange when primary is near 350°", () => {
     const error = generateErrorColor(350);
-    expect(error.hsl.h).toBe(25);
+    // OKLCH round-trip may shift hue slightly from the input 25
+    expect(error.hsl.h).toBeCloseTo(25, 0);
   });
 
   it("picks standard red when primary is distant enough", () => {
     const error = generateErrorColor(120);
-    expect([0, 10, 350]).toContain(error.hsl.h);
-    expect(error.hsl.h).toBe(350);
+    // Should pick hue 350 (most distant red candidate from 120), allow ±2 for OKLCH round-trip
+    expect(error.hsl.h).toBeCloseTo(350, 0);
   });
 });
 

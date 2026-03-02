@@ -12,9 +12,7 @@ export class PaletteDisplay {
   }
 
   update(palette: FullPalette): void {
-    const colorGroups = palette.palettes
-      .map((p, i) => this.renderColorGroup(p, i))
-      .join("");
+    const colorGroups = palette.palettes.map((p, i) => this.renderColorGroup(p, i)).join("");
 
     this.container.innerHTML = `
       <div class="palette-display">

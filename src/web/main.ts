@@ -220,13 +220,13 @@ class AutoThemeApp {
     // Update framework panel
     if (this.state.shadcnEnabled) {
       const mapping: Record<string, string> = {
-        "background": "var(--surface)",
-        "foreground": "var(--text-1)",
-        "primary": "var(--accent)",
-        "secondary": "var(--accent-secondary)",
-        "muted": "var(--surface-sunken)",
-        "accent": "var(--accent-subtle)",
-        "border": "var(--border)",
+        background: "var(--surface)",
+        foreground: "var(--text-1)",
+        primary: "var(--accent)",
+        secondary: "var(--accent-secondary)",
+        muted: "var(--surface-sunken)",
+        accent: "var(--accent-subtle)",
+        border: "var(--border)",
       };
       this.frameworkPanel.update(mapping);
     } else {

@@ -29,7 +29,7 @@ export async function writeOutputs(
   }
 
   if (config.output.darkModeScript) {
-    outputs.push(generateDarkModeScript());
+    outputs.push(generateDarkModeScript(config.output.lightDark && config.mode === "both"));
   }
 
   // Write all files
@@ -57,3 +57,7 @@ export * from "./alpha";
 export * from "./states";
 export * from "./elevation";
 export * from "./shadow";
+export * from "./reactive";
+export * from "./property";
+export * from "./motion";
+export * from "./fluid";

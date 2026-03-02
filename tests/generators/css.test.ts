@@ -55,13 +55,15 @@ describe("findContrastColor", () => {
     const contrastOnLight = findContrastColor(light);
     const contrastOnDark = findContrastColor(dark);
 
-    expect(contrastOnLight.hsl.l).toBe(5);
-    expect(contrastOnDark.hsl.l).toBe(95);
+    // OKLCH round-trip may shift lightness slightly
+    expect(contrastOnLight.hsl.l).toBeCloseTo(5, 0);
+    expect(contrastOnDark.hsl.l).toBeCloseTo(95, 0);
   });
 
   it("preserves hue from background", () => {
     const bg = new Color({ h: 120, s: 50, l: 50, a: 1 });
-    expect(findContrastColor(bg).hsl.h).toBe(120);
+    // OKLCH round-trip may shift hue by a few degrees
+    expect(findContrastColor(bg).hsl.h).toBeCloseTo(120, -1);
   });
 });
 

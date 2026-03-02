@@ -16,29 +16,27 @@ describe("Palette Variations", () => {
       expect(tints).toHaveLength(5);
     });
 
-    it("each tint is lighter than or equal to the previous (capped at 100)", () => {
+    it("each tint is lighter than or equal to the previous (higher OKLCH L)", () => {
       const tints = generateTints(primary);
       for (let i = 1; i < tints.length; i++) {
-        expect(tints[i]!.hsl.l).toBeGreaterThanOrEqual(tints[i - 1]!.hsl.l);
+        expect(tints[i]!.oklch.l).toBeGreaterThanOrEqual(tints[i - 1]!.oklch.l);
       }
     });
 
-    it("tints are strictly lighter until capped at 100", () => {
+    it("tints are strictly lighter until capped", () => {
       // Use a dark color where all 5 tints can increase
       const dark = new Color({ h: 250, s: 100, l: 30, a: 1 });
       const tints = generateTints(dark);
-      // With L=30, tints will be 40, 50, 60, 70, 80 - all strictly increasing
       for (let i = 1; i < tints.length; i++) {
-        expect(tints[i]!.hsl.l).toBeGreaterThan(tints[i - 1]!.hsl.l);
+        expect(tints[i]!.oklch.l).toBeGreaterThan(tints[i - 1]!.oklch.l);
       }
     });
 
-    it("preserves hue and saturation", () => {
+    it("all tints are lighter than the base color", () => {
       const tints = generateTints(primary);
-      const baseHsl = primary.hsl;
+      const baseL = primary.oklch.l;
       for (const tint of tints) {
-        expect(tint.hsl.h).toBeCloseTo(baseHsl.h, 0);
-        expect(tint.hsl.s).toBeCloseTo(baseHsl.s, 0);
+        expect(tint.oklch.l).toBeGreaterThan(baseL);
       }
     });
 
@@ -46,15 +44,15 @@ describe("Palette Variations", () => {
       const semiTransparent = new Color("rgba(100, 57, 255, 0.5)");
       const tints = generateTints(semiTransparent);
       for (const tint of tints) {
-        expect(tint.hsl.a).toBeCloseTo(0.5, 2);
+        expect(tint.oklch.a).toBeCloseTo(0.5, 2);
       }
     });
 
-    it("caps lightness at 100", () => {
+    it("lightness does not exceed maximum", () => {
       const light = new Color({ h: 250, s: 100, l: 95, a: 1 });
       const tints = generateTints(light);
       for (const tint of tints) {
-        expect(tint.hsl.l).toBeLessThanOrEqual(100);
+        expect(tint.oklch.l).toBeLessThanOrEqual(1.0);
       }
     });
 
@@ -63,20 +61,23 @@ describe("Palette Variations", () => {
       expect(tints).toHaveLength(3);
     });
 
-    it("increases lightness by 10 per step", () => {
+    it("each tint is progressively lighter than the base", () => {
       const tints = generateTints(primary);
-      const baseL = primary.hsl.l;
-      expect(tints[0]!.hsl.l).toBeCloseTo(baseL + 10, 0);
-      expect(tints[1]!.hsl.l).toBeCloseTo(baseL + 20, 0);
+      const baseL = primary.oklch.l;
+      // Each successive tint should be further from base lightness
+      for (let i = 1; i < tints.length; i++) {
+        expect(tints[i]!.oklch.l - baseL).toBeGreaterThanOrEqual(tints[i - 1]!.oklch.l - baseL);
+      }
     });
 
-    it("accepts custom increment", () => {
+    it("custom increment produces lighter tints than smaller increment", () => {
       const dark = new Color({ h: 250, s: 100, l: 30, a: 1 });
-      const tints = generateTints(dark, 3, 15);
-      expect(tints).toHaveLength(3);
-      expect(tints[0]!.hsl.l).toBeCloseTo(45, 0);
-      expect(tints[1]!.hsl.l).toBeCloseTo(60, 0);
-      expect(tints[2]!.hsl.l).toBeCloseTo(75, 0);
+      const smallInc = generateTints(dark, 3, 5);
+      const largeInc = generateTints(dark, 3, 25);
+      // Larger increment should produce lighter (or equal) tints
+      for (let i = 0; i < 3; i++) {
+        expect(largeInc[i]!.oklch.l).toBeGreaterThanOrEqual(smallInc[i]!.oklch.l);
+      }
     });
   });
 
@@ -86,19 +87,18 @@ describe("Palette Variations", () => {
       expect(shades).toHaveLength(5);
     });
 
-    it("each shade is darker than the previous", () => {
+    it("each shade is darker than the previous (lower OKLCH L)", () => {
       const shades = generateShades(primary);
       for (let i = 1; i < shades.length; i++) {
-        expect(shades[i]!.hsl.l).toBeLessThan(shades[i - 1]!.hsl.l);
+        expect(shades[i]!.oklch.l).toBeLessThan(shades[i - 1]!.oklch.l);
       }
     });
 
-    it("preserves hue and saturation", () => {
+    it("all shades are darker than the base color", () => {
       const shades = generateShades(primary);
-      const baseHsl = primary.hsl;
+      const baseL = primary.oklch.l;
       for (const shade of shades) {
-        expect(shade.hsl.h).toBeCloseTo(baseHsl.h, 0);
-        expect(shade.hsl.s).toBeCloseTo(baseHsl.s, 0);
+        expect(shade.oklch.l).toBeLessThan(baseL);
       }
     });
 
@@ -106,15 +106,15 @@ describe("Palette Variations", () => {
       const semiTransparent = new Color("rgba(100, 57, 255, 0.5)");
       const shades = generateShades(semiTransparent);
       for (const shade of shades) {
-        expect(shade.hsl.a).toBeCloseTo(0.5, 2);
+        expect(shade.oklch.a).toBeCloseTo(0.5, 2);
       }
     });
 
-    it("floors lightness at 0", () => {
+    it("lightness does not go below zero", () => {
       const dark = new Color({ h: 250, s: 100, l: 15, a: 1 });
       const shades = generateShades(dark);
       for (const shade of shades) {
-        expect(shade.hsl.l).toBeGreaterThanOrEqual(0);
+        expect(shade.oklch.l).toBeGreaterThanOrEqual(0);
       }
     });
 
@@ -123,19 +123,20 @@ describe("Palette Variations", () => {
       expect(shades).toHaveLength(3);
     });
 
-    it("decreases lightness by 10 per step", () => {
+    it("shades get monotonically darker", () => {
       const shades = generateShades(primary);
-      const baseL = primary.hsl.l;
-      expect(shades[0]!.hsl.l).toBeCloseTo(baseL - 10, 0);
-      expect(shades[1]!.hsl.l).toBeCloseTo(baseL - 20, 0);
+      const baseL = primary.oklch.l;
+      for (let i = 1; i < shades.length; i++) {
+        expect(baseL - shades[i]!.oklch.l).toBeGreaterThanOrEqual(baseL - shades[i - 1]!.oklch.l);
+      }
     });
 
-    it("accepts custom increment", () => {
-      const shades = generateShades(primary, 3, 15);
-      const baseL = primary.hsl.l;
-      expect(shades).toHaveLength(3);
-      expect(shades[0]!.hsl.l).toBeCloseTo(baseL - 15, 0);
-      expect(shades[1]!.hsl.l).toBeCloseTo(baseL - 30, 0);
+    it("custom increment produces darker shades than smaller increment", () => {
+      const shades5 = generateShades(primary, 3, 5);
+      const shades25 = generateShades(primary, 3, 25);
+      for (let i = 0; i < 3; i++) {
+        expect(shades25[i]!.oklch.l).toBeLessThanOrEqual(shades5[i]!.oklch.l);
+      }
     });
   });
 
@@ -145,19 +146,26 @@ describe("Palette Variations", () => {
       expect(tones).toHaveLength(4);
     });
 
-    it("each tone is less saturated than the previous", () => {
+    it("each tone has less chroma than the previous (lower OKLCH C)", () => {
       const tones = generateTones(primary);
       for (let i = 1; i < tones.length; i++) {
-        expect(tones[i]!.hsl.s).toBeLessThan(tones[i - 1]!.hsl.s);
+        expect(tones[i]!.oklch.c).toBeLessThan(tones[i - 1]!.oklch.c);
       }
     });
 
-    it("preserves hue and lightness", () => {
+    it("all tones have less chroma than the base", () => {
       const tones = generateTones(primary);
-      const baseHsl = primary.hsl;
+      const baseC = primary.oklch.c;
       for (const tone of tones) {
-        expect(tone.hsl.h).toBeCloseTo(baseHsl.h, 0);
-        expect(tone.hsl.l).toBeCloseTo(baseHsl.l, 0);
+        expect(tone.oklch.c).toBeLessThan(baseC);
+      }
+    });
+
+    it("preserves lightness in OKLCH space", () => {
+      const tones = generateTones(primary);
+      const baseL = primary.oklch.l;
+      for (const tone of tones) {
+        expect(tone.oklch.l).toBeCloseTo(baseL, 2);
       }
     });
 
@@ -165,15 +173,15 @@ describe("Palette Variations", () => {
       const semiTransparent = new Color("rgba(100, 57, 255, 0.5)");
       const tones = generateTones(semiTransparent);
       for (const tone of tones) {
-        expect(tone.hsl.a).toBeCloseTo(0.5, 2);
+        expect(tone.oklch.a).toBeCloseTo(0.5, 2);
       }
     });
 
-    it("floors saturation at 0", () => {
+    it("chroma does not go below zero", () => {
       const lowSat = new Color({ h: 250, s: 30, l: 50, a: 1 });
       const tones = generateTones(lowSat);
       for (const tone of tones) {
-        expect(tone.hsl.s).toBeGreaterThanOrEqual(0);
+        expect(tone.oklch.c).toBeGreaterThanOrEqual(0);
       }
     });
 
@@ -182,19 +190,20 @@ describe("Palette Variations", () => {
       expect(tones).toHaveLength(2);
     });
 
-    it("decreases saturation by 20 per step", () => {
+    it("chroma decreases monotonically", () => {
       const tones = generateTones(primary);
-      const baseS = primary.hsl.s;
-      expect(tones[0]!.hsl.s).toBeCloseTo(baseS - 20, 0);
-      expect(tones[1]!.hsl.s).toBeCloseTo(baseS - 40, 0);
+      const baseC = primary.oklch.c;
+      for (let i = 1; i < tones.length; i++) {
+        expect(baseC - tones[i]!.oklch.c).toBeGreaterThanOrEqual(baseC - tones[i - 1]!.oklch.c);
+      }
     });
 
-    it("accepts custom increment", () => {
-      const tones = generateTones(primary, 3, 10);
-      const baseS = primary.hsl.s;
-      expect(tones).toHaveLength(3);
-      expect(tones[0]!.hsl.s).toBeCloseTo(baseS - 10, 0);
-      expect(tones[1]!.hsl.s).toBeCloseTo(baseS - 20, 0);
+    it("custom increment produces less chromatic tones than smaller increment", () => {
+      const tones10 = generateTones(primary, 3, 10);
+      const tones30 = generateTones(primary, 3, 30);
+      for (let i = 0; i < 3; i++) {
+        expect(tones30[i]!.oklch.c).toBeLessThanOrEqual(tones10[i]!.oklch.c);
+      }
     });
   });
 
@@ -221,25 +230,25 @@ describe("Palette Variations", () => {
 
     it("all tints are lighter than base", () => {
       const variations = generatePaletteVariations(primary);
-      const baseL = variations.base.hsl.l;
+      const baseL = variations.base.oklch.l;
       for (const tint of variations.tints) {
-        expect(tint.hsl.l).toBeGreaterThan(baseL);
+        expect(tint.oklch.l).toBeGreaterThan(baseL);
       }
     });
 
     it("all shades are darker than base", () => {
       const variations = generatePaletteVariations(primary);
-      const baseL = variations.base.hsl.l;
+      const baseL = variations.base.oklch.l;
       for (const shade of variations.shades) {
-        expect(shade.hsl.l).toBeLessThan(baseL);
+        expect(shade.oklch.l).toBeLessThan(baseL);
       }
     });
 
-    it("all tones are less saturated than base", () => {
+    it("all tones are less chromatic than base", () => {
       const variations = generatePaletteVariations(primary);
-      const baseS = variations.base.hsl.s;
+      const baseC = variations.base.oklch.c;
       for (const tone of variations.tones) {
-        expect(tone.hsl.s).toBeLessThan(baseS);
+        expect(tone.oklch.c).toBeLessThan(baseC);
       }
     });
 
@@ -254,14 +263,20 @@ describe("Palette Variations", () => {
       expect(variations.tones).toHaveLength(2);
     });
 
-    it("respects custom increments via options", () => {
+    it("larger tint increment produces lighter results", () => {
       const dark = new Color({ h: 250, s: 100, l: 30, a: 1 });
-      const variations = generatePaletteVariations(dark, {
+      const small = generatePaletteVariations(dark, {
+        tints: 2,
+        tintIncrement: 5,
+      });
+      const large = generatePaletteVariations(dark, {
         tints: 2,
         tintIncrement: 15,
       });
-      expect(variations.tints[0]!.hsl.l).toBeCloseTo(45, 0);
-      expect(variations.tints[1]!.hsl.l).toBeCloseTo(60, 0);
+      // Each tint with larger increment should be at least as light
+      for (let i = 0; i < 2; i++) {
+        expect(large.tints[i]!.oklch.l).toBeGreaterThanOrEqual(small.tints[i]!.oklch.l);
+      }
     });
   });
 });

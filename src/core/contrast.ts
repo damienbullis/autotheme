@@ -103,6 +103,60 @@ export function findAccessibleTextColor(
 }
 
 /**
+ * APCA luminance for a single sRGB channel
+ */
+function apcaSrgbToY(val: number): number {
+  const v = val / 255;
+  return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+}
+
+/**
+ * Calculate APCA luminance (Y) for a color
+ * Uses sRGB coefficients matching APCA-W3 specification
+ */
+export function apcaLuminance(color: Color): number {
+  const { r, g, b } = color.rgb;
+  return 0.2126729 * apcaSrgbToY(r) + 0.7151522 * apcaSrgbToY(g) + 0.072175 * apcaSrgbToY(b);
+}
+
+/**
+ * Calculate APCA contrast (Lc) between text and background colors.
+ * Returns a signed value: positive = dark text on light bg, negative = light text on dark bg.
+ * Magnitude > 60 is roughly equivalent to WCAG AA; > 90 is roughly AAA.
+ *
+ * @see https://github.com/Myndex/SAPC-APCA
+ */
+export function apcaContrast(textColor: Color, bgColor: Color): number {
+  const txtY = apcaLuminance(textColor);
+  const bgY = apcaLuminance(bgColor);
+
+  // Soft clamp near black
+  const txtYc = txtY > 0.022 ? txtY : txtY + Math.pow(0.022 - txtY, 1.414);
+  const bgYc = bgY > 0.022 ? bgY : bgY + Math.pow(0.022 - bgY, 1.414);
+
+  // SAPC constants
+  const normBg = 0.56;
+  const normTxt = 0.57;
+  const revBg = 0.62;
+  const revTxt = 0.65;
+
+  let Lc: number;
+
+  if (bgYc > txtYc) {
+    // Dark text on light background (normal polarity)
+    Lc = (Math.pow(bgYc, normBg) - Math.pow(txtYc, normTxt)) * 1.14;
+  } else {
+    // Light text on dark background (reverse polarity)
+    Lc = (Math.pow(bgYc, revBg) - Math.pow(txtYc, revTxt)) * 1.14;
+  }
+
+  // Low contrast clamp
+  if (Math.abs(Lc) < 0.1) return 0;
+
+  return Lc > 0 ? Lc - 0.027 : Lc + 0.027;
+}
+
+/**
  * Determine if black or white provides better contrast against a background
  */
 export function getBestContrastColor(background: Color): Color {

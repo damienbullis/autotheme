@@ -27,6 +27,7 @@ export interface CLIArgs {
   shadows?: boolean | undefined;
   radius?: boolean | undefined;
   comments?: boolean | undefined;
+  layers?: boolean | undefined;
   swing?: number | undefined;
   swingStrategy?: string | undefined;
   stdout?: boolean | undefined;
@@ -65,7 +66,11 @@ export function parseArgs(args: string[]): CLIArgs {
     .option("--elevation", "Generate elevation system tokens (use --no-elevation to disable)")
     .option("--shadows", "Generate shadow scale (use --no-shadows to disable)")
     .option("--radius", "Generate border radius scale (use --no-radius to disable)")
-    .option("--comments", "Include metadata header and inline comments (use --no-comments to disable)")
+    .option(
+      "--comments",
+      "Include metadata header and inline comments (use --no-comments to disable)",
+    )
+    .option("--layers", "Wrap CSS in @layer declarations (use --no-layers to disable)")
     .option("--swing <value>", "Swing multiplier for harmony angular distance (default: 1)")
     .option("--swing-strategy <strategy>", "Swing strategy: linear, exponential, alternating")
     .option("--stdout", "Output CSS to stdout instead of writing files")
@@ -100,6 +105,7 @@ export function parseArgs(args: string[]): CLIArgs {
     shadows: parsed.options.shadows as boolean | undefined,
     radius: parsed.options.radius as boolean | undefined,
     comments: parsed.options.comments as boolean | undefined,
+    layers: parsed.options.layers as boolean | undefined,
     swing: parsed.options.swing !== undefined ? Number(parsed.options.swing) : undefined,
     swingStrategy: parsed.options.swingStrategy as string | undefined,
     stdout: parsed.options.stdout as boolean | undefined,

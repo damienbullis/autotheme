@@ -1,31 +1,49 @@
 import type { ColorInput, HSLColor, RGBColor, OKLCHColor } from "./types";
 import type { ColorFormat } from "../config/types";
-import { parseColor } from "./parse";
-import { hslToRgb, rgbToHex, hslToOklch, formatOklch } from "./conversions";
+import { parseToOklch } from "./parse";
+import { formatOklch, rgbToHex } from "./conversions";
+import { oklchToRgb, oklchToHsl, clampToGamut } from "./gamut";
 import { getLuminance } from "./luminance";
 
 /**
- * Immutable Color class with HSL internal representation
+ * Immutable Color class with OKLCH internal representation
+ * for perceptually uniform color manipulation
  */
 export class Color {
-  private readonly _hsl: HSLColor;
+  private readonly _oklch: OKLCHColor;
 
   constructor(input: ColorInput) {
-    this._hsl = parseColor(input);
+    this._oklch = parseToOklch(input);
   }
 
   /**
-   * Get the HSL representation
+   * Create a Color directly from OKLCH values (no parsing overhead)
+   */
+  static fromOklch(l: number, c: number, h: number, a: number = 1): Color {
+    const color = Object.create(Color.prototype) as Color;
+    (color as unknown as { _oklch: OKLCHColor })._oklch = { l, c, h, a };
+    return color;
+  }
+
+  /**
+   * Get the OKLCH representation
+   */
+  get oklch(): OKLCHColor {
+    return { ...this._oklch };
+  }
+
+  /**
+   * Get the HSL representation (reverse-converted from OKLCH)
    */
   get hsl(): HSLColor {
-    return { ...this._hsl };
+    return oklchToHsl(this._oklch);
   }
 
   /**
    * Get the RGB representation
    */
   get rgb(): RGBColor {
-    return hslToRgb(this._hsl);
+    return oklchToRgb(clampToGamut(this._oklch));
   }
 
   /**
@@ -36,13 +54,6 @@ export class Color {
   }
 
   /**
-   * Get the OKLCH representation
-   */
-  get oklch(): OKLCHColor {
-    return hslToOklch(this._hsl);
-  }
-
-  /**
    * Get the relative luminance (WCAG standard)
    */
   get luminance(): number {
@@ -50,39 +61,39 @@ export class Color {
   }
 
   /**
-   * Create a lighter color by increasing lightness
-   * @param amount - Percentage to increase lightness (0-100)
+   * Create a lighter color by increasing OKLCH lightness
+   * @param amount - Percentage to increase lightness (0-100, maps to 0-1 OKLCH)
    */
   lighten(amount: number): Color {
-    const newL = Math.min(100, this._hsl.l + amount);
-    return new Color({ ...this._hsl, l: newL });
+    const newL = Math.min(1, this._oklch.l + amount / 100);
+    return Color.fromOklch(newL, this._oklch.c, this._oklch.h, this._oklch.a);
   }
 
   /**
-   * Create a darker color by decreasing lightness
-   * @param amount - Percentage to decrease lightness (0-100)
+   * Create a darker color by decreasing OKLCH lightness
+   * @param amount - Percentage to decrease lightness (0-100, maps to 0-1 OKLCH)
    */
   darken(amount: number): Color {
-    const newL = Math.max(0, this._hsl.l - amount);
-    return new Color({ ...this._hsl, l: newL });
+    const newL = Math.max(0, this._oklch.l - amount / 100);
+    return Color.fromOklch(newL, this._oklch.c, this._oklch.h, this._oklch.a);
   }
 
   /**
-   * Create a more saturated color
-   * @param amount - Percentage to increase saturation (0-100)
+   * Create a more saturated color by increasing OKLCH chroma
+   * @param amount - Percentage to increase chroma (0-100, proportional)
    */
   saturate(amount: number): Color {
-    const newS = Math.min(100, this._hsl.s + amount);
-    return new Color({ ...this._hsl, s: newS });
+    const newC = this._oklch.c + (amount / 100) * 0.4;
+    return Color.fromOklch(this._oklch.l, Math.max(0, newC), this._oklch.h, this._oklch.a);
   }
 
   /**
-   * Create a less saturated color
-   * @param amount - Percentage to decrease saturation (0-100)
+   * Create a less saturated color by decreasing OKLCH chroma
+   * @param amount - Percentage to decrease chroma (0-100, proportional)
    */
   desaturate(amount: number): Color {
-    const newS = Math.max(0, this._hsl.s - amount);
-    return new Color({ ...this._hsl, s: newS });
+    const newC = this._oklch.c * (1 - amount / 100);
+    return Color.fromOklch(this._oklch.l, Math.max(0, newC), this._oklch.h, this._oklch.a);
   }
 
   /**
@@ -90,9 +101,9 @@ export class Color {
    * @param degrees - Degrees to rotate hue (can be negative)
    */
   rotate(degrees: number): Color {
-    let newH = (this._hsl.h + degrees) % 360;
+    let newH = (this._oklch.h + degrees) % 360;
     if (newH < 0) newH += 360;
-    return new Color({ ...this._hsl, h: newH });
+    return Color.fromOklch(this._oklch.l, this._oklch.c, newH, this._oklch.a);
   }
 
   /**
@@ -100,7 +111,12 @@ export class Color {
    * @param alpha - New alpha value (0-1)
    */
   alpha(alpha: number): Color {
-    return new Color({ ...this._hsl, a: Math.max(0, Math.min(1, alpha)) });
+    return Color.fromOklch(
+      this._oklch.l,
+      this._oklch.c,
+      this._oklch.h,
+      Math.max(0, Math.min(1, alpha)),
+    );
   }
 
   /**
@@ -125,7 +141,7 @@ export class Color {
    * Output as HSL CSS string
    */
   toHSL(): string {
-    const { h, s, l, a } = this._hsl;
+    const { h, s, l, a } = this.hsl;
     if (a < 1) {
       return `hsla(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%, ${a})`;
     }
@@ -136,7 +152,7 @@ export class Color {
    * Output as OKLCH CSS string
    */
   toOKLCH(): string {
-    return formatOklch(this.oklch);
+    return formatOklch(this._oklch);
   }
 
   /**
@@ -168,14 +184,15 @@ export class Color {
    * Check if this color equals another color (within a small tolerance)
    */
   equals(other: Color, tolerance: number = 1): boolean {
-    const hslA = this._hsl;
-    const hslB = other.hsl;
+    const a = this._oklch;
+    const b = other.oklch;
 
+    // Compare in OKLCH space: L tolerance ~0.01 per HSL unit, C ~0.004, H ~1 degree
     return (
-      Math.abs(hslA.h - hslB.h) <= tolerance &&
-      Math.abs(hslA.s - hslB.s) <= tolerance &&
-      Math.abs(hslA.l - hslB.l) <= tolerance &&
-      Math.abs(hslA.a - hslB.a) <= 0.01
+      Math.abs(a.l - b.l) <= tolerance * 0.01 &&
+      Math.abs(a.c - b.c) <= tolerance * 0.004 &&
+      Math.abs(a.h - b.h) <= tolerance &&
+      Math.abs(a.a - b.a) <= 0.01
     );
   }
 

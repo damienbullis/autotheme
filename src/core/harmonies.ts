@@ -1,4 +1,5 @@
 import { Color } from "./color";
+import { maxChromaAtHueAndLightness, clampToGamut } from "./gamut";
 import type {
   HarmonyType,
   HarmonyResult,
@@ -91,11 +92,12 @@ export function applySwing(
 }
 
 /**
- * Generate colors from a primary color using count and offset function
+ * Generate colors from a primary color using count and offset function.
+ * Uses OKLCH-native hue rotation with chroma normalization.
  * @param primary - The base color
  * @param count - Number of colors to generate
  * @param offsetFn - Function that returns hue offset for each index
- * @param options - Optional harmony options (swing)
+ * @param options - Optional harmony options (swing, chromaBalance)
  * @returns Array of generated colors
  */
 function generateColorsFromDefinition(
@@ -104,20 +106,43 @@ function generateColorsFromDefinition(
   offsetFn: HarmonyOffsetFn,
   options?: HarmonyOptions,
 ): Color[] {
-  const primaryHsl = primary.hsl;
+  const primaryOklch = primary.oklch;
   const swing = options?.swing ?? 1.0;
   const strategy = options?.swingStrategy ?? "linear";
+  const chromaBalance = options?.chromaBalance !== false;
 
   return Array.from({ length: count }, (_, i) => {
     const rawOffset = offsetFn(i);
     const offset = applySwing(rawOffset, i, swing, strategy);
-    const newHue = normalizeHue(primaryHsl.h + offset);
-    return new Color({
+    const newHue = normalizeHue(primaryOklch.h + offset);
+
+    if (i === 0 && offset === 0) {
+      return primary;
+    }
+
+    let newChroma = primaryOklch.c;
+
+    if (chromaBalance) {
+      // Normalize chroma to the maximum available at the new hue
+      // This prevents out-of-gamut colors and maintains visual balance
+      const primaryMaxC = maxChromaAtHueAndLightness(primaryOklch.h, primaryOklch.l);
+      const targetMaxC = maxChromaAtHueAndLightness(newHue, primaryOklch.l);
+
+      if (primaryMaxC > 0.001) {
+        // Scale chroma proportionally to gamut capacity at each hue
+        const chromaRatio = primaryOklch.c / primaryMaxC;
+        newChroma = targetMaxC * chromaRatio;
+      }
+    }
+
+    const clamped = clampToGamut({
+      l: primaryOklch.l,
+      c: newChroma,
       h: newHue,
-      s: primaryHsl.s,
-      l: primaryHsl.l,
-      a: primaryHsl.a,
+      a: primaryOklch.a,
     });
+
+    return Color.fromOklch(clamped.l, clamped.c, clamped.h, clamped.a);
   });
 }
 

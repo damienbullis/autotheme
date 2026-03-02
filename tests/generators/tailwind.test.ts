@@ -32,9 +32,7 @@ describe("generateTailwindCSS", () => {
   });
 
   it("includes semantic token registrations when semantics enabled", () => {
-    const withSemantics = generateTailwindCSS(
-      createTestTheme({ semantics: { enabled: true } }),
-    );
+    const withSemantics = generateTailwindCSS(createTestTheme({ semantics: { enabled: true } }));
     const withoutSemantics = generateTailwindCSS(
       createTestTheme({ semantics: { enabled: false } }),
     );

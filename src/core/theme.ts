@@ -23,6 +23,7 @@ export function generateTheme(config: AutoThemeConfig): GeneratedTheme {
   const palette = generateFullPalette(color, config.harmony, {
     swing: config.swing,
     swingStrategy: config.swingStrategy,
+    chromaBalance: config.palette.chromaBalance,
     ...(customDefinitions && { customDefinitions }),
     variations: {
       tints: config.palette.tints,

@@ -16,7 +16,7 @@ export type {
 export { Color } from "./color";
 
 // Parsing
-export { parseColor, isRGBColor, isHSLColor } from "./parse";
+export { parseColor, parseToOklch, isRGBColor, isHSLColor, isOKLCHColor } from "./parse";
 
 // Conversions
 export { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, hexToHsl, hslToHex } from "./conversions";
@@ -28,6 +28,8 @@ export {
   checkWCAG,
   findAccessibleTextColor,
   getBestContrastColor,
+  apcaContrast,
+  apcaLuminance,
 } from "./contrast";
 export type { WCAGLevel, WCAGResult } from "./contrast";
 
@@ -57,3 +59,12 @@ export { generateFullPalette, getTextColorKey } from "./palette";
 
 // Background colors
 export { generateBackgroundColors } from "./background";
+
+// Gamut utilities
+export {
+  clampToGamut,
+  maxChromaAtHueAndLightness,
+  isInGamut,
+  oklchToRgb,
+  oklchToHsl,
+} from "./gamut";

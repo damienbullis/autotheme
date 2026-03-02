@@ -134,7 +134,8 @@ function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
     args.tailwind !== undefined ||
     args.preview !== undefined ||
     args.darkModeScript !== undefined ||
-    args.comments !== undefined
+    args.comments !== undefined ||
+    args.layers !== undefined
   ) {
     config.output = { ...config.output };
     if (args.output) config.output.path = args.output;
@@ -142,6 +143,7 @@ function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
     if (args.preview !== undefined) config.output.preview = args.preview;
     if (args.darkModeScript !== undefined) config.output.darkModeScript = args.darkModeScript;
     if (args.comments !== undefined) config.output.comments = args.comments;
+    if (args.layers !== undefined) config.output.layers = args.layers;
   }
 
   // CLI-only

@@ -234,6 +234,25 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
       }
       result.typography.steps = typoObj.steps;
     }
+
+    if (typoObj.fluid !== undefined) {
+      if (typeof typoObj.fluid !== "boolean") {
+        throw new Error("typography.fluid must be a boolean");
+      }
+      result.typography.fluid = typoObj.fluid;
+    }
+
+    if (typoObj.fluidRange !== undefined) {
+      if (
+        !Array.isArray(typoObj.fluidRange) ||
+        typoObj.fluidRange.length !== 2 ||
+        typeof typoObj.fluidRange[0] !== "number" ||
+        typeof typoObj.fluidRange[1] !== "number"
+      ) {
+        throw new Error("typography.fluidRange must be an array of two numbers [min, max]");
+      }
+      result.typography.fluidRange = typoObj.fluidRange as [number, number];
+    }
   }
 
   // Validate spacing (nested object)
@@ -270,6 +289,25 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
         throw new Error("spacing.steps must be at least 1");
       }
       result.spacing.steps = spacingObj.steps;
+    }
+
+    if (spacingObj.fluid !== undefined) {
+      if (typeof spacingObj.fluid !== "boolean") {
+        throw new Error("spacing.fluid must be a boolean");
+      }
+      result.spacing.fluid = spacingObj.fluid;
+    }
+
+    if (spacingObj.fluidRange !== undefined) {
+      if (
+        !Array.isArray(spacingObj.fluidRange) ||
+        spacingObj.fluidRange.length !== 2 ||
+        typeof spacingObj.fluidRange[0] !== "number" ||
+        typeof spacingObj.fluidRange[1] !== "number"
+      ) {
+        throw new Error("spacing.fluidRange must be an array of two numbers [min, max]");
+      }
+      result.spacing.fluidRange = spacingObj.fluidRange as [number, number];
     }
   }
 
@@ -340,7 +378,13 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
         }
         (result.semantics.states as Record<string, unknown>).enabled = statesObj.enabled;
       }
-      for (const key of ["hoverShift", "activeShift", "focusRingAlpha", "disabledAlpha", "disabledDesat"] as const) {
+      for (const key of [
+        "hoverShift",
+        "activeShift",
+        "focusRingAlpha",
+        "disabledAlpha",
+        "disabledDesat",
+      ] as const) {
         if (statesObj[key] !== undefined) {
           if (typeof statesObj[key] !== "number") {
             throw new Error(`semantics.states.${key} must be a number`);
@@ -348,6 +392,49 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
           (result.semantics.states as Record<string, unknown>)[key] = statesObj[key] as number;
         }
       }
+    }
+
+    if (semObj.accessibility !== undefined) {
+      if (
+        typeof semObj.accessibility !== "object" ||
+        semObj.accessibility === null ||
+        Array.isArray(semObj.accessibility)
+      ) {
+        throw new Error("semantics.accessibility must be an object");
+      }
+      const a11yObj = semObj.accessibility as Record<string, unknown>;
+      result.semantics.accessibility = {} as Record<string, unknown>;
+      for (const key of ["contrastAdaptive", "reducedTransparency", "forcedColors"] as const) {
+        if (a11yObj[key] !== undefined) {
+          if (typeof a11yObj[key] !== "boolean") {
+            throw new Error(`semantics.accessibility.${key} must be a boolean`);
+          }
+          (result.semantics.accessibility as Record<string, unknown>)[key] = a11yObj[
+            key
+          ] as boolean;
+        }
+      }
+      if (a11yObj.contrastAlgorithm !== undefined) {
+        if (
+          typeof a11yObj.contrastAlgorithm !== "string" ||
+          !["wcag2", "apca"].includes(a11yObj.contrastAlgorithm)
+        ) {
+          throw new Error('semantics.accessibility.contrastAlgorithm must be "wcag2" or "apca"');
+        }
+        (result.semantics.accessibility as Record<string, unknown>).contrastAlgorithm =
+          a11yObj.contrastAlgorithm;
+      }
+    }
+
+    if (semObj.temperature !== undefined) {
+      if (
+        typeof semObj.temperature !== "number" ||
+        semObj.temperature < -1 ||
+        semObj.temperature > 1
+      ) {
+        throw new Error("semantics.temperature must be a number between -1 and 1");
+      }
+      result.semantics.temperature = semObj.temperature;
     }
 
     if (semObj.elevation !== undefined) {
@@ -371,6 +458,75 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
           throw new Error("semantics.elevation.levels must be a positive number");
         }
         (result.semantics.elevation as Record<string, unknown>).levels = elevObj.levels;
+      }
+    }
+  }
+
+  // Validate motion (nested object)
+  if (obj.motion !== undefined) {
+    if (typeof obj.motion !== "object" || obj.motion === null || Array.isArray(obj.motion)) {
+      throw new Error("motion must be an object");
+    }
+    const motionObj = obj.motion as Record<string, unknown>;
+    result.motion = {};
+
+    if (motionObj.enabled !== undefined) {
+      if (typeof motionObj.enabled !== "boolean") {
+        throw new Error("motion.enabled must be a boolean");
+      }
+      result.motion.enabled = motionObj.enabled;
+    }
+
+    if (motionObj.reducedMotion !== undefined) {
+      if (typeof motionObj.reducedMotion !== "boolean") {
+        throw new Error("motion.reducedMotion must be a boolean");
+      }
+      result.motion.reducedMotion = motionObj.reducedMotion;
+    }
+
+    if (motionObj.spring !== undefined) {
+      if (
+        typeof motionObj.spring !== "object" ||
+        motionObj.spring === null ||
+        Array.isArray(motionObj.spring)
+      ) {
+        throw new Error("motion.spring must be an object");
+      }
+      const springObj = motionObj.spring as Record<string, unknown>;
+      result.motion.spring = {} as Record<string, number>;
+      for (const key of ["stiffness", "damping", "mass"] as const) {
+        if (springObj[key] !== undefined) {
+          if (typeof springObj[key] !== "number" || (springObj[key] as number) <= 0) {
+            throw new Error(`motion.spring.${key} must be a positive number`);
+          }
+          (result.motion.spring as Record<string, number>)[key] = springObj[key] as number;
+        }
+      }
+    }
+
+    if (motionObj.durations !== undefined) {
+      if (
+        typeof motionObj.durations !== "object" ||
+        motionObj.durations === null ||
+        Array.isArray(motionObj.durations)
+      ) {
+        throw new Error("motion.durations must be an object");
+      }
+      const durObj = motionObj.durations as Record<string, unknown>;
+      result.motion.durations = {} as Record<string, number>;
+      for (const key of ["base", "ratio"] as const) {
+        if (durObj[key] !== undefined) {
+          if (typeof durObj[key] !== "number" || (durObj[key] as number) <= 0) {
+            throw new Error(`motion.durations.${key} must be a positive number`);
+          }
+          (result.motion.durations as Record<string, number>)[key] = durObj[key] as number;
+        }
+      }
+      if (durObj.steps !== undefined) {
+        if (typeof durObj.steps !== "number" || durObj.steps < 1) {
+          throw new Error("motion.durations.steps must be at least 1");
+        }
+        (result.motion.durations as Record<string, number>).steps = durObj.steps;
       }
     }
   }
@@ -413,7 +569,16 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
       result.output.path = outputObj.path;
     }
 
-    for (const key of ["tailwind", "preview", "darkModeScript"] as const) {
+    for (const key of [
+      "tailwind",
+      "preview",
+      "darkModeScript",
+      "layers",
+      "reactive",
+      "lightDark",
+      "registered",
+      "p3",
+    ] as const) {
       if (outputObj[key] !== undefined) {
         if (typeof outputObj[key] !== "boolean") {
           throw new Error(`output.${key} must be a boolean`);

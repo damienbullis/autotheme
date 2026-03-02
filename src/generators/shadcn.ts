@@ -76,9 +76,10 @@ function buildShadcnMapping(
   mode: "light" | "dark",
   colorFormat: ColorFormat,
 ): Record<string, string> {
-  const error = mode === "dark"
-    ? generateErrorColor(primaryHue).lighten(10).saturate(10)
-    : generateErrorColor(primaryHue);
+  const error =
+    mode === "dark"
+      ? generateErrorColor(primaryHue).lighten(10).saturate(10)
+      : generateErrorColor(primaryHue);
   const errorFg = findAccessibleTextColor(error);
 
   // Chart colors: map to harmony base colors (500)
@@ -90,37 +91,37 @@ function buildShadcnMapping(
   }
 
   return {
-    "background": "var(--surface)",
-    "foreground": "var(--text-1)",
+    background: "var(--surface)",
+    foreground: "var(--text-1)",
 
-    "card": "var(--surface-elevated)",
+    card: "var(--surface-elevated)",
     "card-foreground": "var(--text-1)",
 
-    "popover": "var(--surface-elevated)",
+    popover: "var(--surface-elevated)",
     "popover-foreground": "var(--text-1)",
 
-    "primary": "var(--accent)",
+    primary: "var(--accent)",
     "primary-foreground": `var(--${prefix}-primary-foreground)`,
 
-    "secondary": "var(--accent-secondary)",
+    secondary: "var(--accent-secondary)",
     "secondary-foreground": `var(--${prefix}-secondary-foreground)`,
 
-    "muted": "var(--surface-sunken)",
+    muted: "var(--surface-sunken)",
     "muted-foreground": "var(--text-2)",
 
-    "accent": "var(--accent-subtle)",
+    accent: "var(--accent-subtle)",
     "accent-foreground": "var(--text-1)",
 
-    "destructive": error.formatAs(colorFormat),
+    destructive: error.formatAs(colorFormat),
     "destructive-foreground": errorFg.formatAs(colorFormat),
 
-    "border": "var(--border)",
-    "input": "var(--border-strong)",
-    "ring": "var(--accent)",
+    border: "var(--border)",
+    input: "var(--border-strong)",
+    ring: "var(--accent)",
 
     ...chartEntries,
 
-    "sidebar": "var(--surface-sunken)",
+    sidebar: "var(--surface-sunken)",
     "sidebar-foreground": "var(--text-1)",
     "sidebar-primary": "var(--accent)",
     "sidebar-primary-foreground": `var(--${prefix}-primary-foreground)`,

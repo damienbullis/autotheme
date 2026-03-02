@@ -21,8 +21,9 @@ describe("generateShadowScale", () => {
 
   it("tints shadow color with primary hue", () => {
     const result = generateShadowScale(1, 1, 2, 200, 15, false, "hsl");
-    // Should contain hsla with hue 200 (alpha < 1 for shadows)
-    expect(result[0]!.value).toMatch(/hsla?\(200,/);
+    // Should contain hsla with hue near 200 (alpha < 1 for shadows)
+    // OKLCH round-trip may shift hue by ±2 degrees
+    expect(result[0]!.value).toMatch(/hsla?\(\s*(19[89]|20[012]),/);
   });
 
   it("dark mode produces higher alpha than light mode", () => {

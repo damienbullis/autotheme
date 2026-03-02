@@ -76,8 +76,8 @@ describe("harmony hue correctness", () => {
     const harmony = generateHarmony(primary, "complementary");
 
     expect(harmony.colors).toHaveLength(2);
-    const dist = hueDistance(harmony.colors[0]!.hsl.h, harmony.colors[1]!.hsl.h);
-    expect(dist).toBeCloseTo(180, -1); // within ~10 degrees
+    const dist = hueDistance(harmony.colors[0]!.oklch.h, harmony.colors[1]!.oklch.h);
+    expect(dist).toBeCloseTo(180, 0); // within ~0.5 degrees in OKLCH
   });
 
   it("triadic colors are ~120 degrees apart", () => {
@@ -85,10 +85,10 @@ describe("harmony hue correctness", () => {
     const harmony = generateHarmony(primary, "triadic");
 
     expect(harmony.colors).toHaveLength(3);
-    const dist01 = hueDistance(harmony.colors[0]!.hsl.h, harmony.colors[1]!.hsl.h);
-    const dist12 = hueDistance(harmony.colors[1]!.hsl.h, harmony.colors[2]!.hsl.h);
-    expect(dist01).toBeCloseTo(120, -1);
-    expect(dist12).toBeCloseTo(120, -1);
+    const dist01 = hueDistance(harmony.colors[0]!.oklch.h, harmony.colors[1]!.oklch.h);
+    const dist12 = hueDistance(harmony.colors[1]!.oklch.h, harmony.colors[2]!.oklch.h);
+    expect(dist01).toBeCloseTo(120, 0);
+    expect(dist12).toBeCloseTo(120, 0);
   });
 
   it("square colors are ~90 degrees apart", () => {
@@ -97,8 +97,8 @@ describe("harmony hue correctness", () => {
 
     expect(harmony.colors).toHaveLength(4);
     for (let i = 0; i < 3; i++) {
-      const dist = hueDistance(harmony.colors[i]!.hsl.h, harmony.colors[i + 1]!.hsl.h);
-      expect(dist).toBeCloseTo(90, -1);
+      const dist = hueDistance(harmony.colors[i]!.oklch.h, harmony.colors[i + 1]!.oklch.h);
+      expect(dist).toBeCloseTo(90, 0);
     }
   });
 
@@ -107,9 +107,9 @@ describe("harmony hue correctness", () => {
     const harmony = generateHarmony(primary, "analogous");
 
     expect(harmony.colors).toHaveLength(3);
-    // Primary at 0, neighbors at -30 and +30
-    const dist01 = hueDistance(harmony.colors[0]!.hsl.h, harmony.colors[1]!.hsl.h);
-    const dist02 = hueDistance(harmony.colors[0]!.hsl.h, harmony.colors[2]!.hsl.h);
+    // Primary at 0, neighbors at -30 and +30 in OKLCH hue
+    const dist01 = hueDistance(harmony.colors[0]!.oklch.h, harmony.colors[1]!.oklch.h);
+    const dist02 = hueDistance(harmony.colors[0]!.oklch.h, harmony.colors[2]!.oklch.h);
     expect(dist01).toBeCloseTo(30, 0);
     expect(dist02).toBeCloseTo(30, 0);
   });
@@ -119,8 +119,8 @@ describe("harmony hue correctness", () => {
     const normal = generateHarmony(primary, "triadic");
     const clustered = generateHarmony(primary, "triadic", { swing: 0.5 });
 
-    const normalDist = hueDistance(normal.colors[0]!.hsl.h, normal.colors[1]!.hsl.h);
-    const clusteredDist = hueDistance(clustered.colors[0]!.hsl.h, clustered.colors[1]!.hsl.h);
+    const normalDist = hueDistance(normal.colors[0]!.oklch.h, normal.colors[1]!.oklch.h);
+    const clusteredDist = hueDistance(clustered.colors[0]!.oklch.h, clustered.colors[1]!.oklch.h);
 
     expect(clusteredDist).toBeLessThan(normalDist);
   });
@@ -130,8 +130,8 @@ describe("harmony hue correctness", () => {
     const normal = generateHarmony(primary, "analogous");
     const spread = generateHarmony(primary, "analogous", { swing: 2 });
 
-    const normalDist = hueDistance(normal.colors[0]!.hsl.h, normal.colors[1]!.hsl.h);
-    const spreadDist = hueDistance(spread.colors[0]!.hsl.h, spread.colors[1]!.hsl.h);
+    const normalDist = hueDistance(normal.colors[0]!.oklch.h, normal.colors[1]!.oklch.h);
+    const spreadDist = hueDistance(spread.colors[0]!.oklch.h, spread.colors[1]!.oklch.h);
 
     expect(spreadDist).toBeGreaterThan(normalDist);
   });
@@ -151,10 +151,10 @@ describe("harmony hue correctness", () => {
 
     for (const type of harmonies) {
       const harmony = generateHarmony(primary, type);
-      expect(harmony.colors[0]!.hsl.h, `${type}: colors[0] should be the primary hue`).toBeCloseTo(
-        primary.hsl.h,
-        0,
-      );
+      expect(
+        harmony.colors[0]!.oklch.h,
+        `${type}: colors[0] should be the primary hue`,
+      ).toBeCloseTo(primary.oklch.h, 0);
     }
   });
 });

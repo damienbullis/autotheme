@@ -41,10 +41,10 @@ describe("Harmony Generation", () => {
       expect(result.colors).toHaveLength(2);
       expect(result.primary).toBe(primary);
 
-      // First color should match primary hue
-      expect(result.colors[0]!.hsl.h).toBeCloseTo(primary.hsl.h, 0);
-      // Second color should be 180° from primary
-      const hueDiff = Math.abs(result.colors[1]!.hsl.h - result.colors[0]!.hsl.h);
+      // First color should match primary hue in OKLCH space
+      expect(result.colors[0]!.oklch.h).toBeCloseTo(primary.oklch.h, 0);
+      // Second color should be 180° from primary in OKLCH space
+      const hueDiff = normalizeHue(result.colors[1]!.oklch.h - result.colors[0]!.oklch.h);
       expect(hueDiff).toBeCloseTo(180, 0);
     });
 
@@ -53,9 +53,9 @@ describe("Harmony Generation", () => {
       expect(result.type).toBe("analogous");
       expect(result.colors).toHaveLength(3);
 
-      // First color should be primary (offset 0), neighbors at -30 and +30
-      const hues = result.colors.map((c) => c.hsl.h);
-      expect(hues[0]).toBeCloseTo(primary.hsl.h, 0);
+      // First color should be primary (offset 0), neighbors at -30 and +30 in OKLCH space
+      const hues = result.colors.map((c) => c.oklch.h);
+      expect(hues[0]).toBeCloseTo(primary.oklch.h, 0);
     });
 
     it("generates triadic harmony (3 colors, 120° apart)", () => {
@@ -63,8 +63,8 @@ describe("Harmony Generation", () => {
       expect(result.type).toBe("triadic");
       expect(result.colors).toHaveLength(3);
 
-      // Colors should be 120° apart
-      const hues = result.colors.map((c) => c.hsl.h);
+      // Colors should be 120° apart in OKLCH space
+      const hues = result.colors.map((c) => c.oklch.h);
       expect(normalizeHue(hues[1]! - hues[0]!)).toBeCloseTo(120, 0);
       expect(normalizeHue(hues[2]! - hues[1]!)).toBeCloseTo(120, 0);
     });
@@ -81,8 +81,8 @@ describe("Harmony Generation", () => {
       expect(result.colors).toHaveLength(4);
 
       // Drift uses golden angle / count: offsets are [0, 34.377, 68.754, 103.131]
-      const hues = result.colors.map((c) => c.hsl.h);
-      const baseHue = primary.hsl.h;
+      const hues = result.colors.map((c) => c.oklch.h);
+      const baseHue = primary.oklch.h;
       expect(hues[0]).toBeCloseTo(baseHue, 0);
       expect(normalizeHue(hues[1]! - baseHue)).toBeCloseTo(34.4, 0);
       expect(normalizeHue(hues[2]! - baseHue)).toBeCloseTo(68.8, 0);
@@ -94,8 +94,8 @@ describe("Harmony Generation", () => {
       expect(result.type).toBe("square");
       expect(result.colors).toHaveLength(4);
 
-      // Colors should be 90° apart
-      const hues = result.colors.map((c) => c.hsl.h);
+      // Colors should be 90° apart in OKLCH space
+      const hues = result.colors.map((c) => c.oklch.h);
       expect(normalizeHue(hues[1]! - hues[0]!)).toBeCloseTo(90, 0);
       expect(normalizeHue(hues[2]! - hues[1]!)).toBeCloseTo(90, 0);
       expect(normalizeHue(hues[3]! - hues[2]!)).toBeCloseTo(90, 0);
@@ -112,8 +112,8 @@ describe("Harmony Generation", () => {
       expect(result.type).toBe("aurelian");
       expect(result.colors).toHaveLength(3);
 
-      // Second color should be 137.5° from primary
-      const hues = result.colors.map((c) => c.hsl.h);
+      // Second color should be 137.5° from primary in OKLCH space
+      const hues = result.colors.map((c) => c.oklch.h);
       expect(normalizeHue(hues[1]! - hues[0]!)).toBeCloseTo(137.5, 0);
     });
 
@@ -122,7 +122,7 @@ describe("Harmony Generation", () => {
       expect(result.type).toBe("bi-polar");
       expect(result.colors).toHaveLength(2);
 
-      const hues = result.colors.map((c) => c.hsl.h);
+      const hues = result.colors.map((c) => c.oklch.h);
       expect(normalizeHue(hues[1]! - hues[0]!)).toBeCloseTo(90, 0);
     });
 
@@ -132,14 +132,13 @@ describe("Harmony Generation", () => {
       expect(result.colors).toHaveLength(3);
     });
 
-    it("preserves saturation and lightness in all harmony colors", () => {
+    it("preserves OKLCH lightness and alpha in all harmony colors", () => {
       const result = generateHarmony(primary, "triadic");
-      const primaryHsl = primary.hsl;
+      const primaryOklch = primary.oklch;
 
       for (const color of result.colors) {
-        expect(color.hsl.s).toBeCloseTo(primaryHsl.s, 0);
-        expect(color.hsl.l).toBeCloseTo(primaryHsl.l, 0);
-        expect(color.hsl.a).toBe(primaryHsl.a);
+        expect(color.oklch.l).toBeCloseTo(primaryOklch.l, 2);
+        expect(color.oklch.a).toBe(primaryOklch.a);
       }
     });
 
@@ -315,9 +314,9 @@ describe("Harmony Generation", () => {
       const noSwing = generateCustomHarmony(primary, 3, (i) => i * 60);
       const withSwing = generateCustomHarmony(primary, 3, (i) => i * 60, { swing: 2.0 });
 
-      // Index 1: offset 60 * 2 = 120
-      const noSwingDiff = normalizeHue(noSwing.colors[1]!.hsl.h - noSwing.colors[0]!.hsl.h);
-      const swingDiff = normalizeHue(withSwing.colors[1]!.hsl.h - withSwing.colors[0]!.hsl.h);
+      // Index 1: offset 60 * 2 = 120 in OKLCH space
+      const noSwingDiff = normalizeHue(noSwing.colors[1]!.oklch.h - noSwing.colors[0]!.oklch.h);
+      const swingDiff = normalizeHue(withSwing.colors[1]!.oklch.h - withSwing.colors[0]!.oklch.h);
       expect(swingDiff).toBeCloseTo(noSwingDiff * 2, 0);
     });
   });
@@ -360,8 +359,8 @@ describe("Harmony Generation", () => {
         triadic: createHarmonyFromOffsets([0, 45, 90]),
       };
       const result = generateHarmony(primary, "triadic", { customDefinitions: customDefs });
-      // Built-in triadic has 120° offsets, not 45°
-      const hues = result.colors.map((c) => c.hsl.h);
+      // Built-in triadic has 120° offsets, not 45° — verify in OKLCH space
+      const hues = result.colors.map((c) => c.oklch.h);
       expect(normalizeHue(hues[1]! - hues[0]!)).toBeCloseTo(120, 0);
     });
 
@@ -389,8 +388,9 @@ describe("Harmony Generation", () => {
         customDefinitions: customDefs,
         swing: 2.0,
       });
-      const noSwingDiff = normalizeHue(noSwing.colors[1]!.hsl.h - noSwing.colors[0]!.hsl.h);
-      const swingDiff = normalizeHue(withSwing.colors[1]!.hsl.h - withSwing.colors[0]!.hsl.h);
+      // Verify hue relationships in OKLCH space
+      const noSwingDiff = normalizeHue(noSwing.colors[1]!.oklch.h - noSwing.colors[0]!.oklch.h);
+      const swingDiff = normalizeHue(withSwing.colors[1]!.oklch.h - withSwing.colors[0]!.oklch.h);
       expect(swingDiff).toBeCloseTo(noSwingDiff * 2, 0);
     });
   });
@@ -404,21 +404,20 @@ describe("Harmony Generation", () => {
       expect(result.colors).toHaveLength(4);
       expect(result.primary).toBe(primary);
 
-      // Verify offsets: 0, 45, 90, 135
-      const baseHue = primary.hsl.h;
-      expect(result.colors[0]!.hsl.h).toBeCloseTo(normalizeHue(baseHue + 0), 0);
-      expect(result.colors[1]!.hsl.h).toBeCloseTo(normalizeHue(baseHue + 45), 0);
-      expect(result.colors[2]!.hsl.h).toBeCloseTo(normalizeHue(baseHue + 90), 0);
-      expect(result.colors[3]!.hsl.h).toBeCloseTo(normalizeHue(baseHue + 135), 0);
+      // Verify offsets in OKLCH space: 0, 45, 90, 135
+      const baseHue = primary.oklch.h;
+      expect(result.colors[0]!.oklch.h).toBeCloseTo(normalizeHue(baseHue + 0), 0);
+      expect(result.colors[1]!.oklch.h).toBeCloseTo(normalizeHue(baseHue + 45), 0);
+      expect(result.colors[2]!.oklch.h).toBeCloseTo(normalizeHue(baseHue + 90), 0);
+      expect(result.colors[3]!.oklch.h).toBeCloseTo(normalizeHue(baseHue + 135), 0);
     });
 
-    it("preserves saturation and lightness", () => {
+    it("preserves OKLCH lightness across harmony colors", () => {
       const primary = new Color("#6439FF");
       const result = generateCustomHarmony(primary, 3, (i) => i * 60);
 
       for (const color of result.colors) {
-        expect(color.hsl.s).toBeCloseTo(primary.hsl.s, 0);
-        expect(color.hsl.l).toBeCloseTo(primary.hsl.l, 0);
+        expect(color.oklch.l).toBeCloseTo(primary.oklch.l, 2);
       }
     });
 
@@ -427,11 +426,11 @@ describe("Harmony Generation", () => {
       const result = generateCustomHarmony(primary, 3, (i) => (i - 1) * 30);
 
       expect(result.colors).toHaveLength(3);
-      // Offsets should be -30, 0, 30
-      const baseHue = primary.hsl.h;
-      expect(result.colors[0]!.hsl.h).toBeCloseTo(normalizeHue(baseHue - 30), 0);
-      expect(result.colors[1]!.hsl.h).toBeCloseTo(baseHue, 0);
-      expect(result.colors[2]!.hsl.h).toBeCloseTo(normalizeHue(baseHue + 30), 0);
+      // Offsets should be -30, 0, 30 in OKLCH space
+      const baseHue = primary.oklch.h;
+      expect(result.colors[0]!.oklch.h).toBeCloseTo(normalizeHue(baseHue - 30), 0);
+      expect(result.colors[1]!.oklch.h).toBeCloseTo(baseHue, 0);
+      expect(result.colors[2]!.oklch.h).toBeCloseTo(normalizeHue(baseHue + 30), 0);
     });
 
     it("can recreate built-in harmonies", () => {
@@ -443,7 +442,7 @@ describe("Harmony Generation", () => {
 
       expect(custom.colors).toHaveLength(builtIn.colors.length);
       for (let i = 0; i < custom.colors.length; i++) {
-        expect(custom.colors[i]!.hsl.h).toBeCloseTo(builtIn.colors[i]!.hsl.h, 0);
+        expect(custom.colors[i]!.oklch.h).toBeCloseTo(builtIn.colors[i]!.oklch.h, 0);
       }
     });
   });

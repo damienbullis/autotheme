@@ -24,9 +24,7 @@ export function generateShadowScale(
   for (let i = 1; i <= steps; i++) {
     const blur = base * Math.pow(ratio, i - 1);
     const yOffset = Math.max(1, Math.round(blur * 0.5));
-    const alpha = isDark
-      ? Math.min(80, 20 + i * 12)
-      : Math.min(40, 5 + i * 7);
+    const alpha = isDark ? Math.min(80, 20 + i * 12) : Math.min(40, 5 + i * 7);
 
     const shadowL = isDark ? 0 : 20;
     const shadowColor = new Color({ h: primaryHue, s: colorTint, l: shadowL, a: alpha / 100 });

@@ -1,5 +1,6 @@
-import type { ColorInput, HSLColor, RGBColor } from "./types";
-import { hexToHsl, rgbToHsl } from "./conversions";
+import type { ColorInput, HSLColor, RGBColor, OKLCHColor } from "./types";
+import { hexToHsl, rgbToHsl, hslToOklch } from "./conversions";
+import { oklchToHsl as gamutOklchToHsl } from "./gamut";
 
 /**
  * Type guard to check if a color input is an RGB color object
@@ -14,7 +15,15 @@ export function isRGBColor(input: ColorInput): input is RGBColor {
  */
 export function isHSLColor(input: ColorInput): input is HSLColor {
   if (typeof input === "string") return false;
-  return "h" in input && "s" in input && "l" in input;
+  return "h" in input && "s" in input && "l" in input && !("c" in input);
+}
+
+/**
+ * Type guard to check if a color input is an OKLCH color object
+ */
+export function isOKLCHColor(input: ColorInput): input is OKLCHColor {
+  if (typeof input === "string") return false;
+  return "l" in input && "c" in input && "h" in input;
 }
 
 /**
@@ -89,6 +98,9 @@ export function parseColor(input: ColorInput): HSLColor {
   if (typeof input === "string") {
     return parseColorString(input);
   }
+  if (isOKLCHColor(input)) {
+    return gamutOklchToHsl(input);
+  }
   if (isRGBColor(input)) {
     // Ensure alpha has a default
     const rgb: RGBColor = {
@@ -106,4 +118,20 @@ export function parseColor(input: ColorInput): HSLColor {
     l: input.l,
     a: input.a ?? 1,
   };
+}
+
+/**
+ * Parse any color input to OKLCH
+ */
+export function parseToOklch(input: ColorInput): OKLCHColor {
+  if (typeof input !== "string" && isOKLCHColor(input)) {
+    return {
+      l: input.l,
+      c: input.c,
+      h: input.h,
+      a: input.a ?? 1,
+    };
+  }
+  const hsl = parseColor(input);
+  return hslToOklch(hsl);
 }

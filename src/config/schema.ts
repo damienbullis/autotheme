@@ -92,6 +92,11 @@ export const CONFIG_SCHEMA = {
           pattern: "^[a-zA-Z][a-zA-Z0-9-]*$",
           description: "CSS variable prefix (e.g., --{prefix}-primary-500)",
         },
+        chromaBalance: {
+          type: "boolean",
+          default: true,
+          description: "Normalize chroma across harmony colors for perceptual balance",
+        },
         contrastTarget: {
           type: "number",
           default: 7,
@@ -216,6 +221,19 @@ export const CONFIG_SCHEMA = {
           items: { type: "number" },
           description: "Manual typography values in rem (overrides base/ratio/steps generation)",
         },
+        fluid: {
+          type: "boolean",
+          default: false,
+          description: "Use clamp() for viewport-responsive typography values",
+        },
+        fluidRange: {
+          type: "array",
+          items: { type: "number" },
+          minItems: 2,
+          maxItems: 2,
+          default: [320, 1280],
+          description: "Viewport range [min, max] in px for fluid scaling",
+        },
       },
       additionalProperties: false,
     },
@@ -250,6 +268,19 @@ export const CONFIG_SCHEMA = {
           type: "array",
           items: { type: "number" },
           description: "Manual spacing values in rem (overrides base/ratio/steps generation)",
+        },
+        fluid: {
+          type: "boolean",
+          default: false,
+          description: "Use clamp() for viewport-responsive spacing values",
+        },
+        fluidRange: {
+          type: "array",
+          items: { type: "number" },
+          minItems: 2,
+          maxItems: 2,
+          default: [320, 1280],
+          description: "Viewport range [min, max] in px for fluid scaling",
         },
       },
       additionalProperties: false,
@@ -331,6 +362,48 @@ export const CONFIG_SCHEMA = {
       },
       additionalProperties: false,
     },
+    motion: {
+      type: "object",
+      description: "Motion token options (durations, easings, transitions)",
+      properties: {
+        enabled: {
+          type: "boolean",
+          default: false,
+          description: "Generate motion tokens (durations, easings, transitions)",
+        },
+        spring: {
+          type: "object",
+          description: "Spring physics parameters for easing generation",
+          properties: {
+            stiffness: { type: "number", default: 100, exclusiveMinimum: 0 },
+            damping: { type: "number", default: 15, exclusiveMinimum: 0 },
+            mass: { type: "number", default: 1, exclusiveMinimum: 0 },
+          },
+          additionalProperties: false,
+        },
+        durations: {
+          type: "object",
+          description: "Duration scale parameters",
+          properties: {
+            base: {
+              type: "number",
+              default: 100,
+              exclusiveMinimum: 0,
+              description: "Base duration in ms",
+            },
+            ratio: { type: "number", default: 1.5, exclusiveMinimum: 0 },
+            steps: { type: "number", default: 5, minimum: 1 },
+          },
+          additionalProperties: false,
+        },
+        reducedMotion: {
+          type: "boolean",
+          default: true,
+          description: "Generate @media (prefers-reduced-motion: reduce) overrides",
+        },
+      },
+      additionalProperties: false,
+    },
     gradients: {
       type: "boolean",
       default: false,
@@ -369,6 +442,13 @@ export const CONFIG_SCHEMA = {
           minimum: 2,
           maximum: 6,
           description: "Number of text hierarchy levels (text-1 through text-N)",
+        },
+        temperature: {
+          type: "number",
+          default: 0,
+          minimum: -1,
+          maximum: 1,
+          description: "Color temperature bias for neutral surfaces (-1 cool, 0 neutral, +1 warm)",
         },
         mapping: {
           type: "object",
@@ -458,6 +538,35 @@ export const CONFIG_SCHEMA = {
           },
           additionalProperties: false,
         },
+        accessibility: {
+          type: "object",
+          description: "Accessibility media query options",
+          properties: {
+            contrastAdaptive: {
+              type: "boolean",
+              default: false,
+              description: "Generate @media (prefers-contrast) blocks for high/low contrast modes",
+            },
+            reducedTransparency: {
+              type: "boolean",
+              default: false,
+              description:
+                "Generate @media (prefers-reduced-transparency) block with opaque fallbacks",
+            },
+            forcedColors: {
+              type: "boolean",
+              default: false,
+              description: "Generate @media (forced-colors: active) block mapping to system colors",
+            },
+            contrastAlgorithm: {
+              type: "string",
+              enum: ["wcag2", "apca"],
+              default: "wcag2",
+              description: "Contrast algorithm for text color calculation: WCAG 2.x or APCA",
+            },
+          },
+          additionalProperties: false,
+        },
       },
       additionalProperties: false,
     },
@@ -506,6 +615,32 @@ export const CONFIG_SCHEMA = {
           type: "boolean",
           default: true,
           description: "Include metadata header and inline section comments in generated CSS",
+        },
+        layers: {
+          type: "boolean",
+          default: true,
+          description: "Wrap CSS output in @layer declarations for cascade control",
+        },
+        reactive: {
+          type: "boolean",
+          default: false,
+          description:
+            "Use relative color syntax (oklch(from var(...))) for runtime-derivable palettes",
+        },
+        lightDark: {
+          type: "boolean",
+          default: false,
+          description: "Use CSS light-dark() function for dual-mode tokens (requires mode: 'both')",
+        },
+        registered: {
+          type: "boolean",
+          default: false,
+          description: "Emit @property declarations for animatable custom properties",
+        },
+        p3: {
+          type: "boolean",
+          default: false,
+          description: "Emit @supports block with Display P3 wide-gamut color values",
         },
       },
       additionalProperties: false,

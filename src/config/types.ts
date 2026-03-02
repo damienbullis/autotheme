@@ -51,14 +51,25 @@ export interface ElevationConfig {
   levels: number;
 }
 
+export type ContrastAlgorithm = "wcag2" | "apca";
+
+export interface AccessibilityConfig {
+  contrastAdaptive: boolean;
+  reducedTransparency: boolean;
+  forcedColors: boolean;
+  contrastAlgorithm: ContrastAlgorithm;
+}
+
 export interface SemanticsConfig {
   enabled: boolean;
   surfaceDepth: number;
   textLevels: number;
+  temperature: number;
   mapping: SemanticMapping;
   overrides?: Record<string, string>;
   states: StatesConfig;
   elevation: ElevationConfig;
+  accessibility: AccessibilityConfig;
 }
 
 export type ThemeMode = "light" | "dark" | "both";
@@ -85,6 +96,7 @@ export interface AutoThemeConfig {
   palette: {
     prefix: string;
     contrastTarget: number;
+    chromaBalance: boolean;
     tints: number;
     shades: number;
     tones: number;
@@ -103,6 +115,8 @@ export interface AutoThemeConfig {
     steps: number;
     names?: string[];
     values?: number[];
+    fluid: boolean;
+    fluidRange: [number, number];
   };
 
   // Spacing (defaults to off)
@@ -112,6 +126,8 @@ export interface AutoThemeConfig {
     ratio: number;
     steps: number;
     values?: number[];
+    fluid: boolean;
+    fluidRange: [number, number];
   };
 
   // Shadow scale
@@ -128,6 +144,14 @@ export interface AutoThemeConfig {
   // Semantic tokens
   semantics: SemanticsConfig;
 
+  // Motion tokens
+  motion: {
+    enabled: boolean;
+    spring: { stiffness: number; damping: number; mass: number };
+    durations: { base: number; ratio: number; steps: number };
+    reducedMotion: boolean;
+  };
+
   // Framework bindings
   shadcn: {
     enabled: boolean;
@@ -141,6 +165,11 @@ export interface AutoThemeConfig {
     preview: boolean;
     darkModeScript: boolean;
     comments: boolean;
+    layers: boolean;
+    reactive: boolean;
+    lightDark: boolean;
+    registered: boolean;
+    p3: boolean;
   };
 
   // Custom harmonies
@@ -163,6 +192,7 @@ export const DEFAULT_CONFIG: AutoThemeConfig = {
   palette: {
     prefix: "color",
     contrastTarget: 7,
+    chromaBalance: true,
     tints: 5,
     shades: 5,
     tones: 4,
@@ -178,6 +208,8 @@ export const DEFAULT_CONFIG: AutoThemeConfig = {
     base: 1,
     ratio: 1.25,
     steps: 7,
+    fluid: false,
+    fluidRange: [320, 1280],
   },
 
   spacing: {
@@ -185,6 +217,8 @@ export const DEFAULT_CONFIG: AutoThemeConfig = {
     base: 0.25,
     ratio: 2,
     steps: 10,
+    fluid: false,
+    fluidRange: [320, 1280],
   },
 
   shadows: {
@@ -206,6 +240,7 @@ export const DEFAULT_CONFIG: AutoThemeConfig = {
     enabled: false,
     surfaceDepth: 4,
     textLevels: 3,
+    temperature: 0,
     mapping: { accent: "primary", accentSecondary: "secondary" },
     states: {
       enabled: false,
@@ -216,6 +251,19 @@ export const DEFAULT_CONFIG: AutoThemeConfig = {
       disabledDesat: 60,
     },
     elevation: { enabled: false, levels: 4 },
+    accessibility: {
+      contrastAdaptive: false,
+      reducedTransparency: false,
+      forcedColors: false,
+      contrastAlgorithm: "wcag2",
+    },
+  },
+
+  motion: {
+    enabled: false,
+    spring: { stiffness: 100, damping: 15, mass: 1 },
+    durations: { base: 100, ratio: 1.5, steps: 5 },
+    reducedMotion: true,
   },
 
   gradients: false,
@@ -233,5 +281,10 @@ export const DEFAULT_CONFIG: AutoThemeConfig = {
     preview: false,
     darkModeScript: false,
     comments: true,
+    layers: true,
+    reactive: false,
+    lightDark: false,
+    registered: false,
+    p3: false,
   },
 };

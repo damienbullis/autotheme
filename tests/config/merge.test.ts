@@ -9,19 +9,20 @@ describe("generateRandomColor", () => {
     expect(color.toHex()).toMatch(/^#[0-9a-f]{6}$/);
   });
 
-  it("generates vibrant colors (high saturation)", () => {
+  it("generates vibrant colors (high OKLCH chroma)", () => {
     for (let i = 0; i < 10; i++) {
       const color = generateRandomColor();
-      expect(color.hsl.s).toBeGreaterThanOrEqual(70);
-      expect(color.hsl.s).toBeLessThanOrEqual(100);
+      // Vibrant colors should have meaningful chroma (> 0.05 in OKLCH)
+      expect(color.oklch.c).toBeGreaterThan(0.05);
     }
   });
 
-  it("generates colors with moderate lightness", () => {
+  it("generates colors with moderate lightness (not too dark, not too light)", () => {
     for (let i = 0; i < 10; i++) {
       const color = generateRandomColor();
-      expect(color.hsl.l).toBeGreaterThanOrEqual(45);
-      expect(color.hsl.l).toBeLessThanOrEqual(65);
+      // OKLCH L in [0, 1]; should be moderate -- not near-black and not near-white
+      expect(color.oklch.l).toBeGreaterThan(0.2);
+      expect(color.oklch.l).toBeLessThan(0.95);
     }
   });
 });

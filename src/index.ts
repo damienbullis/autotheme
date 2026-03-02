@@ -22,6 +22,7 @@ export type { HarmonyMeta } from "./core/harmony-meta";
 export * from "./core/color";
 export * from "./core/contrast";
 export * from "./core/parse";
+export * from "./core/gamut";
 export * from "./core/conversions";
 export * from "./core/harmonies";
 export * from "./core/harmony-meta";

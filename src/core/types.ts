@@ -25,7 +25,7 @@ export interface OKLCHColor {
 }
 
 /** Color input types */
-export type ColorInput = string | HSLColor | RGBColor;
+export type ColorInput = string | HSLColor | RGBColor | OKLCHColor;
 
 /** Harmony types available for palette generation */
 export type HarmonyType =
@@ -47,6 +47,7 @@ export type SwingStrategy = "linear" | "exponential" | "alternating";
 export interface HarmonyOptions {
   swing?: number;
   swingStrategy?: SwingStrategy;
+  chromaBalance?: boolean;
 }
 
 /** Function that computes hue offset for a given index */

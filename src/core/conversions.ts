@@ -194,6 +194,9 @@ export function hslToOklch(hsl: HSLColor): OKLCHColor {
   return rgbToOklch(hslToRgb(hsl));
 }
 
+// Re-export reverse conversions from gamut module
+export { oklchToRgb, oklchToHsl, oklchToOklab } from "./gamut";
+
 /**
  * Format OKLCH as CSS string
  */

@@ -78,7 +78,8 @@ describe("generateSurfaces", () => {
   it("surfaces are tinted with primary hue at low saturation", () => {
     const surfaces = generateSurfaces(220, 80, 96, 4, false);
     const surface = surfaces.find((t) => t.name === "surface")!;
-    expect(surface.value.hsl.h).toBe(220);
+    // OKLCH round-trip may shift hue by a few degrees from the input
+    expect(surface.value.hsl.h).toBeCloseTo(220, -1);
     expect(surface.value.hsl.s).toBeLessThanOrEqual(15);
   });
 });

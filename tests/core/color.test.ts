@@ -64,100 +64,110 @@ describe("Color class", () => {
   describe("immutability", () => {
     it("returns new color from lighten", () => {
       const original = new Color("#ff0000");
+      const originalL = original.oklch.l;
       const lighter = original.lighten(20);
-      expect(original.hsl.l).toBeCloseTo(50);
-      expect(lighter.hsl.l).toBeCloseTo(70);
+      expect(original.oklch.l).toBe(originalL);
+      expect(lighter.oklch.l).toBeGreaterThan(originalL);
     });
 
     it("returns new color from darken", () => {
       const original = new Color("#ff0000");
+      const originalL = original.oklch.l;
       const darker = original.darken(20);
-      expect(original.hsl.l).toBeCloseTo(50);
-      expect(darker.hsl.l).toBeCloseTo(30);
+      expect(original.oklch.l).toBe(originalL);
+      expect(darker.oklch.l).toBeLessThan(originalL);
     });
   });
 
   describe("lighten", () => {
     it("increases lightness", () => {
-      const color = new Color({ h: 0, s: 100, l: 50, a: 1 });
+      const color = Color.fromOklch(0.5, 0.15, 30);
       const lighter = color.lighten(20);
-      expect(lighter.hsl.l).toBe(70);
+      expect(lighter.oklch.l).toBeCloseTo(0.7);
     });
 
-    it("caps at 100", () => {
-      const color = new Color({ h: 0, s: 100, l: 90, a: 1 });
+    it("caps at 1", () => {
+      const color = Color.fromOklch(0.9, 0.15, 30);
       const lighter = color.lighten(20);
-      expect(lighter.hsl.l).toBe(100);
+      expect(lighter.oklch.l).toBe(1);
     });
 
     it("preserves other values", () => {
-      const color = new Color({ h: 180, s: 50, l: 50, a: 0.5 });
+      const color = Color.fromOklch(0.5, 0.12, 200, 0.5);
       const lighter = color.lighten(10);
-      expect(lighter.hsl.h).toBe(180);
-      expect(lighter.hsl.s).toBe(50);
-      expect(lighter.hsl.a).toBe(0.5);
+      expect(lighter.oklch.c).toBe(0.12);
+      expect(lighter.oklch.h).toBe(200);
+      expect(lighter.oklch.a).toBe(0.5);
     });
   });
 
   describe("darken", () => {
     it("decreases lightness", () => {
-      const color = new Color({ h: 0, s: 100, l: 50, a: 1 });
+      const color = Color.fromOklch(0.5, 0.15, 30);
       const darker = color.darken(20);
-      expect(darker.hsl.l).toBe(30);
+      expect(darker.oklch.l).toBeCloseTo(0.3);
     });
 
     it("caps at 0", () => {
-      const color = new Color({ h: 0, s: 100, l: 10, a: 1 });
+      const color = Color.fromOklch(0.1, 0.15, 30);
       const darker = color.darken(20);
-      expect(darker.hsl.l).toBe(0);
+      expect(darker.oklch.l).toBe(0);
     });
   });
 
   describe("saturate", () => {
-    it("increases saturation", () => {
-      const color = new Color({ h: 0, s: 50, l: 50, a: 1 });
+    it("increases chroma", () => {
+      const color = Color.fromOklch(0.5, 0.1, 30);
       const saturated = color.saturate(20);
-      expect(saturated.hsl.s).toBe(70);
+      expect(saturated.oklch.c).toBeGreaterThan(0.1);
     });
 
-    it("caps at 100", () => {
-      const color = new Color({ h: 0, s: 90, l: 50, a: 1 });
+    it("increases chroma by expected amount", () => {
+      const color = Color.fromOklch(0.5, 0.1, 30);
       const saturated = color.saturate(20);
-      expect(saturated.hsl.s).toBe(100);
+      // saturate adds (amount/100) * 0.4 to chroma
+      expect(saturated.oklch.c).toBeCloseTo(0.1 + 0.08);
     });
   });
 
   describe("desaturate", () => {
-    it("decreases saturation", () => {
-      const color = new Color({ h: 0, s: 50, l: 50, a: 1 });
+    it("decreases chroma", () => {
+      const color = Color.fromOklch(0.5, 0.2, 30);
       const desaturated = color.desaturate(20);
-      expect(desaturated.hsl.s).toBe(30);
+      expect(desaturated.oklch.c).toBeLessThan(0.2);
     });
 
-    it("caps at 0", () => {
-      const color = new Color({ h: 0, s: 10, l: 50, a: 1 });
-      const desaturated = color.desaturate(20);
-      expect(desaturated.hsl.s).toBe(0);
+    it("decreases chroma proportionally", () => {
+      const color = Color.fromOklch(0.5, 0.2, 30);
+      const desaturated = color.desaturate(50);
+      // desaturate multiplies chroma by (1 - amount/100)
+      expect(desaturated.oklch.c).toBeCloseTo(0.1);
+    });
+
+    it("fully desaturates to zero chroma", () => {
+      const color = Color.fromOklch(0.5, 0.2, 30);
+      const desaturated = color.desaturate(100);
+      expect(desaturated.oklch.c).toBe(0);
     });
   });
 
   describe("rotate", () => {
     it("rotates hue by degrees", () => {
-      const color = new Color({ h: 0, s: 100, l: 50, a: 1 });
+      const color = Color.fromOklch(0.5, 0.15, 0);
       const rotated = color.rotate(120);
-      expect(rotated.hsl.h).toBe(120);
+      expect(rotated.oklch.h).toBeCloseTo(120);
     });
 
     it("wraps around 360", () => {
-      const color = new Color({ h: 300, s: 100, l: 50, a: 1 });
+      const color = Color.fromOklch(0.5, 0.15, 300);
       const rotated = color.rotate(120);
-      expect(rotated.hsl.h).toBe(60);
+      expect(rotated.oklch.h).toBeCloseTo(60);
     });
 
     it("handles negative rotation", () => {
-      const color = new Color({ h: 60, s: 100, l: 50, a: 1 });
+      const color = Color.fromOklch(0.5, 0.15, 60);
       const rotated = color.rotate(-120);
-      expect(rotated.hsl.h).toBe(300);
+      expect(rotated.oklch.h).toBeCloseTo(300);
     });
   });
 
@@ -232,10 +242,12 @@ describe("Color class", () => {
     });
 
     it("uses tolerance for comparison", () => {
-      const color1 = new Color({ h: 0, s: 100, l: 50, a: 1 });
-      const color2 = new Color({ h: 0.5, s: 100, l: 50, a: 1 });
-      expect(color1.equals(color2, 1)).toBe(true);
-      expect(color1.equals(color2, 0.1)).toBe(false);
+      const color1 = Color.fromOklch(0.5, 0.15, 30);
+      const color2 = Color.fromOklch(0.5, 0.15, 32);
+      // tolerance=5 means H difference of 5 allowed, so 2 degrees apart should pass
+      expect(color1.equals(color2, 5)).toBe(true);
+      // tolerance=1 means H difference of 1 allowed, so 2 degrees apart should fail
+      expect(color1.equals(color2, 1)).toBe(false);
     });
   });
 });

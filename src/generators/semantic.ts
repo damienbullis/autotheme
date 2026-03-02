@@ -35,15 +35,26 @@ export function generateSemanticTokens(
   const primaryPalette = palette.palettes[0]!;
   const primaryHsl = primaryPalette.base.hsl;
   const depth = config.semantics.surfaceDepth;
+  const temperature = config.semantics.temperature ?? 0;
+
+  // Apply temperature bias to surface hue
+  // temperature: -1 = cool (250°), 0 = neutral (use primary), +1 = warm (60°)
+  let surfaceHue = primaryHsl.h;
+  if (temperature !== 0) {
+    const targetHue = temperature > 0 ? 60 : 250;
+    surfaceHue = primaryHsl.h + (targetHue - primaryHsl.h) * Math.abs(temperature) * 0.5;
+    // Normalize hue to 0-360
+    surfaceHue = ((surfaceHue % 360) + 360) % 360;
+  }
 
   // Surface anchor lightness
   const surfaceAnchorL = isDark ? depth * 1.5 : 100 - depth;
 
-  const surfaces = generateSurfaces(primaryHsl.h, primaryHsl.s, surfaceAnchorL, depth, isDark);
-  const borders = generateBorders(primaryHsl.h, primaryHsl.s, surfaceAnchorL, isDark);
+  const surfaces = generateSurfaces(surfaceHue, primaryHsl.s, surfaceAnchorL, depth, isDark);
+  const borders = generateBorders(surfaceHue, primaryHsl.s, surfaceAnchorL, isDark);
   const surfaceColor = surfaces[0]!.value;
   const text = generateTextHierarchy(
-    primaryHsl.h,
+    surfaceHue,
     surfaceColor,
     config.semantics.textLevels,
     config.palette.contrastTarget,
@@ -232,6 +243,98 @@ export function generateAccents(
 }
 
 /**
+ * Generate semantic CSS using CSS light-dark() function.
+ * Produces a single :root block with light-dark(lightVal, darkVal) for each token.
+ */
+export function generateLightDarkSemanticCSS(theme: GeneratedTheme): string {
+  const { palette, config } = theme;
+  const comments = config.output.comments;
+  const lines: string[] = [];
+
+  const lightTokens = generateSemanticTokens(palette, config, "light");
+  const darkTokens = generateSemanticTokens(palette, config, "dark");
+
+  lines.push(":root {");
+
+  const pairs = pairTokenSets(lightTokens, darkTokens);
+  for (const { section, tokens } of pairs) {
+    lines.push("");
+    if (comments) lines.push(`    /* ${section} */`);
+    for (const { name, lightVal, darkVal } of tokens) {
+      lines.push(`    --${name}: light-dark(${lightVal}, ${darkVal});`);
+    }
+  }
+
+  lines.push("}");
+
+  // Accessibility queries still apply
+  const a11y = config.semantics.accessibility ?? {
+    contrastAdaptive: false,
+    reducedTransparency: false,
+    forcedColors: false,
+    contrastAlgorithm: "wcag2" as const,
+  };
+
+  if (a11y.contrastAdaptive) {
+    lines.push("");
+    lines.push(generateContrastAdaptiveCSS(palette, config));
+  }
+  if (a11y.reducedTransparency) {
+    lines.push("");
+    lines.push(generateReducedTransparencyCSS(config, comments));
+  }
+  if (a11y.forcedColors) {
+    lines.push("");
+    lines.push(generateForcedColorsCSS(comments));
+  }
+
+  return lines.join("\n");
+}
+
+/**
+ * Pair light and dark token sets for light-dark() output
+ */
+function pairTokenSets(
+  light: SemanticTokenSet,
+  dark: SemanticTokenSet,
+): { section: string; tokens: { name: string; lightVal: string; darkVal: string }[] }[] {
+  const sections = [
+    { section: "Surfaces", light: light.surfaces, dark: dark.surfaces },
+    { section: "Borders", light: light.borders, dark: dark.borders },
+    { section: "Text Hierarchy", light: light.text, dark: dark.text },
+    { section: "Accents", light: light.accents, dark: dark.accents },
+  ];
+
+  if (light.states && dark.states) {
+    sections.push({ section: "States", light: light.states, dark: dark.states });
+  }
+  if (light.elevation && dark.elevation) {
+    sections.push({ section: "Elevation", light: light.elevation, dark: dark.elevation });
+  }
+
+  return sections.map(({ section, light: l, dark: d }) => ({
+    section,
+    tokens: l.map((lightToken, i) => {
+      const darkToken = d[i];
+      const colorFormat = "oklch" as const; // light-dark always uses oklch for consistency
+      return {
+        name: lightToken.name,
+        lightVal: formatTokenValueDirect(lightToken, colorFormat),
+        darkVal: darkToken
+          ? formatTokenValueDirect(darkToken, colorFormat)
+          : formatTokenValueDirect(lightToken, colorFormat),
+      };
+    }),
+  }));
+}
+
+function formatTokenValueDirect(token: SemanticToken, colorFormat: ColorFormat): string {
+  if (token.rawCSS) return token.rawCSS;
+  if (token.ref) return `var(${token.ref})`;
+  return token.value.formatAs(colorFormat);
+}
+
+/**
  * Format semantic tokens into CSS blocks respecting mode.
  */
 export function generateSemanticCSS(theme: GeneratedTheme): string {
@@ -239,6 +342,12 @@ export function generateSemanticCSS(theme: GeneratedTheme): string {
   const mode = config.mode;
   const colorFormat = config.colorFormat;
   const comments = config.output.comments;
+  const a11y = config.semantics.accessibility ?? {
+    contrastAdaptive: false,
+    reducedTransparency: false,
+    forcedColors: false,
+    contrastAlgorithm: "wcag2" as const,
+  };
   const lines: string[] = [];
 
   if (mode === "light" || mode === "both") {
@@ -260,6 +369,142 @@ export function generateSemanticCSS(theme: GeneratedTheme): string {
     writeTokenBlock(lines, darkTokens, colorFormat, comments);
     lines.push("}");
   }
+
+  // Accessibility adaptive media queries
+  if (a11y.contrastAdaptive) {
+    lines.push("");
+    lines.push(generateContrastAdaptiveCSS(palette, config));
+  }
+
+  if (a11y.reducedTransparency) {
+    lines.push("");
+    lines.push(generateReducedTransparencyCSS(config, comments));
+  }
+
+  if (a11y.forcedColors) {
+    lines.push("");
+    lines.push(generateForcedColorsCSS(comments));
+  }
+
+  return lines.join("\n");
+}
+
+/**
+ * Generate @media (prefers-contrast: more) and (prefers-contrast: less) blocks
+ */
+function generateContrastAdaptiveCSS(palette: FullPalette, config: AutoThemeConfig): string {
+  const colorFormat = config.colorFormat;
+  const comments = config.output.comments;
+  const lines: string[] = [];
+
+  // High contrast mode: increase border contrast, strengthen text
+  if (comments) lines.push("/* High Contrast Mode */");
+  lines.push("@media (prefers-contrast: more) {");
+  lines.push("  :root {");
+
+  // Stronger borders
+  const primaryHsl = palette.palettes[0]!.base.hsl;
+  const strongBorder = new Color({ h: primaryHsl.h, s: 10, l: 20, a: 1 });
+  lines.push(`    --border: ${strongBorder.formatAs(colorFormat)};`);
+  lines.push(`    --border-subtle: ${strongBorder.formatAs(colorFormat)};`);
+  const strongerBorder = new Color({ h: primaryHsl.h, s: 15, l: 10, a: 1 });
+  lines.push(`    --border-strong: ${strongerBorder.formatAs(colorFormat)};`);
+
+  // Stronger text
+  const strongText = new Color({ h: 0, s: 0, l: 2, a: 1 });
+  lines.push(`    --text-1: ${strongText.formatAs(colorFormat)};`);
+  const text2 = new Color({ h: 0, s: 0, l: 15, a: 1 });
+  lines.push(`    --text-2: ${text2.formatAs(colorFormat)};`);
+
+  lines.push("  }");
+  lines.push("");
+
+  // Dark mode high contrast
+  lines.push("  .dark {");
+  const darkStrongBorder = new Color({ h: primaryHsl.h, s: 10, l: 80, a: 1 });
+  lines.push(`    --border: ${darkStrongBorder.formatAs(colorFormat)};`);
+  lines.push(`    --border-subtle: ${darkStrongBorder.formatAs(colorFormat)};`);
+  const darkStrongerBorder = new Color({ h: primaryHsl.h, s: 15, l: 90, a: 1 });
+  lines.push(`    --border-strong: ${darkStrongerBorder.formatAs(colorFormat)};`);
+  const darkStrongText = new Color({ h: 0, s: 0, l: 98, a: 1 });
+  lines.push(`    --text-1: ${darkStrongText.formatAs(colorFormat)};`);
+  const darkText2 = new Color({ h: 0, s: 0, l: 85, a: 1 });
+  lines.push(`    --text-2: ${darkText2.formatAs(colorFormat)};`);
+  lines.push("  }");
+  lines.push("}");
+
+  lines.push("");
+
+  // Low contrast mode: soften borders and text
+  if (comments) lines.push("/* Low Contrast Mode */");
+  lines.push("@media (prefers-contrast: less) {");
+  lines.push("  :root {");
+  const softBorder = new Color({ h: primaryHsl.h, s: 5, l: 85, a: 1 });
+  lines.push(`    --border: ${softBorder.formatAs(colorFormat)};`);
+  lines.push(`    --border-strong: ${softBorder.formatAs(colorFormat)};`);
+  const softText = new Color({ h: 0, s: 0, l: 30, a: 1 });
+  lines.push(`    --text-1: ${softText.formatAs(colorFormat)};`);
+  lines.push("  }");
+  lines.push("");
+  lines.push("  .dark {");
+  const darkSoftBorder = new Color({ h: primaryHsl.h, s: 5, l: 25, a: 1 });
+  lines.push(`    --border: ${darkSoftBorder.formatAs(colorFormat)};`);
+  lines.push(`    --border-strong: ${darkSoftBorder.formatAs(colorFormat)};`);
+  const darkSoftText = new Color({ h: 0, s: 0, l: 70, a: 1 });
+  lines.push(`    --text-1: ${darkSoftText.formatAs(colorFormat)};`);
+  lines.push("  }");
+  lines.push("}");
+
+  return lines.join("\n");
+}
+
+/**
+ * Generate @media (prefers-reduced-transparency) with opaque alpha fallbacks
+ */
+function generateReducedTransparencyCSS(config: AutoThemeConfig, comments: boolean): string {
+  const colorFormat = config.colorFormat;
+  const lines: string[] = [];
+
+  if (comments) lines.push("/* Reduced Transparency Mode */");
+  lines.push("@media (prefers-reduced-transparency) {");
+  lines.push("  :root {");
+  // Replace semi-transparent overlay with opaque equivalent
+  const opaqueOverlay = new Color({ h: 0, s: 0, l: 10, a: 1 });
+  lines.push(`    --surface-overlay: ${opaqueOverlay.formatAs(colorFormat)};`);
+  lines.push("  }");
+  lines.push("");
+  lines.push("  .dark {");
+  const darkOpaqueOverlay = new Color({ h: 0, s: 0, l: 5, a: 1 });
+  lines.push(`    --surface-overlay: ${darkOpaqueOverlay.formatAs(colorFormat)};`);
+  lines.push("  }");
+  lines.push("}");
+
+  return lines.join("\n");
+}
+
+/**
+ * Generate @media (forced-colors: active) mapping to system colors
+ */
+function generateForcedColorsCSS(comments: boolean): string {
+  const lines: string[] = [];
+
+  if (comments) lines.push("/* Forced Colors Mode (Windows High Contrast) */");
+  lines.push("@media (forced-colors: active) {");
+  lines.push("  :root {");
+  lines.push("    --surface: Canvas;");
+  lines.push("    --surface-elevated: Canvas;");
+  lines.push("    --surface-sunken: Canvas;");
+  lines.push("    --text-1: CanvasText;");
+  lines.push("    --text-2: CanvasText;");
+  lines.push("    --text-3: GrayText;");
+  lines.push("    --border: ButtonBorder;");
+  lines.push("    --border-subtle: ButtonBorder;");
+  lines.push("    --border-strong: CanvasText;");
+  lines.push("    --accent: LinkText;");
+  lines.push("    --accent-subtle: LinkText;");
+  lines.push("    --accent-secondary: Highlight;");
+  lines.push("  }");
+  lines.push("}");
 
   return lines.join("\n");
 }
@@ -284,7 +529,12 @@ export function applyOverrides(tokens: SemanticTokenSet, overrides: Record<strin
 
 // ─── Internal helpers ────────────────────────────────────────
 
-function writeTokenBlock(lines: string[], tokens: SemanticTokenSet, colorFormat: ColorFormat, comments: boolean = true): void {
+function writeTokenBlock(
+  lines: string[],
+  tokens: SemanticTokenSet,
+  colorFormat: ColorFormat,
+  comments: boolean = true,
+): void {
   if (comments) lines.push("    /* Surfaces */");
   for (const t of tokens.surfaces) {
     lines.push(`    --${t.name}: ${formatTokenValue(t, colorFormat)};`);
