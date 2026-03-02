@@ -1,5 +1,6 @@
 import { Color } from "../core/color";
 import type { SemanticToken } from "./semantic";
+import type { ColorFormat } from "../config/types";
 
 /**
  * Generate elevation tokens: surface, shadow, and border for each level.
@@ -11,6 +12,7 @@ export function generateElevationTokens(
   primaryHue: number,
   levels: number,
   isDark: boolean,
+  colorFormat: ColorFormat = "oklch",
 ): SemanticToken[] {
   const tokens: SemanticToken[] = [];
 
@@ -25,9 +27,8 @@ export function generateElevationTokens(
     const blur = i * 4;
     const shadowAlpha = isDark ? 30 + i * 10 : 5 + i * 5;
     const shadowL = isDark ? 0 : 20;
-    const shadowColor = new Color({ h: primaryHue, s: 5, l: shadowL, a: 1 });
-    const shadowOklch = shadowColor.oklch;
-    const shadowValue = `0 ${yOffset}px ${blur}px oklch(${shadowOklch.l.toFixed(3)} ${shadowOklch.c.toFixed(3)} ${shadowOklch.h.toFixed(3)} / ${shadowAlpha}%)`;
+    const shadowColor = new Color({ h: primaryHue, s: 5, l: shadowL, a: shadowAlpha / 100 });
+    const shadowValue = `0 ${yOffset}px ${blur}px ${shadowColor.formatAs(colorFormat)}`;
     tokens.push({
       name: `elevation-${i}-shadow`,
       value: shadowColor,

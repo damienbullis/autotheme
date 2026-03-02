@@ -304,6 +304,104 @@ describe("generateCSS", () => {
     expect(result.content).toMatch(/--primary:\s*var\(--accent\)/);
   });
 
+  it("includes metadata header when comments: true", () => {
+    const theme = createTestTheme({ output: { comments: true } });
+    const result = generateCSS(theme);
+    expect(result.content).toContain("AutoTheme v2");
+    expect(result.content).toContain(theme.config.color);
+    expect(result.content).toContain(theme.config.harmony as string);
+  });
+
+  it("omits all CSS comments when comments: false", () => {
+    const theme = createTestTheme({
+      output: { comments: false },
+      semantics: { enabled: true },
+      shadcn: { enabled: true },
+      spacing: { enabled: true },
+      noise: true,
+      gradients: true,
+      utilities: true,
+    });
+    const result = generateCSS(theme);
+    expect(result.content).not.toContain("/*");
+    expect(result.content).not.toContain("*/");
+  });
+
+  it("colorFormat 'oklch' outputs oklch() values", () => {
+    const theme = createTestTheme({ colorFormat: "oklch" });
+    const result = generateCSS(theme);
+    expect(result.content).toMatch(/--color-primary-500:\s*oklch\(/);
+  });
+
+  it("colorFormat 'hsl' outputs hsl() values", () => {
+    const theme = createTestTheme({ colorFormat: "hsl" });
+    const result = generateCSS(theme);
+    expect(result.content).toMatch(/--color-primary-500:\s*hsl\(/);
+    expect(result.content).not.toMatch(/--color-primary-500:\s*oklch\(/);
+  });
+
+  it("colorFormat 'rgb' outputs rgb() values", () => {
+    const theme = createTestTheme({ colorFormat: "rgb" });
+    const result = generateCSS(theme);
+    expect(result.content).toMatch(/--color-primary-500:\s*rgb\(/);
+  });
+
+  it("colorFormat 'hex' outputs # values", () => {
+    const theme = createTestTheme({ colorFormat: "hex" });
+    const result = generateCSS(theme);
+    expect(result.content).toMatch(/--color-primary-500:\s*#[0-9a-f]+;/i);
+  });
+
+  it("colorFormat is used consistently across all generators", () => {
+    const theme = createTestTheme({
+      colorFormat: "hsl",
+      semantics: { enabled: true },
+      shadcn: { enabled: true },
+    });
+    const result = generateCSS(theme);
+    // Palette colors use hsl
+    expect(result.content).toMatch(/--color-primary-500:\s*hsl\(/);
+    // No oklch in output (except possibly CSS comments)
+    const contentWithoutComments = result.content.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(contentWithoutComments).not.toContain("oklch(");
+  });
+
+  it("generates radius scale when enabled", () => {
+    const theme = createTestTheme({ radius: { enabled: true, base: 0.125, ratio: 2, steps: 4 } });
+    const result = generateCSS(theme);
+    expect(result.content).toContain("--radius-1: 0.125rem;");
+    expect(result.content).toContain("--radius-2: 0.250rem;");
+    expect(result.content).toContain("--radius-3: 0.500rem;");
+    expect(result.content).toContain("--radius-4: 1.000rem;");
+  });
+
+  it("uses manual radius values when provided", () => {
+    const theme = createTestTheme({
+      radius: { enabled: true, values: [0.25, 0.5, 1, 2] },
+    });
+    const result = generateCSS(theme);
+    expect(result.content).toContain("--radius-1: 0.250rem;");
+    expect(result.content).toContain("--radius-4: 2.000rem;");
+  });
+
+  it("radius does not conflict with Shadcn radius", () => {
+    const theme = createTestTheme({
+      radius: { enabled: true, steps: 3 },
+      shadcn: { enabled: true },
+    });
+    const result = generateCSS(theme);
+    // Our numeric radius
+    expect(result.content).toContain("--radius-1:");
+    // Shadcn's named radius (--radius: in shadcn block)
+    expect(result.content).toContain("--radius:");
+  });
+
+  it("radius disabled by default", () => {
+    const theme = createTestTheme();
+    const result = generateCSS(theme);
+    expect(result.content).not.toContain("--radius-1:");
+  });
+
   it("Phase 3 features disabled by default produce no extra output", () => {
     const theme = createTestTheme();
     const result = generateCSS(theme);

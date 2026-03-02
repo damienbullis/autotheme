@@ -1,36 +1,60 @@
 import { Color } from "../core/color";
 import type { GeneratedTheme } from "./types";
 import { getHarmonyName } from "./css";
+import { generateShadowScale } from "./shadow";
 
 /**
  * Generate dark mode CSS with inverted text colors
- * Uses OKLCH color format and Tailwind-compatible `.dark` selector
+ * Uses configured color format and Tailwind-compatible `.dark` selector
  */
 export function generateDarkModeCSS(theme: GeneratedTheme): string {
   const { palette, config } = theme;
   const prefix = config.palette.prefix;
+  const colorFormat = config.colorFormat;
   const mode = config.mode;
   const lines: string[] = [];
 
   // When mode is "dark", emit under :root; when "both", emit under .dark
+  const comments = config.output.comments;
   const selector = mode === "dark" ? ":root" : ".dark";
   lines.push(`${selector} {`);
-  lines.push("    /* Dark Mode Color Overrides */");
+  if (comments) lines.push("    /* Dark Mode Color Overrides */");
 
   // Inverted text/contrast colors for dark mode
   palette.palettes.forEach((p, i) => {
     const name = getHarmonyName(i);
     lines.push("");
-    lines.push(`    /* ${name.charAt(0).toUpperCase() + name.slice(1)} Dark Mode */`);
+    if (comments) {
+      lines.push(`    /* ${name.charAt(0).toUpperCase() + name.slice(1)} Dark Mode */`);
+    }
 
     // Dark mode foreground (darker for light text on dark bg)
     const darkForeground = findDarkModeTextColor(p.base);
-    lines.push(`    --${prefix}-${name}-foreground: ${darkForeground.toOKLCH()};`);
+    lines.push(`    --${prefix}-${name}-foreground: ${darkForeground.formatAs(colorFormat)};`);
 
     // Contrast color (inverted for dark mode)
     const contrastColor = findDarkModeContrastColor(p.base);
-    lines.push(`    --${prefix}-${name}-contrast: ${contrastColor.toOKLCH()};`);
+    lines.push(`    --${prefix}-${name}-contrast: ${contrastColor.formatAs(colorFormat)};`);
   });
+
+  // Dark mode shadow overrides (only in "both" mode, since dark-only already generates dark shadows)
+  if (mode === "both" && config.shadows.enabled && !config.shadows.values) {
+    const primaryHue = palette.palettes[0]!.base.hsl.h;
+    lines.push("");
+    if (comments) lines.push("    /* Dark Mode Shadow Overrides */");
+    const darkShadows = generateShadowScale(
+      config.shadows.steps,
+      config.shadows.base,
+      config.shadows.ratio,
+      primaryHue,
+      config.shadows.colorTint,
+      true,
+      colorFormat,
+    );
+    for (const s of darkShadows) {
+      lines.push(`    --${s.name}: ${s.value};`);
+    }
+  }
 
   lines.push("}");
 

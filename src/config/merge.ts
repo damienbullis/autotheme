@@ -67,6 +67,7 @@ function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
 
   if (args.color) config.color = args.color;
   if (args.harmony) config.harmony = args.harmony as AutoThemeConfig["harmony"];
+  if (args.colorFormat) config.colorFormat = args.colorFormat as AutoThemeConfig["colorFormat"];
   if (args.mode) config.mode = args.mode as AutoThemeConfig["mode"];
   if (args.swing !== undefined) config.swing = args.swing;
   if (args.swingStrategy)
@@ -112,6 +113,16 @@ function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
     config.semantics = { ...config.semantics, elevation: { enabled: args.elevation } };
   }
 
+  // Shadows
+  if (args.shadows !== undefined) {
+    config.shadows = { ...config.shadows, enabled: args.shadows };
+  }
+
+  // Radius
+  if (args.radius !== undefined) {
+    config.radius = { ...config.radius, enabled: args.radius };
+  }
+
   // Shadcn
   if (args.shadcn !== undefined) {
     config.shadcn = { ...config.shadcn, enabled: args.shadcn };
@@ -122,13 +133,15 @@ function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
     args.output ||
     args.tailwind !== undefined ||
     args.preview !== undefined ||
-    args.darkModeScript !== undefined
+    args.darkModeScript !== undefined ||
+    args.comments !== undefined
   ) {
     config.output = { ...config.output };
     if (args.output) config.output.path = args.output;
     if (args.tailwind !== undefined) config.output.tailwind = args.tailwind;
     if (args.preview !== undefined) config.output.preview = args.preview;
     if (args.darkModeScript !== undefined) config.output.darkModeScript = args.darkModeScript;
+    if (args.comments !== undefined) config.output.comments = args.comments;
   }
 
   // CLI-only

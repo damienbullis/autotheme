@@ -2,11 +2,9 @@
  * Generate CSS utility classes for gradients and noise
  * Uses Tailwind-compatible variable names
  */
-export function generateUtilityClasses(prefix: string = "color"): string {
-  return `
-/* Utility Classes */
-
-.gradient-linear {
+export function generateUtilityClasses(prefix: string = "color", comments: boolean = true): string {
+  const header = comments ? "/* Utility Classes */\n\n" : "";
+  return `${header}.gradient-linear {
     --gradient-stops: var(--gradient-from, var(--${prefix}-primary-500)) var(--gradient-from-position, -20%), var(--gradient-to, transparent) var(--gradient-to-position, 120%);
     background-image: linear-gradient(var(--gradient-direction, to right), var(--gradient-stops));
 }

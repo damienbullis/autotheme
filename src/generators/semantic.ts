@@ -1,7 +1,7 @@
 import { Color } from "../core/color";
 import { getContrastRatio } from "../core/contrast";
 import type { FullPalette } from "../core/types";
-import type { AutoThemeConfig } from "../config/types";
+import type { AutoThemeConfig, ColorFormat } from "../config/types";
 import type { GeneratedTheme } from "./types";
 import { getHarmonyName } from "./css";
 import { generateStateTokens } from "./states";
@@ -65,6 +65,7 @@ export function generateSemanticTokens(
       primaryHue,
       config.semantics.elevation.levels,
       isDark,
+      config.colorFormat,
     );
   }
 
@@ -236,25 +237,27 @@ export function generateAccents(
 export function generateSemanticCSS(theme: GeneratedTheme): string {
   const { palette, config } = theme;
   const mode = config.mode;
+  const colorFormat = config.colorFormat;
+  const comments = config.output.comments;
   const lines: string[] = [];
 
   if (mode === "light" || mode === "both") {
     const lightTokens = generateSemanticTokens(palette, config, "light");
     lines.push(":root {");
-    writeTokenBlock(lines, lightTokens);
+    writeTokenBlock(lines, lightTokens, colorFormat, comments);
     lines.push("}");
   }
 
   if (mode === "dark") {
     const darkTokens = generateSemanticTokens(palette, config, "dark");
     lines.push(":root {");
-    writeTokenBlock(lines, darkTokens);
+    writeTokenBlock(lines, darkTokens, colorFormat, comments);
     lines.push("}");
   } else if (mode === "both") {
     lines.push("");
     const darkTokens = generateSemanticTokens(palette, config, "dark");
     lines.push(".dark {");
-    writeTokenBlock(lines, darkTokens);
+    writeTokenBlock(lines, darkTokens, colorFormat, comments);
     lines.push("}");
   }
 
@@ -281,55 +284,55 @@ export function applyOverrides(tokens: SemanticTokenSet, overrides: Record<strin
 
 // ─── Internal helpers ────────────────────────────────────────
 
-function writeTokenBlock(lines: string[], tokens: SemanticTokenSet): void {
-  lines.push("    /* Surfaces */");
+function writeTokenBlock(lines: string[], tokens: SemanticTokenSet, colorFormat: ColorFormat, comments: boolean = true): void {
+  if (comments) lines.push("    /* Surfaces */");
   for (const t of tokens.surfaces) {
-    lines.push(`    --${t.name}: ${formatTokenValue(t)};`);
+    lines.push(`    --${t.name}: ${formatTokenValue(t, colorFormat)};`);
   }
 
   lines.push("");
-  lines.push("    /* Borders */");
+  if (comments) lines.push("    /* Borders */");
   for (const t of tokens.borders) {
-    lines.push(`    --${t.name}: ${formatTokenValue(t)};`);
+    lines.push(`    --${t.name}: ${formatTokenValue(t, colorFormat)};`);
   }
 
   lines.push("");
-  lines.push("    /* Text Hierarchy */");
+  if (comments) lines.push("    /* Text Hierarchy */");
   for (const t of tokens.text) {
-    lines.push(`    --${t.name}: ${formatTokenValue(t)};`);
+    lines.push(`    --${t.name}: ${formatTokenValue(t, colorFormat)};`);
   }
 
   lines.push("");
-  lines.push("    /* Accents */");
+  if (comments) lines.push("    /* Accents */");
   for (const t of tokens.accents) {
-    lines.push(`    --${t.name}: ${formatTokenValue(t)};`);
+    lines.push(`    --${t.name}: ${formatTokenValue(t, colorFormat)};`);
   }
 
   if (tokens.states && tokens.states.length > 0) {
     lines.push("");
-    lines.push("    /* States */");
+    if (comments) lines.push("    /* States */");
     for (const t of tokens.states) {
-      lines.push(`    --${t.name}: ${formatTokenValue(t)};`);
+      lines.push(`    --${t.name}: ${formatTokenValue(t, colorFormat)};`);
     }
   }
 
   if (tokens.elevation && tokens.elevation.length > 0) {
     lines.push("");
-    lines.push("    /* Elevation */");
+    if (comments) lines.push("    /* Elevation */");
     for (const t of tokens.elevation) {
-      lines.push(`    --${t.name}: ${formatTokenValue(t)};`);
+      lines.push(`    --${t.name}: ${formatTokenValue(t, colorFormat)};`);
     }
   }
 }
 
-function formatTokenValue(token: SemanticToken): string {
+function formatTokenValue(token: SemanticToken, colorFormat: ColorFormat): string {
   if (token.rawCSS) {
     return token.rawCSS;
   }
   if (token.ref) {
     return `var(${token.ref})`;
   }
-  return token.value.toOKLCH();
+  return token.value.formatAs(colorFormat);
 }
 
 function clampL(l: number): number {

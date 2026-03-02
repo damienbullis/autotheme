@@ -4,6 +4,7 @@ import { normalizeHue } from "../core/harmonies";
 import { getHarmonyName } from "./css";
 import type { GeneratedTheme } from "./types";
 import type { FullPalette, PaletteVariations } from "../core/types";
+import type { ColorFormat } from "../config/types";
 
 /**
  * Calculate the hue distance between two hues (0-180)
@@ -73,6 +74,7 @@ function buildShadcnMapping(
   primaryHue: number,
   paletteCount: number,
   mode: "light" | "dark",
+  colorFormat: ColorFormat,
 ): Record<string, string> {
   const error = mode === "dark"
     ? generateErrorColor(primaryHue).lighten(10).saturate(10)
@@ -109,8 +111,8 @@ function buildShadcnMapping(
     "accent": "var(--accent-subtle)",
     "accent-foreground": "var(--text-1)",
 
-    "destructive": error.toOKLCH(),
-    "destructive-foreground": errorFg.toOKLCH(),
+    "destructive": error.formatAs(colorFormat),
+    "destructive-foreground": errorFg.formatAs(colorFormat),
 
     "border": "var(--border)",
     "input": "var(--border-strong)",
@@ -136,17 +138,20 @@ function buildShadcnMapping(
 export function generateShadcnCSS(theme: GeneratedTheme, radius: string = "0.625rem"): string {
   const { config, palette } = theme;
   const prefix = config.palette.prefix;
+  const colorFormat = config.colorFormat;
   const primaryHue = palette.palettes[0]!.base.hsl.h;
   const paletteCount = palette.palettes.length;
   const mode = config.mode;
   const lines: string[] = [];
 
+  const comments = config.output.comments;
+
   if (mode === "light" || mode === "both") {
-    const mapping = buildShadcnMapping(prefix, primaryHue, paletteCount, "light");
+    const mapping = buildShadcnMapping(prefix, primaryHue, paletteCount, "light", colorFormat);
     lines.push(":root {");
     lines.push(`    --radius: ${radius};`);
     lines.push("");
-    lines.push("    /* Shadcn UI Component Variables */");
+    if (comments) lines.push("    /* Shadcn UI Component Variables */");
     for (const [key, value] of Object.entries(mapping)) {
       lines.push(`    --${key}: ${value};`);
     }
@@ -155,11 +160,11 @@ export function generateShadcnCSS(theme: GeneratedTheme, radius: string = "0.625
 
   if (mode === "dark") {
     // Dark-only: emit dark mapping under :root
-    const mapping = buildShadcnMapping(prefix, primaryHue, paletteCount, "dark");
+    const mapping = buildShadcnMapping(prefix, primaryHue, paletteCount, "dark", colorFormat);
     lines.push(":root {");
     lines.push(`    --radius: ${radius};`);
     lines.push("");
-    lines.push("    /* Shadcn UI Component Variables */");
+    if (comments) lines.push("    /* Shadcn UI Component Variables */");
     for (const [key, value] of Object.entries(mapping)) {
       lines.push(`    --${key}: ${value};`);
     }
@@ -172,8 +177,8 @@ export function generateShadcnCSS(theme: GeneratedTheme, radius: string = "0.625
     const darkErrorFg = findAccessibleTextColor(darkError);
     lines.push("");
     lines.push(".dark {");
-    lines.push(`    --destructive: ${darkError.toOKLCH()};`);
-    lines.push(`    --destructive-foreground: ${darkErrorFg.toOKLCH()};`);
+    lines.push(`    --destructive: ${darkError.formatAs(colorFormat)};`);
+    lines.push(`    --destructive-foreground: ${darkErrorFg.formatAs(colorFormat)};`);
     lines.push("}");
   }
 

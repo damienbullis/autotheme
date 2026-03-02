@@ -1,10 +1,17 @@
 import { Color, generateFullPalette, HARMONY_META } from "../core";
 import type { HarmonyType, FullPalette } from "../core";
 import { generateCSS, getHarmonyName } from "../generators/css";
+import { generateSemanticTokens } from "../generators/semantic";
+import { DEFAULT_CONFIG } from "../config/types";
+import type { AutoThemeConfig } from "../config/types";
 import { ColorPicker } from "./components/color-picker";
 import { HarmonySelector } from "./components/harmony-selector";
 import { PaletteDisplay } from "./components/palette-display";
 import { CodePreview } from "./components/code-preview";
+import { SemanticsPanel } from "./components/semantics-panel";
+import { FrameworkPanel } from "./components/framework-panel";
+import { LayerToggles } from "./components/layer-toggles";
+import type { LayerToggleState } from "./components/layer-toggles";
 import { initDocs } from "./components/docs-section";
 
 /**
@@ -31,6 +38,13 @@ interface AppState {
   harmony: HarmonyType;
   scalar: number;
   contrastTarget: number;
+  semanticsEnabled: boolean;
+  shadcnEnabled: boolean;
+  statesEnabled: boolean;
+  elevationEnabled: boolean;
+  shadowsEnabled: boolean;
+  radiusEnabled: boolean;
+  spacingEnabled: boolean;
 }
 
 class AutoThemeApp {
@@ -39,6 +53,8 @@ class AutoThemeApp {
   private harmonySelector!: HarmonySelector;
   private paletteDisplay!: PaletteDisplay;
   private codePreview!: CodePreview;
+  private semanticsPanel!: SemanticsPanel;
+  private frameworkPanel!: FrameworkPanel;
 
   constructor() {
     this.state = {
@@ -46,11 +62,18 @@ class AutoThemeApp {
       harmony: "analogous",
       scalar: 1.618,
       contrastTarget: 7,
+      semanticsEnabled: false,
+      shadcnEnabled: false,
+      statesEnabled: false,
+      elevationEnabled: false,
+      shadowsEnabled: false,
+      radiusEnabled: false,
+      spacingEnabled: true,
     };
 
     this.initComponents();
     this.bindEvents();
-    this.updateTheme();
+    this.handleHashChange();
     initDocs();
   }
 
@@ -68,8 +91,23 @@ class AutoThemeApp {
     );
 
     this.paletteDisplay = new PaletteDisplay(document.getElementById("palette-display")!);
-
     this.codePreview = new CodePreview(document.getElementById("code-preview")!);
+    this.semanticsPanel = new SemanticsPanel(document.getElementById("semantics-panel")!);
+    this.frameworkPanel = new FrameworkPanel(document.getElementById("framework-panel")!);
+
+    new LayerToggles(
+      document.getElementById("layer-toggles-container")!,
+      {
+        semanticsEnabled: this.state.semanticsEnabled,
+        shadcnEnabled: this.state.shadcnEnabled,
+        statesEnabled: this.state.statesEnabled,
+        elevationEnabled: this.state.elevationEnabled,
+        shadowsEnabled: this.state.shadowsEnabled,
+        radiusEnabled: this.state.radiusEnabled,
+        spacingEnabled: this.state.spacingEnabled,
+      },
+      (toggleState) => this.handleToggleChange(toggleState),
+    );
   }
 
   private bindEvents(): void {
@@ -81,7 +119,6 @@ class AutoThemeApp {
 
     // URL hash handling for deep linking
     window.addEventListener("hashchange", () => this.handleHashChange());
-    this.handleHashChange();
   }
 
   private handleColorChange(color: string): void {
@@ -96,9 +133,70 @@ class AutoThemeApp {
     this.updateURL();
   }
 
+  private handleToggleChange(toggleState: LayerToggleState): void {
+    Object.assign(this.state, toggleState);
+    this.updateTheme();
+    this.updateURL();
+  }
+
+  private buildConfig(): AutoThemeConfig {
+    return {
+      ...DEFAULT_CONFIG,
+      color: this.state.color,
+      harmony: this.state.harmony,
+      colorFormat: "oklch",
+      mode: "both",
+      palette: {
+        ...DEFAULT_CONFIG.palette,
+        contrastTarget: this.state.contrastTarget,
+      },
+      typography: {
+        ...DEFAULT_CONFIG.typography,
+        ratio: this.state.scalar,
+      },
+      spacing: {
+        ...DEFAULT_CONFIG.spacing,
+        enabled: this.state.spacingEnabled,
+        ratio: this.state.scalar,
+      },
+      shadows: {
+        ...DEFAULT_CONFIG.shadows,
+        enabled: this.state.shadowsEnabled,
+      },
+      radius: {
+        ...DEFAULT_CONFIG.radius,
+        enabled: this.state.radiusEnabled,
+      },
+      gradients: true,
+      noise: true,
+      utilities: true,
+      semantics: {
+        ...DEFAULT_CONFIG.semantics,
+        enabled: this.state.semanticsEnabled,
+        states: {
+          ...DEFAULT_CONFIG.semantics.states,
+          enabled: this.state.statesEnabled,
+        },
+        elevation: {
+          ...DEFAULT_CONFIG.semantics.elevation,
+          enabled: this.state.elevationEnabled,
+        },
+      },
+      shadcn: {
+        ...DEFAULT_CONFIG.shadcn,
+        enabled: this.state.shadcnEnabled,
+      },
+      output: {
+        ...DEFAULT_CONFIG.output,
+        comments: true,
+      },
+    };
+  }
+
   private updateTheme(): void {
     const primaryColor = new Color(this.state.color);
     const palette = generateFullPalette(primaryColor, this.state.harmony);
+    const config = this.buildConfig();
 
     // Update CSS variables directly on :root
     this.applyThemeToDOM(palette);
@@ -107,71 +205,33 @@ class AutoThemeApp {
     this.paletteDisplay.update(palette);
 
     // Generate CSS code for preview
-    const theme = {
-      palette,
-      config: {
-        color: this.state.color,
-        harmony: this.state.harmony,
-        mode: "both" as const,
-        swing: 1,
-        swingStrategy: "linear" as const,
-        palette: {
-          prefix: "color",
-          contrastTarget: this.state.contrastTarget,
-          tints: 5,
-          shades: 5,
-          tones: 4,
-          tintIncrement: 10,
-          shadeIncrement: 10,
-          toneIncrement: 20,
-          alphaVariants: false,
-          alphaSteps: { bg: 10, border: 20, glow: 15, hover: 8 },
-        },
-        typography: {
-          enabled: true,
-          base: 1,
-          ratio: this.state.scalar,
-          steps: 7,
-        },
-        spacing: {
-          enabled: true,
-          base: 0.25,
-          ratio: this.state.scalar,
-          steps: 10,
-        },
-        gradients: true,
-        noise: true,
-        utilities: true,
-        semantics: {
-          enabled: false,
-          surfaceDepth: 4,
-          textLevels: 3,
-          mapping: { accent: "primary", accentSecondary: "secondary" },
-          states: {
-            enabled: false,
-            hoverShift: 5,
-            activeShift: 10,
-            focusRingAlpha: 50,
-            disabledAlpha: 40,
-            disabledDesat: 60,
-          },
-          elevation: { enabled: false, levels: 4 },
-        },
-        shadcn: {
-          enabled: true,
-          radius: "0.625rem",
-        },
-        output: {
-          path: "./autotheme.css",
-          tailwind: false,
-          preview: false,
-          darkModeScript: false,
-        },
-      },
-    };
-
+    const theme = { palette, config };
     const cssOutput = generateCSS(theme);
     this.codePreview.update(cssOutput.content);
+
+    // Update semantics panel
+    if (this.state.semanticsEnabled) {
+      const tokens = generateSemanticTokens(palette, config, "light");
+      this.semanticsPanel.update(tokens);
+    } else {
+      this.semanticsPanel.update(null);
+    }
+
+    // Update framework panel
+    if (this.state.shadcnEnabled) {
+      const mapping: Record<string, string> = {
+        "background": "var(--surface)",
+        "foreground": "var(--text-1)",
+        "primary": "var(--accent)",
+        "secondary": "var(--accent-secondary)",
+        "muted": "var(--surface-sunken)",
+        "accent": "var(--accent-subtle)",
+        "border": "var(--border)",
+      };
+      this.frameworkPanel.update(mapping);
+    } else {
+      this.frameworkPanel.update(null);
+    }
   }
 
   private applyThemeToDOM(palette: FullPalette): void {
@@ -224,6 +284,13 @@ class AutoThemeApp {
     const params = new URLSearchParams();
     params.set("color", this.state.color.replace("#", ""));
     params.set("harmony", this.state.harmony);
+    if (this.state.semanticsEnabled) params.set("semantics", "1");
+    if (this.state.shadcnEnabled) params.set("shadcn", "1");
+    if (this.state.statesEnabled) params.set("states", "1");
+    if (this.state.elevationEnabled) params.set("elevation", "1");
+    if (this.state.shadowsEnabled) params.set("shadows", "1");
+    if (this.state.radiusEnabled) params.set("radius", "1");
+    if (!this.state.spacingEnabled) params.set("spacing", "0");
     window.history.replaceState(null, "", `?${params.toString()}`);
   }
 
@@ -241,6 +308,15 @@ class AutoThemeApp {
       this.state.harmony = harmony as HarmonyType;
       this.harmonySelector.setValue(this.state.harmony);
     }
+
+    // Toggle states from URL
+    if (params.has("semantics")) this.state.semanticsEnabled = params.get("semantics") === "1";
+    if (params.has("shadcn")) this.state.shadcnEnabled = params.get("shadcn") === "1";
+    if (params.has("states")) this.state.statesEnabled = params.get("states") === "1";
+    if (params.has("elevation")) this.state.elevationEnabled = params.get("elevation") === "1";
+    if (params.has("shadows")) this.state.shadowsEnabled = params.get("shadows") === "1";
+    if (params.has("radius")) this.state.radiusEnabled = params.get("radius") === "1";
+    if (params.has("spacing")) this.state.spacingEnabled = params.get("spacing") !== "0";
 
     this.updateTheme();
   }

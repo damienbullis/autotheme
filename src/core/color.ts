@@ -1,4 +1,5 @@
 import type { ColorInput, HSLColor, RGBColor, OKLCHColor } from "./types";
+import type { ColorFormat } from "../config/types";
 import { parseColor } from "./parse";
 import { hslToRgb, rgbToHex, hslToOklch, formatOklch } from "./conversions";
 import { getLuminance } from "./luminance";
@@ -145,6 +146,22 @@ export class Color {
   toRGBValues(): string {
     const { r, g, b } = this.rgb;
     return `${r} ${g} ${b}`;
+  }
+
+  /**
+   * Format the color in the specified CSS format
+   */
+  formatAs(format: ColorFormat): string {
+    switch (format) {
+      case "oklch":
+        return this.toOKLCH();
+      case "hsl":
+        return this.toHSL();
+      case "rgb":
+        return this.toRGB();
+      case "hex":
+        return this.toHex();
+    }
   }
 
   /**

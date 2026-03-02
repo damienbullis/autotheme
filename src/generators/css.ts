@@ -6,6 +6,7 @@ import { generateUtilityClasses } from "./utilities";
 import { generateShadcnCSS } from "./shadcn";
 import { generateSemanticCSS } from "./semantic";
 import { generateAlphaVariants } from "./alpha";
+import { generateShadowScale } from "./shadow";
 
 /**
  * Semantic names for harmony colors by index
@@ -63,13 +64,29 @@ export function buildScaleMapping(count: number, scalePoints: number[]): Record<
 export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   const { palette, config } = theme;
   const prefix = config.palette.prefix;
+  const comments = config.output.comments;
   const lines: string[] = [];
 
+  const colorFormat = config.colorFormat;
+  const formatLabel = colorFormat.toUpperCase();
+
+  // Metadata header
+  if (comments) {
+    lines.push("/* ========================================");
+    lines.push(`   AutoTheme v2 — Generated ${new Date().toISOString().split("T")[0]}`);
+    lines.push(`   Color: ${config.color} | Harmony: ${config.harmony}`);
+    lines.push(`   Mode: ${config.mode} | Format: ${formatLabel}`);
+    lines.push("   ======================================== */");
+    lines.push("");
+  }
+
   // AutoTheme extended variables with Tailwind namespaces
-  lines.push("/* ========================================");
-  lines.push("   AutoTheme Color Scales (Tailwind v4 compatible)");
-  lines.push("   Uses OKLCH color format and 50-950 scale");
-  lines.push("   ======================================== */");
+  if (comments) {
+    lines.push("/* ========================================");
+    lines.push("   AutoTheme Color Scales (Tailwind v4 compatible)");
+    lines.push(`   Uses ${formatLabel} color format and 50-950 scale`);
+    lines.push("   ======================================== */");
+  }
   lines.push("");
   lines.push(":root {");
 
@@ -83,58 +100,60 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   palette.palettes.forEach((p, i) => {
     const name = getHarmonyName(i);
     lines.push("");
-    lines.push(`    /* ${name.charAt(0).toUpperCase() + name.slice(1)} Color Scale */`);
+    if (comments) {
+      lines.push(`    /* ${name.charAt(0).toUpperCase() + name.slice(1)} Color Scale */`);
+    }
 
     // Tints (lighter): reversed so lightest (highest index) gets smallest scale number
     for (let j = p.tints.length; j >= 1; j--) {
       const tint = p.tints[j - 1];
       if (tint) {
         const scale = tintScaleMap[p.tints.length - j + 1];
-        lines.push(`    --${prefix}-${name}-${scale}: ${tint.toOKLCH()};`);
+        lines.push(`    --${prefix}-${name}-${scale}: ${tint.formatAs(colorFormat)};`);
       }
     }
 
     // Base color (500)
-    lines.push(`    --${prefix}-${name}-500: ${p.base.toOKLCH()};`);
+    lines.push(`    --${prefix}-${name}-500: ${p.base.formatAs(colorFormat)};`);
 
     // Shades (darker)
     for (let j = 1; j <= p.shades.length; j++) {
       const shade = p.shades[j - 1];
       if (shade) {
         const scale = shadeScaleMap[j];
-        lines.push(`    --${prefix}-${name}-${scale}: ${shade.toOKLCH()};`);
+        lines.push(`    --${prefix}-${name}-${scale}: ${shade.formatAs(colorFormat)};`);
       }
     }
 
     // Foreground (accessible text color)
     const textColor = palette.textColors.get(`c${i}-base`);
     if (textColor) {
-      lines.push(`    --${prefix}-${name}-foreground: ${textColor.toOKLCH()};`);
+      lines.push(`    --${prefix}-${name}-foreground: ${textColor.formatAs(colorFormat)};`);
     }
 
     // Contrast color
     const contrastColor = findContrastColor(p.base);
-    lines.push(`    --${prefix}-${name}-contrast: ${contrastColor.toOKLCH()};`);
+    lines.push(`    --${prefix}-${name}-contrast: ${contrastColor.formatAs(colorFormat)};`);
 
     // Tones (desaturated): tone-1 through tone-4
     p.tones.forEach((tone, j) => {
-      lines.push(`    --${prefix}-${name}-tone-${j + 1}: ${tone.toOKLCH()};`);
+      lines.push(`    --${prefix}-${name}-tone-${j + 1}: ${tone.formatAs(colorFormat)};`);
     });
 
     // Alpha variants (transparent overlays)
     if (config.palette.alphaVariants) {
       const av = generateAlphaVariants(p.base, config.palette.alphaSteps);
-      lines.push(`    --${prefix}-${name}-bg: ${av.bg.toOKLCH()};`);
-      lines.push(`    --${prefix}-${name}-border: ${av.border.toOKLCH()};`);
-      lines.push(`    --${prefix}-${name}-glow: ${av.glow.toOKLCH()};`);
-      lines.push(`    --${prefix}-${name}-hover: ${av.hover.toOKLCH()};`);
+      lines.push(`    --${prefix}-${name}-bg: ${av.bg.formatAs(colorFormat)};`);
+      lines.push(`    --${prefix}-${name}-border: ${av.border.formatAs(colorFormat)};`);
+      lines.push(`    --${prefix}-${name}-glow: ${av.glow.formatAs(colorFormat)};`);
+      lines.push(`    --${prefix}-${name}-hover: ${av.hover.formatAs(colorFormat)};`);
     }
   });
 
   // Typography scale (Tailwind namespace)
   if (config.typography.enabled) {
     lines.push("");
-    lines.push("    /* Typography Scale */");
+    if (comments) lines.push("    /* Typography Scale */");
     const typoValues = config.typography.values
       ? config.typography.values
       : generateCenteredScale(
@@ -152,7 +171,7 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   // Spacing scale (Tailwind namespace)
   if (config.spacing.enabled) {
     lines.push("");
-    lines.push("    /* Spacing Scale */");
+    if (comments) lines.push("    /* Spacing Scale */");
     const spacings = config.spacing.values
       ? config.spacing.values
       : generateScaledValues(config.spacing.base, config.spacing.ratio, config.spacing.steps);
@@ -161,17 +180,55 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     });
   }
 
+  // Shadow scale
+  if (config.shadows.enabled) {
+    const primaryHue = palette.palettes[0]!.base.hsl.h;
+    lines.push("");
+    if (comments) lines.push("    /* Shadow Scale */");
+    if (config.shadows.values) {
+      config.shadows.values.forEach((val, i) => {
+        lines.push(`    --shadow-${i + 1}: ${val};`);
+      });
+    } else {
+      const isDark = config.mode === "dark";
+      const shadows = generateShadowScale(
+        config.shadows.steps,
+        config.shadows.base,
+        config.shadows.ratio,
+        primaryHue,
+        config.shadows.colorTint,
+        isDark,
+        colorFormat,
+      );
+      for (const s of shadows) {
+        lines.push(`    --${s.name}: ${s.value};`);
+      }
+    }
+  }
+
+  // Border radius scale
+  if (config.radius.enabled) {
+    lines.push("");
+    if (comments) lines.push("    /* Border Radius Scale */");
+    const radii = config.radius.values
+      ? config.radius.values
+      : generateScaledValues(config.radius.base, config.radius.ratio, config.radius.steps);
+    radii.forEach((r, i) => {
+      lines.push(`    --radius-${i + 1}: ${r.toFixed(3)}rem;`);
+    });
+  }
+
   // Noise background
   if (config.noise) {
     lines.push("");
-    lines.push("    /* Background Images */");
+    if (comments) lines.push("    /* Background Images */");
     lines.push(`    --background-image-noise: ${generateNoiseSVG()};`);
   }
 
   // Gradients
   if (config.gradients) {
     lines.push("");
-    lines.push("    /* Gradients */");
+    if (comments) lines.push("    /* Gradients */");
     lines.push("    --gradient-direction: to right;");
     palette.palettes.forEach((_, i) => {
       if (i === 0) return;
@@ -183,16 +240,22 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
       lines.push("    );");
     });
 
-    // Rainbow gradient
+    // Rainbow gradient — approximate spectral colors
+    const rainbowColors = [
+      new Color("#ff3b30"), // red
+      new Color("#ff9500"), // orange
+      new Color("#ffcc00"), // yellow
+      new Color("#34c759"), // green
+      new Color("#007aff"), // blue
+      new Color("#5856d6"), // indigo
+      new Color("#af52de"), // violet
+    ];
     lines.push("    --gradient-linear-rainbow: linear-gradient(");
     lines.push("        var(--gradient-direction),");
-    lines.push("        oklch(0.628 0.258 29.234),");
-    lines.push("        oklch(0.792 0.176 70.067),");
-    lines.push("        oklch(0.968 0.211 109.769),");
-    lines.push("        oklch(0.866 0.295 142.495),");
-    lines.push("        oklch(0.452 0.313 264.052),");
-    lines.push("        oklch(0.318 0.175 303.108),");
-    lines.push("        oklch(0.491 0.319 303.108)");
+    rainbowColors.forEach((c, idx) => {
+      const comma = idx < rainbowColors.length - 1 ? "," : "";
+      lines.push(`        ${c.formatAs(colorFormat)}${comma}`);
+    });
     lines.push("    );");
   }
 
@@ -201,20 +264,24 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   // Semantic tokens
   if (config.semantics.enabled) {
     lines.push("");
-    lines.push("/* ========================================");
-    lines.push("   AutoTheme Semantic Tokens");
-    lines.push("   ======================================== */");
-    lines.push("");
+    if (comments) {
+      lines.push("/* ========================================");
+      lines.push("   AutoTheme Semantic Tokens");
+      lines.push("   ======================================== */");
+      lines.push("");
+    }
     lines.push(generateSemanticCSS(theme));
   }
 
   // Shadcn UI variables (after semantics, since shadcn references semantic tokens)
   if (config.shadcn.enabled) {
     lines.push("");
-    lines.push("/* ========================================");
-    lines.push("   Shadcn UI Compatible Theme Variables");
-    lines.push("   ======================================== */");
-    lines.push("");
+    if (comments) {
+      lines.push("/* ========================================");
+      lines.push("   Shadcn UI Compatible Theme Variables");
+      lines.push("   ======================================== */");
+      lines.push("");
+    }
     lines.push(generateShadcnCSS(theme, config.shadcn.radius));
   }
 
@@ -227,7 +294,7 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   // Utility classes
   if (config.utilities) {
     lines.push("");
-    lines.push(generateUtilityClasses(prefix));
+    lines.push(generateUtilityClasses(prefix, comments));
   }
 
   return {

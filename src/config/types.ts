@@ -1,5 +1,8 @@
 import type { HarmonyType, SwingStrategy } from "../core/types";
 
+/** Supported CSS color output formats */
+export type ColorFormat = "oklch" | "hsl" | "rgb" | "hex";
+
 /** Definition of a custom harmony with explicit hue offsets */
 export interface CustomHarmonyDefinition {
   offsets: number[];
@@ -26,6 +29,23 @@ export interface StatesConfig {
   disabledDesat: number;
 }
 
+export interface ShadowConfig {
+  enabled: boolean;
+  base: number;
+  ratio: number;
+  steps: number;
+  colorTint: number;
+  values?: string[];
+}
+
+export interface RadiusConfig {
+  enabled: boolean;
+  base: number;
+  ratio: number;
+  steps: number;
+  values?: number[];
+}
+
 export interface ElevationConfig {
   enabled: boolean;
   levels: number;
@@ -50,6 +70,9 @@ export interface AutoThemeConfig {
   // Required
   color: string;
   harmony: HarmonyType | string;
+
+  // Color format
+  colorFormat: ColorFormat;
 
   // Mode
   mode: ThemeMode;
@@ -91,6 +114,12 @@ export interface AutoThemeConfig {
     values?: number[];
   };
 
+  // Shadow scale
+  shadows: ShadowConfig;
+
+  // Border radius scale
+  radius: RadiusConfig;
+
   // Feature toggles (all default: false)
   gradients: boolean;
   noise: boolean;
@@ -111,6 +140,7 @@ export interface AutoThemeConfig {
     tailwind: boolean;
     preview: boolean;
     darkModeScript: boolean;
+    comments: boolean;
   };
 
   // Custom harmonies
@@ -125,6 +155,7 @@ export interface AutoThemeConfig {
 export const DEFAULT_CONFIG: AutoThemeConfig = {
   color: "",
   harmony: "analogous",
+  colorFormat: "oklch",
   mode: "both",
   swing: 1,
   swingStrategy: "linear",
@@ -154,6 +185,21 @@ export const DEFAULT_CONFIG: AutoThemeConfig = {
     base: 0.25,
     ratio: 2,
     steps: 10,
+  },
+
+  shadows: {
+    enabled: false,
+    base: 1,
+    ratio: 2,
+    steps: 5,
+    colorTint: 10,
+  },
+
+  radius: {
+    enabled: false,
+    base: 0.125,
+    ratio: 2,
+    steps: 6,
   },
 
   semantics: {
@@ -186,5 +232,6 @@ export const DEFAULT_CONFIG: AutoThemeConfig = {
     tailwind: false,
     preview: false,
     darkModeScript: false,
+    comments: true,
   },
 };

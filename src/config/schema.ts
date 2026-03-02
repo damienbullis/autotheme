@@ -18,6 +18,12 @@ export const CONFIG_SCHEMA = {
       description: "Primary color in hex, rgb, or hsl format",
       examples: ["#6439FF", "rgb(100, 57, 255)", "hsl(255, 100%, 61%)"],
     },
+    colorFormat: {
+      type: "string",
+      enum: ["oklch", "hsl", "rgb", "hex"],
+      default: "oklch",
+      description: "CSS color output format for generated variables",
+    },
     mode: {
       type: "string",
       enum: ["light", "dark", "both"],
@@ -248,6 +254,83 @@ export const CONFIG_SCHEMA = {
       },
       additionalProperties: false,
     },
+    shadows: {
+      type: "object",
+      description: "Shadow scale options",
+      properties: {
+        enabled: {
+          type: "boolean",
+          default: false,
+          description: "Generate shadow scale CSS variables",
+        },
+        base: {
+          type: "number",
+          default: 1,
+          exclusiveMinimum: 0,
+          description: "Base blur value in px for shadow scale",
+        },
+        ratio: {
+          type: "number",
+          default: 2,
+          exclusiveMinimum: 0,
+          description: "Scale factor for shadow blur progression",
+        },
+        steps: {
+          type: "number",
+          default: 5,
+          minimum: 1,
+          description: "Number of shadow scale steps",
+        },
+        colorTint: {
+          type: "number",
+          default: 10,
+          minimum: 0,
+          maximum: 100,
+          description: "Saturation percentage for shadow color tinting with primary hue",
+        },
+        values: {
+          type: "array",
+          items: { type: "string" },
+          description: "Manual shadow values (overrides base/ratio/steps generation)",
+        },
+      },
+      additionalProperties: false,
+    },
+    radius: {
+      type: "object",
+      description: "Border radius scale options",
+      properties: {
+        enabled: {
+          type: "boolean",
+          default: false,
+          description: "Generate border radius scale CSS variables",
+        },
+        base: {
+          type: "number",
+          default: 0.125,
+          exclusiveMinimum: 0,
+          description: "Base border radius value in rem",
+        },
+        ratio: {
+          type: "number",
+          default: 2,
+          exclusiveMinimum: 0,
+          description: "Scale factor for border radius progression",
+        },
+        steps: {
+          type: "number",
+          default: 6,
+          minimum: 1,
+          description: "Number of border radius scale steps",
+        },
+        values: {
+          type: "array",
+          items: { type: "number" },
+          description: "Manual radius values in rem (overrides base/ratio/steps generation)",
+        },
+      },
+      additionalProperties: false,
+    },
     gradients: {
       type: "boolean",
       default: false,
@@ -418,6 +501,11 @@ export const CONFIG_SCHEMA = {
           type: "boolean",
           default: false,
           description: "Generate dark mode initialization script",
+        },
+        comments: {
+          type: "boolean",
+          default: true,
+          description: "Include metadata header and inline section comments in generated CSS",
         },
       },
       additionalProperties: false,

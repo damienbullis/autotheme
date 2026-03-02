@@ -23,6 +23,7 @@ export function createTestTheme(
   const config: AutoThemeConfig = {
     color,
     harmony,
+    colorFormat: overrides.colorFormat ?? "oklch",
     mode: overrides.mode ?? "both",
     swing: overrides.swing ?? 1,
     swingStrategy: overrides.swingStrategy ?? "linear",
@@ -58,6 +59,21 @@ export function createTestTheme(
       steps: overrides.spacing?.steps ?? 10,
       ...(overrides.spacing?.values && { values: overrides.spacing.values }),
     },
+    shadows: {
+      enabled: overrides.shadows?.enabled ?? false,
+      base: overrides.shadows?.base ?? 1,
+      ratio: overrides.shadows?.ratio ?? 2,
+      steps: overrides.shadows?.steps ?? 5,
+      colorTint: overrides.shadows?.colorTint ?? 10,
+      ...(overrides.shadows?.values && { values: overrides.shadows.values }),
+    },
+    radius: {
+      enabled: overrides.radius?.enabled ?? false,
+      base: overrides.radius?.base ?? 0.125,
+      ratio: overrides.radius?.ratio ?? 2,
+      steps: overrides.radius?.steps ?? 6,
+      ...(overrides.radius?.values && { values: overrides.radius.values }),
+    },
     gradients: overrides.gradients ?? false,
     noise: overrides.noise ?? false,
     utilities: overrides.utilities ?? false,
@@ -92,6 +108,7 @@ export function createTestTheme(
       tailwind: overrides.output?.tailwind ?? false,
       preview: overrides.output?.preview ?? false,
       darkModeScript: overrides.output?.darkModeScript ?? false,
+      comments: overrides.output?.comments ?? true,
     },
   };
 

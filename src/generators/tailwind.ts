@@ -151,6 +151,26 @@ export function generateTailwindCSS(theme: GeneratedTheme): GeneratorOutput {
     lines.push("");
   }
 
+  // Shadow scale — reference existing vars
+  if (config.shadows.enabled) {
+    lines.push("    /* Shadow Scale */");
+    const count = config.shadows.values?.length ?? config.shadows.steps;
+    for (let i = 1; i <= count; i++) {
+      lines.push(`    --shadow-${i}: var(--shadow-${i});`);
+    }
+    lines.push("");
+  }
+
+  // Radius scale — reference existing vars
+  if (config.radius.enabled) {
+    lines.push("    /* Border Radius Scale */");
+    const count = config.radius.values?.length ?? config.radius.steps;
+    for (let i = 1; i <= count; i++) {
+      lines.push(`    --radius-${i}: var(--radius-${i});`);
+    }
+    lines.push("");
+  }
+
   lines.push("}");
 
   // @theme inline — non-utility vars (noise, gradients)

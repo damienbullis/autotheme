@@ -1,4 +1,8 @@
 import type { FullPalette, PaletteVariations } from "../../core";
+import { getHarmonyName } from "../../generators/css";
+
+const TINT_SCALES = [400, 300, 200, 100, 50];
+const SHADE_SCALES = [600, 700, 800, 900, 950];
 
 export class PaletteDisplay {
   private container: HTMLElement;
@@ -9,7 +13,7 @@ export class PaletteDisplay {
 
   update(palette: FullPalette): void {
     const colorGroups = palette.palettes
-      .map((p, i) => this.renderColorGroup(p, i, palette))
+      .map((p, i) => this.renderColorGroup(p, i))
       .join("");
 
     this.container.innerHTML = `
@@ -33,50 +37,49 @@ export class PaletteDisplay {
     });
   }
 
-  private renderColorGroup(p: PaletteVariations, index: number, _palette: FullPalette): string {
+  private renderColorGroup(p: PaletteVariations, index: number): string {
+    const name = getHarmonyName(index);
+    const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+
     return `
       <div class="color-group">
-        <h3>Color ${index}</h3>
+        <h3>${displayName}</h3>
 
         <div class="swatch swatch--large"
-             style="background: rgb(var(--at-c${index}))"
-             data-color="var(--at-c${index})"
+             style="background: var(--color-${name}-500)"
+             data-color="var(--color-${name}-500)"
              title="Click to copy">
-          <span style="color: rgb(var(--at-c${index}-text))">
+          <span style="color: var(--color-${name}-foreground)">
             ${p.base.toHex()}
           </span>
         </div>
 
         <div class="swatch-row">
           <span class="swatch-row__label">Tints</span>
-          ${[1, 2, 3, 4, 5]
-            .map(
-              (j) => `
+          ${TINT_SCALES.map(
+            (scale) => `
             <div class="swatch"
-                 style="background: rgb(var(--at-c${index}-l${j}))"
-                 data-color="var(--at-c${index}-l${j})"
-                 title="L${j} - Click to copy">
-              L${j}
+                 style="background: var(--color-${name}-${scale})"
+                 data-color="var(--color-${name}-${scale})"
+                 title="${scale} - Click to copy">
+              ${scale}
             </div>
           `,
-            )
-            .join("")}
+          ).join("")}
         </div>
 
         <div class="swatch-row">
           <span class="swatch-row__label">Shades</span>
-          ${[1, 2, 3, 4, 5]
-            .map(
-              (j) => `
+          ${SHADE_SCALES.map(
+            (scale) => `
             <div class="swatch"
-                 style="background: rgb(var(--at-c${index}-d${j}))"
-                 data-color="var(--at-c${index}-d${j})"
-                 title="D${j} - Click to copy">
-              D${j}
+                 style="background: var(--color-${name}-${scale})"
+                 data-color="var(--color-${name}-${scale})"
+                 title="${scale} - Click to copy">
+              ${scale}
             </div>
           `,
-            )
-            .join("")}
+          ).join("")}
         </div>
 
         <div class="swatch-row">
@@ -85,10 +88,10 @@ export class PaletteDisplay {
             .map(
               (j) => `
             <div class="swatch"
-                 style="background: rgb(var(--at-c${index}-g${j}))"
-                 data-color="var(--at-c${index}-g${j})"
-                 title="G${j} - Click to copy">
-              G${j}
+                 style="background: var(--color-${name}-tone-${j})"
+                 data-color="var(--color-${name}-tone-${j})"
+                 title="Tone ${j} - Click to copy">
+              T${j}
             </div>
           `,
             )

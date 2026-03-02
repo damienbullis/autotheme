@@ -6,6 +6,7 @@ export interface CLIArgs {
   color?: string | undefined;
   harmony?: string | undefined;
   mode?: string | undefined;
+  colorFormat?: string | undefined;
   output?: string | undefined;
   config?: string | undefined;
   preset?: string | undefined;
@@ -23,6 +24,9 @@ export interface CLIArgs {
   alphaVariants?: boolean | undefined;
   states?: boolean | undefined;
   elevation?: boolean | undefined;
+  shadows?: boolean | undefined;
+  radius?: boolean | undefined;
+  comments?: boolean | undefined;
   swing?: number | undefined;
   swingStrategy?: string | undefined;
   stdout?: boolean | undefined;
@@ -38,6 +42,7 @@ export function parseArgs(args: string[]): CLIArgs {
     .option("-c, --color <color>", "Primary color (hex, rgb, hsl)")
     .option("-a, --harmony <type>", "Color harmony type")
     .option("-m, --mode <mode>", "Theme mode: light, dark, or both (default: both)")
+    .option("--color-format <format>", "Color output format: oklch, hsl, rgb, hex (default: oklch)")
     .option("-o, --output <path>", "Output file path")
     .option("--config <path>", "Path to config file or URL")
     .option("-p, --preset <name>", "Use a built-in preset (e.g., ocean, sunset, forest)")
@@ -58,6 +63,9 @@ export function parseArgs(args: string[]): CLIArgs {
     )
     .option("--states", "Generate interactive state tokens (use --no-states to disable)")
     .option("--elevation", "Generate elevation system tokens (use --no-elevation to disable)")
+    .option("--shadows", "Generate shadow scale (use --no-shadows to disable)")
+    .option("--radius", "Generate border radius scale (use --no-radius to disable)")
+    .option("--comments", "Include metadata header and inline comments (use --no-comments to disable)")
     .option("--swing <value>", "Swing multiplier for harmony angular distance (default: 1)")
     .option("--swing-strategy <strategy>", "Swing strategy: linear, exponential, alternating")
     .option("--stdout", "Output CSS to stdout instead of writing files")
@@ -71,6 +79,7 @@ export function parseArgs(args: string[]): CLIArgs {
     color: parsed.options.color as string | undefined,
     harmony: parsed.options.harmony as string | undefined,
     mode: parsed.options.mode as string | undefined,
+    colorFormat: parsed.options.colorFormat as string | undefined,
     output: parsed.options.output as string | undefined,
     config: parsed.options.config as string | undefined,
     preset: parsed.options.preset as string | undefined,
@@ -88,6 +97,9 @@ export function parseArgs(args: string[]): CLIArgs {
     alphaVariants: parsed.options.alphaVariants as boolean | undefined,
     states: parsed.options.states as boolean | undefined,
     elevation: parsed.options.elevation as boolean | undefined,
+    shadows: parsed.options.shadows as boolean | undefined,
+    radius: parsed.options.radius as boolean | undefined,
+    comments: parsed.options.comments as boolean | undefined,
     swing: parsed.options.swing !== undefined ? Number(parsed.options.swing) : undefined,
     swingStrategy: parsed.options.swingStrategy as string | undefined,
     stdout: parsed.options.stdout as boolean | undefined,
