@@ -22,6 +22,12 @@ export function generateTheme(config: ResolvedConfig): GeneratedTheme {
     }
   }
 
+  // Support --harmony custom --angles
+  if (config.harmony === "custom" && config.angles) {
+    customDefinitions = customDefinitions ?? {};
+    customDefinitions["custom"] = createHarmonyFromOffsets(config.angles);
+  }
+
   if (config.palette !== false) {
     // Full palette with variations
     const palette = generateFullPalette(color, config.harmony, {

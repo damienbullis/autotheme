@@ -55,6 +55,22 @@ export const HARMONY_DEFINITIONS: Record<HarmonyType, HarmonyDefinition> = {
     count: 3,
     offset: (i) => (i === 0 ? 0 : i === 1 ? -120 : 120),
   },
+  monochromatic: {
+    count: 3,
+    offset: () => 0,
+    generate: (primary) => {
+      const oklch = primary.oklch;
+      return [
+        primary,
+        Color.fromOklch(oklch.l, oklch.c * 0.5, oklch.h, oklch.a),
+        Color.fromOklch(oklch.l, oklch.c * 0.15, oklch.h, oklch.a),
+      ];
+    },
+  },
+  "double-split-complementary": {
+    count: 5,
+    offset: (i) => [0, 150, 210, 30, 330][i] ?? 0,
+  },
 };
 
 /**
@@ -178,12 +194,9 @@ export function generateHarmony(
     );
   }
 
-  const colors = generateColorsFromDefinition(
-    primary,
-    definition.count,
-    definition.offset,
-    options,
-  );
+  const colors = definition.generate
+    ? definition.generate(primary, options)
+    : generateColorsFromDefinition(primary, definition.count, definition.offset, options);
 
   return {
     type,

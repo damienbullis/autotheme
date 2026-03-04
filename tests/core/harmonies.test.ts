@@ -132,6 +132,46 @@ describe("Harmony Generation", () => {
       expect(result.colors).toHaveLength(3);
     });
 
+    it("generates monochromatic harmony (3 colors, same hue, decreasing chroma)", () => {
+      const result = generateHarmony(primary, "monochromatic");
+      expect(result.type).toBe("monochromatic");
+      expect(result.colors).toHaveLength(3);
+
+      // Primary is identical to input
+      expect(result.colors[0]).toBe(primary);
+
+      // All same hue
+      const baseHue = primary.oklch.h;
+      for (const color of result.colors) {
+        expect(color.oklch.h).toBeCloseTo(baseHue, 1);
+      }
+
+      // Lightness preserved
+      const baseL = primary.oklch.l;
+      for (const color of result.colors) {
+        expect(color.oklch.l).toBeCloseTo(baseL, 2);
+      }
+
+      // Decreasing chroma
+      expect(result.colors[1]!.oklch.c).toBeLessThan(result.colors[0]!.oklch.c);
+      expect(result.colors[2]!.oklch.c).toBeLessThan(result.colors[1]!.oklch.c);
+    });
+
+    it("generates double-split-complementary harmony (5 colors)", () => {
+      const result = generateHarmony(primary, "double-split-complementary");
+      expect(result.type).toBe("double-split-complementary");
+      expect(result.colors).toHaveLength(5);
+
+      // Check angular relationships: offsets are [0, 150, 210, 30, 330]
+      const baseHue = primary.oklch.h;
+      const hues = result.colors.map((c) => c.oklch.h);
+      expect(hues[0]).toBeCloseTo(baseHue, 0);
+      expect(normalizeHue(hues[1]! - baseHue)).toBeCloseTo(150, 0);
+      expect(normalizeHue(hues[2]! - baseHue)).toBeCloseTo(210, 0);
+      expect(normalizeHue(hues[3]! - baseHue)).toBeCloseTo(30, 0);
+      expect(normalizeHue(hues[4]! - baseHue)).toBeCloseTo(330, 0);
+    });
+
     it("preserves OKLCH lightness and alpha in all harmony colors", () => {
       const result = generateHarmony(primary, "triadic");
       const primaryOklch = primary.oklch;
@@ -153,9 +193,9 @@ describe("Harmony Generation", () => {
   });
 
   describe("getHarmonyTypes", () => {
-    it("returns all 10 harmony types", () => {
+    it("returns all 12 harmony types", () => {
       const types = getHarmonyTypes();
-      expect(types).toHaveLength(10);
+      expect(types).toHaveLength(12);
     });
 
     it("includes all expected harmony types", () => {
@@ -171,6 +211,8 @@ describe("Harmony Generation", () => {
         "aurelian",
         "bi-polar",
         "retrograde",
+        "monochromatic",
+        "double-split-complementary",
       ];
 
       for (const type of expected) {
@@ -180,8 +222,8 @@ describe("Harmony Generation", () => {
   });
 
   describe("HARMONY_DEFINITIONS", () => {
-    it("has definitions for all 10 harmony types", () => {
-      expect(Object.keys(HARMONY_DEFINITIONS)).toHaveLength(10);
+    it("has definitions for all 12 harmony types", () => {
+      expect(Object.keys(HARMONY_DEFINITIONS)).toHaveLength(12);
     });
 
     it("complementary generates offsets [0, 180]", () => {

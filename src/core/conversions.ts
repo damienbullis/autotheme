@@ -140,7 +140,7 @@ export function hslToHex(hsl: HSLColor): string {
 /**
  * Convert sRGB to linear RGB (gamma expansion)
  */
-function srgbToLinear(c: number): number {
+export function srgbToLinear(c: number): number {
   const v = c / 255;
   return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
 }

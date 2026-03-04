@@ -125,6 +125,93 @@ export interface ShadcnConfig {
   radius: string;
 }
 
+export type PatternType =
+  | "stripes-diagonal"
+  | "stripes-horizontal"
+  | "stripes-vertical"
+  | "dots"
+  | "crosshatch";
+
+export type PatternDensity = "sm" | "md" | "lg";
+
+export interface PatternsConfig {
+  types: PatternType[];
+  density: PatternDensity;
+}
+
+// ─── Effects Config Types ─────────────────────────────────────
+
+export interface FilterGrainConfig {
+  frequency: number;
+  octaves: number;
+  opacity: number;
+}
+
+export interface FilterGlowConfig {
+  color: string;
+  blur: number;
+  intensity: number;
+}
+
+export interface FilterDuotoneConfig {
+  shadow: string;
+  highlight: string;
+}
+
+export interface FiltersConfig {
+  grain: false | FilterGrainConfig;
+  glow: false | FilterGlowConfig;
+  duotone: false | FilterDuotoneConfig;
+}
+
+export type BlendMode =
+  | "multiply"
+  | "screen"
+  | "overlay"
+  | "darken"
+  | "lighten"
+  | "color-dodge"
+  | "color-burn"
+  | "hard-light"
+  | "soft-light"
+  | "difference"
+  | "exclusion"
+  | "hue"
+  | "saturation"
+  | "color"
+  | "luminosity";
+
+export interface BlendModesConfig {
+  modes: BlendMode[];
+}
+
+export interface GlassConfig {
+  blur: number;
+  opacity: number;
+  saturation: number;
+  colors: string[];
+}
+
+export interface BlobConfig {
+  count: number;
+  points: number;
+  randomness: number;
+  seed: number;
+  size: number;
+}
+
+export interface StackConfig {
+  layers: number;
+}
+
+export interface EffectsConfig {
+  filters: false | FiltersConfig;
+  blendModes: false | BlendModesConfig;
+  glass: false | GlassConfig;
+  blobs: false | BlobConfig;
+  stack: false | StackConfig;
+}
+
 export interface OutputConfig {
   path: string;
   format: ColorFormat;
@@ -171,6 +258,8 @@ export interface AutoThemeConfig {
   gradients: boolean;
   noise: boolean;
   utilities: boolean;
+  patterns: boolean | DeepPartial<PatternsConfig>;
+  effects: boolean | DeepPartial<EffectsConfig>;
   shadcn: boolean | DeepPartial<ShadcnConfig>;
 
   // Output
@@ -178,6 +267,9 @@ export interface AutoThemeConfig {
 
   // Custom harmonies
   harmonies?: Record<string, CustomHarmonyDefinition>;
+
+  // Custom angles (for --harmony custom --angles "0,72,144")
+  angles?: number[];
 
   // CLI-only
   preset?: string;
@@ -208,11 +300,15 @@ export interface ResolvedConfig {
   gradients: boolean;
   noise: boolean;
   utilities: boolean;
+  patterns: false | PatternsConfig;
+  effects: false | EffectsConfig;
   shadcn: false | ShadcnConfig;
 
   output: OutputConfig;
 
   harmonies?: Record<string, CustomHarmonyDefinition>;
+
+  angles?: number[];
 
   // CLI-only (stripped after resolution)
   silent?: boolean;
@@ -310,8 +406,67 @@ export const DEFAULT_MOTION: MotionConfig = {
   reducedMotion: true,
 };
 
+export const DEFAULT_PATTERNS: PatternsConfig = {
+  types: ["stripes-diagonal", "stripes-horizontal", "stripes-vertical", "dots", "crosshatch"],
+  density: "md",
+};
+
 export const DEFAULT_SHADCN: ShadcnConfig = {
   radius: "0.625rem",
+};
+
+export const DEFAULT_FILTER_GRAIN: FilterGrainConfig = {
+  frequency: 0.65,
+  octaves: 3,
+  opacity: 0.08,
+};
+
+export const DEFAULT_FILTER_GLOW: FilterGlowConfig = {
+  color: "primary",
+  blur: 20,
+  intensity: 0.6,
+};
+
+export const DEFAULT_FILTER_DUOTONE: FilterDuotoneConfig = {
+  shadow: "primary",
+  highlight: "secondary",
+};
+
+export const DEFAULT_FILTERS: FiltersConfig = {
+  grain: { ...DEFAULT_FILTER_GRAIN },
+  glow: { ...DEFAULT_FILTER_GLOW },
+  duotone: { ...DEFAULT_FILTER_DUOTONE },
+};
+
+export const DEFAULT_BLEND_MODES: BlendModesConfig = {
+  modes: ["multiply", "screen", "overlay", "soft-light"],
+};
+
+export const DEFAULT_GLASS: GlassConfig = {
+  blur: 12,
+  opacity: 0.15,
+  saturation: 1.8,
+  colors: ["primary", "secondary"],
+};
+
+export const DEFAULT_BLOBS: BlobConfig = {
+  count: 3,
+  points: 6,
+  randomness: 0.4,
+  seed: 0,
+  size: 400,
+};
+
+export const DEFAULT_STACK: StackConfig = {
+  layers: 5,
+};
+
+export const DEFAULT_EFFECTS: EffectsConfig = {
+  filters: { ...DEFAULT_FILTERS },
+  blendModes: { ...DEFAULT_BLEND_MODES, modes: [...DEFAULT_BLEND_MODES.modes] },
+  glass: { ...DEFAULT_GLASS, colors: [...DEFAULT_GLASS.colors] },
+  blobs: { ...DEFAULT_BLOBS },
+  stack: { ...DEFAULT_STACK },
 };
 
 export const DEFAULT_OUTPUT: OutputConfig = {

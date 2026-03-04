@@ -74,6 +74,18 @@ export const HARMONY_META: HarmonyMeta[] = [
     description: "Reverse triadic arrangement. Unique perspective.",
     colorCount: 3,
   },
+  {
+    type: "monochromatic",
+    name: "Monochromatic",
+    description: "Single hue with chroma variation. Subtle, cohesive.",
+    colorCount: 3,
+  },
+  {
+    type: "double-split-complementary",
+    name: "Double Split-Complementary",
+    description: "Base and complement each split ±30°. Rich, versatile 5-color palette.",
+    colorCount: 5,
+  },
 ];
 
 /**

@@ -16,17 +16,19 @@ We start with a hex code:
      The hex value printed below in a monospace font. -->
 <img src="docs/assets/anatomy-step1-swatch.svg" width="120" />
 
-AutoTheme parses this into HSL for manipulation — hue rotation is cleanest in HSL:
+AutoTheme parses this into OKLCH — a perceptually uniform color space where equal numeric changes produce equal visual changes:
 
 ```
-#6439FF → hsl(249°, 100%, 61%)
+#6439FF → oklch(0.49 0.31 270)
 ```
 
-| Component      | Value | Meaning                     |
-| -------------- | ----- | --------------------------- |
-| **Hue**        | 249°  | Position on the color wheel |
-| **Saturation** | 100%  | Full intensity              |
-| **Lightness**  | 61%   | Medium-bright               |
+| Component       | Value | Meaning                                      |
+| --------------- | ----- | -------------------------------------------- |
+| **L** Lightness | 0.49  | Perceptual brightness (0 = black, 1 = white) |
+| **C** Chroma    | 0.31  | Color intensity (0 = gray)                   |
+| **H** Hue       | 270   | Position on the color wheel                  |
+
+All subsequent manipulation — hue rotation, tint/shade generation, accessible text calculation — happens in OKLCH.
 
 ---
 
@@ -34,77 +36,81 @@ AutoTheme parses this into HSL for manipulation — hue rotation is cleanest in 
 
 We choose **triadic** — three colors equally spaced on the wheel.
 
-The math: take the hue (249°) and add 120° and 240°:
+The math: take the hue (270°) and add 120° and 240°:
 
 ```
-Primary:   249°                    → #6439FF (blue-violet)
-Secondary: 249° + 120° = 9°       → #FF3964 (red-pink)
-Tertiary:  249° + 240° = 129°     → #39FF64 (green)
+Primary:   270°                    → #6439FF (blue-violet)
+Secondary: 270° + 120° = 30°      → warm orange
+Tertiary:  270° + 240° = 150°     → teal-green
 ```
 
 <!-- ASSET: anatomy-step2-wheel.svg
-     A color wheel showing three dots at 249°, 9°, and 129°, connected by
+     A color wheel showing three dots at 270°, 30°, and 150°, connected by
      an equilateral triangle. Each dot is colored with the actual color.
-     Labels: "Primary 249°", "Secondary 9°", "Tertiary 129°".
+     Labels: "Primary 270°", "Secondary 30°", "Tertiary 150°".
      The triangle should be drawn with thin white/gray lines. -->
 <img src="docs/assets/anatomy-step2-wheel.svg" width="360" />
 
 Three colors. Geometrically balanced. Guaranteed to work together.
 
-Each harmony uses different geometry:
+AutoTheme has 12 built-in harmonies, each using different geometry:
 
-| Harmony             | Rotation                        |
-| ------------------- | ------------------------------- |
-| Analogous           | -30°, 0°, +30°                  |
-| Complementary       | 0°, 180°                        |
-| Triadic             | 0°, 120°, 240°                  |
-| Split-Complementary | 0°, 150°, 210°                  |
-| Square              | 0°, 90°, 180°, 270°             |
-| Rectangle           | 0°, 60°, 180°, 240°             |
-| Aurelian            | 0°, 137.5°, 275°                |
-| Tetradic            | 0°, π×57.3°, 2π×57.3°, 3π×57.3° |
-| Bi-Polar            | 0°, 90°                         |
-| Retrograde          | 0°, -120°, -240°                |
+| Harmony                    | Rotation                        | Colors |
+| -------------------------- | ------------------------------- | ------ |
+| Complementary              | 0°, 180°                        | 2      |
+| Analogous                  | -30°, 0°, +30°                  | 3      |
+| Triadic                    | 0°, 120°, 240°                  | 3      |
+| Split-Complementary        | 0°, 150°, 210°                  | 3      |
+| Drift                      | Progressive spiral              | 4      |
+| Square                     | 0°, 90°, 180°, 270°             | 4      |
+| Rectangle                  | 0°, 60°, 180°, 240°             | 4      |
+| Aurelian                   | 0°, 137.5°, 275° (golden angle) | 3      |
+| Bi-Polar                   | 0°, 90°                         | 2      |
+| Retrograde                 | 0°, -120°, +120°                | 3      |
+| Monochromatic              | Same hue, varying chroma        | 3      |
+| Double-Split-Complementary | 0°, 150°, 210°, 30°, 330°       | 5      |
+
+You can also define custom harmonies with arbitrary angles: `--angles "0,72,144"`.
 
 ---
 
 ## Step 3: Tints, shades, and tones
 
-Each of the 3 colors now expands into a full scale. Let's trace the primary (`#6439FF`):
+Each of the 3 colors expands into a full scale. Let's trace the primary:
 
-**Tints** — mix with white (increase lightness):
+**Tints** — increase OKLCH lightness:
 
 ```
-50:  hsl(249°, 100%, 95%)  ██  Almost white with a violet hint
-100: hsl(249°, 100%, 90%)  ██
-200: hsl(249°, 100%, 82%)  ██
-300: hsl(249°, 100%, 74%)  ██
-400: hsl(249°, 100%, 66%)  ██  Noticeably lighter than base
+50:  oklch(0.95 ...)  Almost white with a violet hint
+100: oklch(0.90 ...)
+200: oklch(0.82 ...)
+300: oklch(0.74 ...)
+400: oklch(0.66 ...)  Noticeably lighter than base
 ```
 
 **Base:**
 
 ```
-500: hsl(249°, 100%, 61%)  ██  The original color
+500: oklch(0.49 ...)  The original color
 ```
 
-**Shades** — mix with black (decrease lightness):
+**Shades** — decrease OKLCH lightness:
 
 ```
-600: hsl(249°, 100%, 50%)  ██
-700: hsl(249°, 100%, 42%)  ██
-800: hsl(249°, 100%, 34%)  ██
-900: hsl(249°, 100%, 22%)  ██
-950: hsl(249°, 100%, 14%)  ██  Near black with violet identity
+600: oklch(0.42 ...)
+700: oklch(0.35 ...)
+800: oklch(0.28 ...)
+900: oklch(0.20 ...)
+950: oklch(0.14 ...)  Near black with violet identity
 ```
 
-**Tones** — desaturate (reduce saturation):
+**Tones** — decrease chroma (desaturate):
 
 ```
-tone-1: hsl(249°, 80%, 61%)  ██
-tone-2: hsl(249°, 60%, 61%)  ██
-tone-3: hsl(249°, 40%, 61%)  ██
-tone-4: hsl(249°, 20%, 61%)  ██  Almost gray, barely violet
+tone-1: oklch(0.49 0.25 270)
+tone-2: oklch(0.49 0.19 270)
+tone-3: oklch(0.49 0.12 270)
+tone-4: oklch(0.49 0.06 270)  Almost gray, barely violet
 ```
 
 <!-- ASSET: anatomy-step3-scale.png
@@ -120,28 +126,24 @@ That's **16 variants** from one color. Across all 3 triadic colors: **48 color v
 
 ## Step 4: Accessible text colors
 
-For each of those 48 colors, AutoTheme finds a text color that meets **WCAG AAA** (7:1 contrast ratio).
+For each color, AutoTheme finds a text color that meets **WCAG AAA** (7:1 contrast ratio).
 
-The algorithm for `--color-primary-500` (`#6439FF`):
+The algorithm for the primary (`#6439FF`):
 
 ```
-1. Calculate luminance of #6439FF → 0.107
+1. Calculate luminance → 0.107
 
-2. Test white (#FFFFFF, luminance 1.0):
+2. Test white (luminance 1.0):
    Contrast = (1.0 + 0.05) / (0.107 + 0.05) = 6.69:1
    ✗ Below 7:1 target
 
-3. Test black (#000000, luminance 0.0):
+3. Test black (luminance 0.0):
    Contrast = (0.107 + 0.05) / (0.0 + 0.05) = 3.14:1
    ✗ Below 7:1 target
 
 4. Search intermediate values...
-   Test #F5F5F5 (luminance 0.913):
-   Contrast = (0.913 + 0.05) / (0.107 + 0.05) = 6.13:1
-   ✗ Still below
-
-5. Test #FFFFFF wins with best ratio (6.69:1 closest to target)
-   → foreground: #FFFFFF
+   Best achievable: 6.69:1 with white
+   → foreground: white
 ```
 
 <!-- ASSET: anatomy-step4-contrast.svg (or .png)
@@ -151,33 +153,39 @@ The algorithm for `--color-primary-500` (`#6439FF`):
      primary-800 with light text) to show how foreground adapts. -->
 <img src="docs/assets/anatomy-step4-contrast.svg" width="480" />
 
-This runs for every single color in the palette. The result: you never need to think about text contrast.
+This runs for every single color in the palette. You never need to think about text contrast.
 
 ---
 
-## Step 5: Convert to OKLCH
+## Step 5: Semantic tokens
 
-HSL was useful for hue rotation, but the final output uses **OKLCH** — a perceptually uniform color space where equal numeric changes produce equal visual changes.
+With the palette generated, AutoTheme derives semantic design tokens from the primary hue. Using the **depth** parameter, it creates:
 
+**Surfaces** — tinted neutrals at the primary hue with very low chroma:
+
+```css
+--surface: oklch(0.99 0.01 270); /* Page background */
+--surface-sunken: oklch(0.97 0.01 270); /* Recessed areas */
+--surface-raised: oklch(1 0.01 270); /* Elevated areas */
 ```
-Primary HSL:   hsl(249°, 100%, 61%)
-Primary OKLCH: oklch(0.49 0.31 270)
+
+**Text hierarchy** — decreasing contrast from primary to tertiary:
+
+```css
+--text-primary: oklch(0.05 0.025 270); /* Headings */
+--text-secondary: oklch(0.3 0.018 270); /* Body text */
+--text-tertiary: oklch(0.55 0.01 270); /* Captions */
 ```
 
-| OKLCH Component   | Value | Meaning                                     |
-| ----------------- | ----- | ------------------------------------------- |
-| **L** (Lightness) | 0.49  | Perceptual lightness (0 = black, 1 = white) |
-| **C** (Chroma)    | 0.31  | Color intensity (0 = gray)                  |
-| **H** (Hue)       | 270   | Hue angle on OKLCH wheel                    |
+**Borders** — subtle to strong:
 
-Why OKLCH? In HSL, 50% lightness for yellow looks bright while 50% lightness for blue looks dark. OKLCH corrects this — `L=0.5` looks equally bright for any hue.
+```css
+--border: oklch(0.85 0.012 270);
+--border-subtle: oklch(0.92 0.012 270);
+--border-strong: oklch(0.75 0.012 270);
+```
 
-<!-- ASSET: anatomy-step5-oklch.png
-     Side by side: HSL vs OKLCH scales for two different hues (e.g., the
-     blue-violet primary and a yellow). In HSL, the visual "middle" of the two
-     scales appears at different positions. In OKLCH, both scales have their
-     visual midpoint in the same position. -->
-<img src="docs/assets/anatomy-step5-oklch.png" width="600" />
+These are the default output — no `palette: true` needed.
 
 ---
 
@@ -187,69 +195,43 @@ Everything comes together as CSS custom properties:
 
 ```css
 :root {
-  /* Primary — #6439FF (blue-violet) */
-  --color-primary-50: oklch(0.95 0.03 270);
-  --color-primary-100: oklch(0.91 0.06 270);
-  --color-primary-200: oklch(0.83 0.12 270);
-  --color-primary-300: oklch(0.75 0.18 270);
-  --color-primary-400: oklch(0.67 0.24 270);
-  --color-primary-500: oklch(0.49 0.31 270); /* Base */
-  --color-primary-600: oklch(0.42 0.28 270);
-  --color-primary-700: oklch(0.35 0.24 270);
-  --color-primary-800: oklch(0.28 0.19 270);
-  --color-primary-900: oklch(0.2 0.13 270);
-  --color-primary-950: oklch(0.14 0.08 270);
-  --color-primary-foreground: oklch(1 0 0); /* White text */
-  --color-primary-contrast: oklch(1 0 0);
-  --color-primary-tone-1: oklch(0.49 0.25 270);
-  --color-primary-tone-2: oklch(0.49 0.19 270);
-  --color-primary-tone-3: oklch(0.49 0.12 270);
-  --color-primary-tone-4: oklch(0.49 0.06 270);
-
-  /* Secondary — #FF3964 (red-pink) */
-  --color-secondary-50: oklch(0.95 0.03 9);
-  /* ... full scale ... */
-
-  /* Tertiary — #39FF64 (green) */
-  --color-tertiary-50: oklch(0.95 0.03 149);
-  /* ... full scale ... */
-
-  /* Shadcn UI semantic tokens */
-  --background: oklch(0.99 0.001 270);
-  --foreground: oklch(0.14 0.02 270);
-  --primary: oklch(0.49 0.31 270);
-  --primary-foreground: oklch(1 0 0);
-  /* --card, --muted, --accent, --destructive, etc. */
+  /* Semantic tokens (default output) */
+  --surface: oklch(0.99 0.01 270);
+  --surface-foreground: oklch(0.05 0.025 270);
+  --text-primary: oklch(0.05 0.025 270);
+  --text-secondary: oklch(0.3 0.018 270);
+  --border: oklch(0.85 0.012 270);
+  --accent: oklch(0.49 0.31 270);
+  --accent-foreground: oklch(1 0 0);
 
   /* Typography */
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  /* ... through --text-4xl */
+  --text-xs: 0.512rem;
+  --text-sm: 0.64rem;
+  /* ... through --text-3xl */
 
-  /* Spacing (golden ratio: 1.618) */
+  /* Spacing */
   --spacing-1: 0.25rem;
-  --spacing-2: 0.405rem;
+  --spacing-2: 0.5rem;
   /* ... through --spacing-10 */
+}
 
-  /* Gradients */
-  --gradient-linear-primary: linear-gradient(
-    var(--gradient-direction),
-    oklch(0.49 0.31 270),
-    oklch(0.49 0.31 9)
-  );
-
-  /* Noise texture */
-  --background-image-noise: url("data:image/svg+xml,...");
+.dark {
+  --surface: oklch(0.13 0.01 270);
+  --surface-foreground: oklch(0.95 0.025 270);
+  --text-primary: oklch(0.95 0.025 270);
+  /* ... inverted tokens */
 }
 ```
 
-Dark mode generates a second set under `.dark`:
+With `palette: true`, you also get the full scales:
 
 ```css
-.dark {
-  --color-primary-50: oklch(0.17 0.08 270); /* Inverted: dark tints */
-  --color-primary-950: oklch(0.93 0.03 270); /* Inverted: light shades */
-  /* ... */
+:root {
+  --color-primary-50: oklch(0.95 0.03 270);
+  --color-primary-500: oklch(0.49 0.31 270);
+  --color-primary-950: oklch(0.14 0.08 270);
+  --color-primary-foreground: oklch(1 0 0);
+  /* ... all harmony colors */
 }
 ```
 
@@ -262,13 +244,14 @@ Dark mode generates a second set under `.dark`:
 ```
 
 ```html
-<body>
-  <header style="background: var(--color-primary-500); color: var(--color-primary-foreground);">
+<body style="background: var(--surface); color: var(--surface-foreground);">
+  <header style="background: var(--accent); color: var(--accent-foreground);">
     Accessible by default.
   </header>
 
-  <main style="background: var(--color-primary-50);">
-    <p style="color: var(--color-primary-900);">Tints and shades from color theory.</p>
+  <main>
+    <h1 style="color: var(--text-primary);">Heading</h1>
+    <p style="color: var(--text-secondary);">Body text with clear hierarchy.</p>
   </main>
 </body>
 ```
@@ -276,7 +259,7 @@ Dark mode generates a second set under `.dark`:
 With Tailwind:
 
 ```html
-<div class="bg-primary-500 text-primary-foreground">Same thing, utility classes.</div>
+<div class="bg-accent text-accent-foreground">Same thing, utility classes.</div>
 ```
 
 <!-- ASSET: anatomy-step7-themed-ui.png
@@ -293,18 +276,22 @@ With Tailwind:
 ```
 #6439FF
   │
-  ├─ Parse → hsl(249°, 100%, 61%)
+  ├─ Parse → oklch(0.49 0.31 270)
   │
-  ├─ Harmony (triadic) → 3 colors at 249°, 9°, 129°
+  ├─ Harmony (triadic) → 3 colors at 270°, 30°, 150°
   │
   ├─ Expand each → 11 scale steps + 4 tones + foreground + contrast
-  │                = 17 variables × 3 colors = 51 variables
+  │                = 17 variables × 3 colors = 51 palette variables
   │
   ├─ Accessibility → WCAG AAA foreground for every color
   │
-  ├─ Convert → HSL to OKLCH (perceptual uniformity)
+  ├─ Semantic tokens → surfaces, text, borders, accents (~25 tokens)
   │
-  ├─ Generate → CSS variables, Shadcn tokens, typography, spacing
+  ├─ Optional layers:
+  │   ├─ States → hover, active, focus, disabled
+  │   ├─ Elevation → surfaces + multi-layer shadows
+  │   ├─ Effects → filters, glass, blobs, patterns
+  │   └─ Shadcn → Shadcn UI variable aliases
   │
   └─ Output → autotheme.css (light + dark mode)
 ```

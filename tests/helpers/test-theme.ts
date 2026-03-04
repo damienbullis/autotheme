@@ -19,6 +19,8 @@ import {
   DEFAULT_MOTION,
   DEFAULT_STATES,
   DEFAULT_ELEVATION,
+  DEFAULT_PATTERNS,
+  DEFAULT_EFFECTS,
   DEFAULT_SHADCN,
 } from "../../src/config/types";
 import type { HarmonyType } from "../../src/core/types";
@@ -164,6 +166,25 @@ export function createTestTheme(overrides: TestOverrides = {}): GeneratedTheme {
     gradients: overrides.gradients ?? false,
     noise: overrides.noise ?? false,
     utilities: overrides.utilities ?? false,
+    patterns:
+      overrides.patterns === undefined
+        ? false
+        : overrides.patterns === false
+          ? false
+          : {
+              ...DEFAULT_PATTERNS,
+              types: [...DEFAULT_PATTERNS.types],
+              ...(typeof overrides.patterns === "object" ? overrides.patterns : {}),
+            },
+    effects:
+      overrides.effects === undefined
+        ? false
+        : overrides.effects === false
+          ? false
+          : {
+              ...DEFAULT_EFFECTS,
+              ...(typeof overrides.effects === "object" ? overrides.effects : {}),
+            },
     shadcn:
       overrides.shadcn === undefined
         ? false

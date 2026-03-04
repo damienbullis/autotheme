@@ -72,6 +72,11 @@ describe("parseArgs", () => {
     expect(args.semantics).toBe(false);
   });
 
+  it("parses --angles flag", () => {
+    const args = parseArgs(["--angles", "0,72,144,216,288"]);
+    expect(args.angles).toBe("0,72,144,216,288");
+  });
+
   it("unprovided options are undefined", () => {
     const args = parseArgs([]);
 

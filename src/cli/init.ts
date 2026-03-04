@@ -1,12 +1,38 @@
 import prompts from "prompts";
 import { writeFile } from "fs/promises";
 import { HARMONY_META } from "../core/harmony-meta";
-import { DEFAULT_OUTPUT, DEFAULT_PALETTE, DEFAULT_TYPOGRAPHY } from "../config/types";
 import { log } from "./logger";
 
-export async function runInit(skipPrompts: boolean = false): Promise<void> {
-  if (skipPrompts) {
-    await writeDefaultConfig();
+export type FrameworkType = "nextjs" | "astro" | "nuxt" | "sveltekit" | "vanilla";
+
+export const FRAMEWORK_DEFAULTS: Record<
+  FrameworkType,
+  { shadcn?: boolean; output: { path: string; tailwind?: boolean } }
+> = {
+  nextjs: { shadcn: true, output: { path: "./src/app/autotheme.css", tailwind: true } },
+  astro: { output: { path: "./src/styles/autotheme.css", tailwind: true } },
+  nuxt: { output: { path: "./assets/css/autotheme.css", tailwind: true } },
+  sveltekit: { output: { path: "./src/autotheme.css", tailwind: true } },
+  vanilla: { output: { path: "./autotheme.css" } },
+};
+
+const FRAMEWORK_GUIDE: Record<FrameworkType, string> = {
+  nextjs: "docs/guides/nextjs.md",
+  astro: "docs/guides/astro.md",
+  nuxt: "docs/guides/nuxt.md",
+  sveltekit: "docs/guides/sveltekit.md",
+  vanilla: "docs/guides/vanilla.md",
+};
+
+export interface InitOptions {
+  skipPrompts?: boolean;
+  framework?: FrameworkType;
+}
+
+export async function runInit(options: InitOptions = {}): Promise<void> {
+  if (options.skipPrompts) {
+    const framework = options.framework ?? "vanilla";
+    await writeDefaultConfig(framework);
     return;
   }
 
@@ -30,36 +56,26 @@ export async function runInit(skipPrompts: boolean = false): Promise<void> {
       initial: 1, // analogous
     },
     {
-      type: "text",
-      name: "outputPath",
-      message: "Output path:",
-      initial: DEFAULT_OUTPUT.path,
+      type: "select",
+      name: "framework",
+      message: "Framework:",
+      choices: [
+        { title: "Next.js", value: "nextjs" },
+        { title: "Astro", value: "astro" },
+        { title: "Nuxt", value: "nuxt" },
+        { title: "SvelteKit", value: "sveltekit" },
+        { title: "Vanilla / Other", value: "vanilla" },
+      ],
     },
     {
-      type: "text",
-      name: "prefix",
-      message: "CSS variable prefix:",
-      initial: DEFAULT_PALETTE.prefix,
-    },
-    {
-      type: "number",
-      name: "fontSize",
-      message: "Base font size (rem):",
-      initial: DEFAULT_TYPOGRAPHY.base,
-      float: true,
-      min: 0.1,
-    },
-    {
-      type: "confirm",
-      name: "preview",
-      message: "Generate HTML preview?",
-      initial: false,
-    },
-    {
-      type: "confirm",
-      name: "tailwind",
-      message: "Generate Tailwind v4 CSS?",
-      initial: false,
+      type: "select",
+      name: "mode",
+      message: "Theme mode:",
+      choices: [
+        { title: "Both (light + dark)", value: "both" },
+        { title: "Light only", value: "light" },
+        { title: "Dark only", value: "dark" },
+      ],
     },
   ]);
 
@@ -68,21 +84,42 @@ export async function runInit(skipPrompts: boolean = false): Promise<void> {
     return;
   }
 
-  await writeConfig({
+  const framework = (response.framework ?? "vanilla") as FrameworkType;
+  const defaults = FRAMEWORK_DEFAULTS[framework];
+
+  // Conditional follow-up: Shadcn for Next.js
+  let shadcn = defaults.shadcn;
+  if (framework === "nextjs") {
+    const shadcnResponse = await prompts({
+      type: "confirm",
+      name: "shadcn",
+      message: "Enable Shadcn UI variables?",
+      initial: true,
+    });
+    shadcn = shadcnResponse.shadcn;
+  }
+
+  const config: Record<string, unknown> = {
     color: response.color,
     harmony: response.harmony,
-    palette: {
-      prefix: response.prefix,
-    },
-    typography: {
-      base: response.fontSize,
-    },
-    output: {
-      path: response.outputPath,
-      preview: response.preview,
-      tailwind: response.tailwind,
-    },
-  });
+    mode: response.mode,
+  };
+
+  if (shadcn) {
+    config.shadcn = true;
+  }
+
+  config.output = { ...defaults.output };
+
+  await writeConfig(config);
+  printNextSteps(framework);
+}
+
+function printNextSteps(framework: FrameworkType): void {
+  log.dim("");
+  log.info("Next steps:");
+  log.dim("  npx autotheme");
+  log.dim(`  See: ${FRAMEWORK_GUIDE[framework]}`);
 }
 
 async function writeConfig(config: Record<string, unknown>): Promise<void> {
@@ -95,14 +132,21 @@ async function writeConfig(config: Record<string, unknown>): Promise<void> {
   log.success("Created autotheme.json");
 }
 
-async function writeDefaultConfig(): Promise<void> {
-  await writeConfig({
+async function writeDefaultConfig(framework: FrameworkType): Promise<void> {
+  const defaults = FRAMEWORK_DEFAULTS[framework];
+  const config: Record<string, unknown> = {
     color: "#6439FF",
     harmony: "analogous",
-    output: {
-      path: DEFAULT_OUTPUT.path,
-    },
-  });
+    mode: "both",
+    output: { ...defaults.output },
+  };
+
+  if (defaults.shadcn) {
+    config.shadcn = true;
+  }
+
+  await writeConfig(config);
+  printNextSteps(framework);
 }
 
 function validateColorInput(value: string): boolean | string {

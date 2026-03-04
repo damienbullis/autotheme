@@ -38,7 +38,9 @@ export type HarmonyType =
   | "rectangle"
   | "aurelian"
   | "bi-polar"
-  | "retrograde";
+  | "retrograde"
+  | "monochromatic"
+  | "double-split-complementary";
 
 /** Swing strategy for adjusting harmony angular distances */
 export type SwingStrategy = "linear" | "exponential" | "alternating";
@@ -57,6 +59,7 @@ export type HarmonyOffsetFn = (index: number) => number;
 export interface HarmonyDefinition {
   count: number;
   offset: HarmonyOffsetFn;
+  generate?: (primary: Color, options?: HarmonyOptions) => Color[];
 }
 
 /** Result of generating a color harmony */

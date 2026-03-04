@@ -164,6 +164,7 @@ class AutoThemeApp {
       gradients: true,
       noise: true,
       utilities: true,
+      patterns: false,
       semantics: this.state.semanticsEnabled ? { ...DEFAULT_SEMANTICS } : false,
       states: this.state.statesEnabled
         ? {
@@ -177,6 +178,7 @@ class AutoThemeApp {
         ? { levels: 4, delta: 0.03, tintShadows: true }
         : false,
       motion: false,
+      effects: false,
       shadcn: this.state.shadcnEnabled ? { ...DEFAULT_SHADCN } : false,
       output: {
         ...DEFAULT_OUTPUT,
@@ -210,21 +212,22 @@ class AutoThemeApp {
       this.semanticsPanel.update(null);
     }
 
-    // Update framework panel
-    if (this.state.shadcnEnabled) {
-      const mapping: Record<string, string> = {
-        background: "var(--surface)",
-        foreground: "var(--text-1)",
-        primary: "var(--accent)",
-        secondary: "var(--accent-secondary)",
-        muted: "var(--surface-sunken)",
-        accent: "var(--accent-subtle)",
-        border: "var(--border)",
-      };
-      this.frameworkPanel.update(mapping);
-    } else {
-      this.frameworkPanel.update(null);
-    }
+    // Update framework panel (always visible)
+    const shadcnMapping = this.state.shadcnEnabled
+      ? {
+          background: "var(--surface)",
+          foreground: "var(--text-1)",
+          primary: "var(--accent)",
+          secondary: "var(--accent-secondary)",
+          muted: "var(--surface-sunken)",
+          accent: "var(--accent-subtle)",
+          border: "var(--border)",
+        }
+      : null;
+    this.frameworkPanel.update({
+      shadcnMapping,
+      shadcnEnabled: this.state.shadcnEnabled,
+    });
   }
 
   private applyThemeToDOM(palette: FullPalette): void {

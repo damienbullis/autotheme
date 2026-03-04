@@ -2,29 +2,31 @@
 
 AutoTheme generates a complete CSS design system from a single color. This document covers every feature in detail.
 
-## Architecture: Three Layers
+## Architecture: Semantic-First
 
-AutoTheme outputs CSS in three layers. Each builds on the one below it.
+AutoTheme defaults to semantic tokens — meaningful design tokens derived from your color, not raw palette scales. The full 50–950 palette is available via `palette: true` but most projects only need semantics.
 
 ```
-Layer 1: Raw Palette (always emitted)
-  --color-primary-50 through -950, tones, foreground, contrast
-  Per-harmony-color scales in Tailwind v4 naming convention
+Default output (~25 tokens):
+  Surfaces, text hierarchy, borders, accents, error
+  Typography, spacing, gradients, noise
 
-Layer 2: Semantic Tokens (always emitted)
-  --surface, --primary-container, --accent, --outline, etc.
-  Design-intent tokens derived from the raw palette
-
-Layer 3: Shadcn UI Extras (when shadcn: true)
-  --card, --popover, --sidebar-*, --chart-*, --ring, --input, --border, --radius
-  Thin alias layer consuming Layer 2 values
+Full output (opt-in features):
+  + Palette scales (50-950 per harmony color)
+  + States (hover, active, focus, disabled)
+  + Elevation (surfaces + multi-layer shadows)
+  + Shadows, radius, motion scales
+  + Shadcn UI variables
+  + Visual effects (filters, glass, blobs, patterns, blend modes)
 ```
 
 ---
 
-## Color Palette (Layer 1)
+## Color Palette
 
-Every color in the harmony gets a full scale. For a triadic harmony (3 colors), that's `primary`, `secondary`, and `tertiary`.
+**Config:** `palette: boolean | PaletteConfig` (default: `false`)
+
+When enabled, every harmony color gets a full scale. For a triadic harmony (3 colors), that's `primary`, `secondary`, and `tertiary`.
 
 ### Per-Color Variables
 
@@ -49,9 +51,11 @@ That's **17 variables per harmony color**. A 4-color harmony produces 68 palette
 
 ### How Scales Are Built
 
-- **Tints** (50-400): Lightness increased in 10% steps from base
-- **Shades** (600-950): Lightness decreased in 10% steps from base
-- **Tones** (tone-1..4): Saturation decreased in 20% steps from base
+All scale generation uses OKLCH lightness for perceptual uniformity:
+
+- **Tints** (50–400): Lightness increased in configurable steps from base
+- **Shades** (600–950): Lightness decreased in configurable steps from base
+- **Tones** (tone-1..4): Chroma decreased in configurable steps from base
 - **Foreground**: Best-effort WCAG AAA (7:1) text color via `findAccessibleTextColor()`
 - **Contrast**: Light or dark color preserving the base hue
 
@@ -64,135 +68,356 @@ autotheme --prefix "at"
 # produces --at-primary-500, --at-secondary-200, etc.
 ```
 
-When using Tailwind output with a custom prefix, `--color-*` aliases are auto-generated so Tailwind utilities like `bg-primary-500` still work.
+---
+
+## Semantic Tokens
+
+**Config:** `semantics: boolean | SemanticsConfig` (default: `true`)
+
+Semantic tokens give meaning to colors. Instead of raw palette values, you use tokens like `--surface`, `--text-primary`, or `--accent`.
+
+### Depth Abstraction
+
+The core concept is **depth** — a single parameter (default `0.13`) that controls how tinted the surface layer is. From depth and the primary hue, AutoTheme derives:
+
+- Surface lightness (higher depth = more contrast between surface and background)
+- Text hierarchy (primary → secondary → tertiary with decreasing contrast)
+- Border weights (subtle → default → strong)
+
+In dark mode, depth is inverted (`1 - depth`) so the same config produces appropriate dark surfaces.
+
+### Surfaces
+
+| Variable               | Description                               |
+| ---------------------- | ----------------------------------------- |
+| `--surface`            | Page background — tinted neutral at depth |
+| `--surface-foreground` | Accessible text on surface                |
+| `--surface-sunken`     | Recessed area (depth − sunkenDelta)       |
+| `--surface-raised`     | Elevated area (depth + sunkenDelta)       |
+
+All surfaces carry the primary hue at very low chroma (configurable), giving a warm/cool tint.
+
+### Text Hierarchy
+
+| Variable           | Description                    |
+| ------------------ | ------------------------------ |
+| `--text-primary`   | Highest contrast text (anchor) |
+| `--text-secondary` | Medium contrast text           |
+| `--text-tertiary`  | Subtle/muted text              |
+
+Text levels use a configurable curve from anchor (default 0.95) to floor (default 0.55) lightness, with low chroma from the primary hue.
+
+### Borders
+
+| Variable          | Description                        |
+| ----------------- | ---------------------------------- |
+| `--border`        | Default border                     |
+| `--border-subtle` | Lighter border for dividers        |
+| `--border-strong` | Stronger border for focus/emphasis |
+
+### Accent Roles
+
+| Variable                 | Source                                       |
+| ------------------------ | -------------------------------------------- |
+| `--accent`               | Mapped from harmony color (default: primary) |
+| `--accent-foreground`    | Accessible text on accent                    |
+| `--secondary`            | Second harmony color                         |
+| `--secondary-foreground` | Accessible text on secondary                 |
+| `--tertiary`             | Third harmony color                          |
+| `--tertiary-foreground`  | Accessible text on tertiary                  |
+
+The mapping is configurable via `semantics.mapping`:
+
+```json
+{ "accent": "primary", "secondary": "secondary", "tertiary": "tertiary" }
+```
+
+### Tinted Surfaces
+
+Each accent color also gets a tinted surface variant for soft backgrounds:
+
+```
+--primary-surface / --primary-surface-foreground
+--secondary-surface / --secondary-surface-foreground
+--tertiary-surface / --tertiary-surface-foreground
+--error-surface / --error-surface-foreground
+```
+
+### Dark Mode
+
+Systematic inversion from the same configuration:
+
+- Depth is inverted (`1 - depth`), so light surfaces become dark surfaces
+- Text hierarchy lightness is flipped
+- All foreground colors recalculated for contrast on dark backgrounds
+- Same chroma values maintain color temperature
 
 ---
 
-## Semantic Tokens (Layer 2)
+## States
 
-Semantic tokens give meaning to colors. Instead of guessing which of 68 palette variables to use, you use tokens like `--surface`, `--primary-container`, or `--accent`.
+**Config:** `states: boolean | StatesConfig` (default: `false`)
 
-**Always emitted** regardless of the `shadcn` config flag.
+Universal modifier tokens for interactive states. Instead of per-component state colors, you get composable deltas:
 
-### Surface System
+| Variable                   | Description                        |
+| -------------------------- | ---------------------------------- |
+| `--state-hover`            | Lightness delta for hover          |
+| `--state-active`           | Lightness delta for active/pressed |
+| `--state-disabled-opacity` | Opacity for disabled elements      |
+| `--focus-ring-color`       | Focus ring color (default: accent) |
+| `--focus-ring-width`       | Focus ring width                   |
+| `--focus-ring-offset`      | Focus ring offset                  |
 
-| Variable                         | Light Mode                   | Dark Mode                  |
-| -------------------------------- | ---------------------------- | -------------------------- |
-| `--surface`                      | Primary tint[4] (lightest)   | Fixed low lightness (L=10) |
-| `--surface-foreground`           | Accessible text on surface   | Accessible text on surface |
-| `--surface-dim`                  | Primary tint[3]              | Very dark (L=6)            |
-| `--surface-bright`               | Near-white, low saturation   | Slightly elevated (L=22)   |
-| `--surface-container`            | Tint[4] slightly desaturated | Dark neutral (L=14)        |
-| `--surface-container-foreground` | Accessible text              | Accessible text            |
-| `--surface-container-high`       | Tint[3] desaturated          | Elevated dark (L=18)       |
-| `--surface-container-low`        | Tint[4] more desaturated     | Recessed dark (L=8)        |
+### Usage with OKLCH
 
-### Color Roles
+States compose with any color using relative color syntax:
 
-Each role follows the same pattern: base color, foreground text, container (soft background), and container foreground.
+```css
+.button:hover {
+  background: oklch(from var(--accent) calc(l + var(--state-hover)) c h);
+}
 
-| Variable Pattern                                         | Source                                                      |
-| -------------------------------------------------------- | ----------------------------------------------------------- |
-| `--primary` / `--primary-foreground`                     | harmony[0] base color                                       |
-| `--primary-container` / `--primary-container-foreground` | Lightened, desaturated tint of primary                      |
-| `--secondary` / `--secondary-*`                          | **Real harmony[1] color** (not a lightened primary)         |
-| `--tertiary` / `--tertiary-*`                            | harmony[2], or primary rotated 120deg for 2-color harmonies |
-| `--accent` / `--accent-*`                                | Most hue-distant harmony color from primary                 |
+.button:active {
+  background: oklch(from var(--accent) calc(l + var(--state-active)) c h);
+}
 
-### Harmony-to-Semantic Mapping
+.button:disabled {
+  opacity: var(--state-disabled-opacity);
+}
+```
 
-| Harmony Colors         | `--primary` | `--secondary` | `--tertiary`           | `--accent`       |
-| ---------------------- | ----------- | ------------- | ---------------------- | ---------------- |
-| 2 (e.g. complementary) | harmony[0]  | harmony[1]    | primary.rotate(120deg) | harmony[1]       |
-| 3 (e.g. triadic)       | harmony[0]  | harmony[1]    | harmony[2]             | most hue-distant |
-| 4 (e.g. square)        | harmony[0]  | harmony[1]    | harmony[2]             | harmony[3]       |
-
-### Other Semantic Tokens
-
-| Variable                       | Description                          |
-| ------------------------------ | ------------------------------------ |
-| `--muted`                      | Primary tone-2 (desaturated)         |
-| `--muted-foreground`           | Accessible text on muted             |
-| `--muted-container`            | Primary tone-3 (more desaturated)    |
-| `--error`                      | Independent red/danger color         |
-| `--error-foreground`           | Accessible text on error             |
-| `--error-container`            | Soft red background                  |
-| `--error-container-foreground` | Accessible text on error container   |
-| `--outline`                    | Default border color                 |
-| `--outline-variant`            | Subtle border color                  |
-| `--inverse-surface`            | Dark surface for tooltips/snackbars  |
-| `--inverse-surface-foreground` | Text on inverse surface              |
-| `--inverse-primary`            | Primary variant for inverse contexts |
-
-### Dark Mode Strategy
-
-Systematic inversion from the same palette:
-
-- Light surfaces (tints) become dark surfaces (fixed low lightness)
-- Base colors lightened +10% for visibility on dark backgrounds
-- Containers use deep shades (D4) with heavy desaturation for AAA contrast
-- All `-foreground` colors recalculated via `findAccessibleTextColor()`
-- Outline colors shifted to lower lightness range
+In dark mode, hover delta direction is inverted (lightens instead of darkens).
 
 ---
 
-## Shadcn UI Integration (Layer 3)
+## Elevation
 
-**Config:** `shadcn: boolean` (default: `true`)
+**Config:** `elevation: boolean | ElevationConfig` (default: `false`)
 
-When enabled, emits Shadcn UI compatible variables that alias semantic tokens. This means Shadcn components work with real harmony colors instead of generic grays.
+Each elevation level (1–N, default 4 levels) produces two tokens:
 
-### Variable Mapping
+| Variable                 | Description                        |
+| ------------------------ | ---------------------------------- |
+| `--elevation-{N}`        | Surface color at elevation level N |
+| `--elevation-{N}-shadow` | Multi-layer box shadow at level N  |
 
-| Shadcn Variable            | Derived From                                                  |
-| -------------------------- | ------------------------------------------------------------- |
-| `--background`             | `semantic.surface`                                            |
-| `--foreground`             | `semantic.surfaceForeground`                                  |
-| `--primary`                | `semantic.primary`                                            |
-| `--primary-foreground`     | `semantic.primaryForeground`                                  |
-| `--secondary`              | `semantic.secondaryContainer` (soft bg for shadcn convention) |
-| `--secondary-foreground`   | `semantic.secondaryContainerForeground`                       |
-| `--muted`                  | `semantic.mutedContainer`                                     |
-| `--muted-foreground`       | `semantic.mutedForeground`                                    |
-| `--accent`                 | `semantic.accentContainer`                                    |
-| `--accent-foreground`      | `semantic.accentContainerForeground`                          |
-| `--destructive`            | `semantic.error`                                              |
-| `--destructive-foreground` | `semantic.errorForeground`                                    |
-| `--border`                 | `semantic.outlineVariant`                                     |
-| `--input`                  | `semantic.outline`                                            |
-| `--ring`                   | `semantic.primary`                                            |
-| `--card`                   | `semantic.surfaceContainer`                                   |
-| `--card-foreground`        | Accessible text on card                                       |
-| `--popover`                | `semantic.surfaceContainer`                                   |
-| `--popover-foreground`     | Accessible text on popover                                    |
-| `--radius`                 | Config value (default `0.625rem`)                             |
+### How It Works
 
-### Chart Colors
+- **Light mode (card model)**: Surfaces are near-white; shadows create the depth perception
+- **Dark mode**: Surfaces get progressively lighter with each level; shadows are subtle
+- Shadow layers scale with level (1 layer at level 1, up to 3 at higher levels)
+- When `tintShadows` is enabled (default), shadow colors carry the primary hue at low chroma
 
-Derived directly from harmony colors (not from semantic layer):
+### Usage
 
-| Variable    | Source                               |
-| ----------- | ------------------------------------ |
-| `--chart-1` | harmony[0] (primary)                 |
-| `--chart-2` | harmony[1] or primary.rotate(60deg)  |
-| `--chart-3` | harmony[2] or primary.rotate(120deg) |
-| `--chart-4` | harmony[3] or primary.rotate(180deg) |
-| `--chart-5` | harmony[4] or primary.rotate(240deg) |
+```css
+.card {
+  background: var(--elevation-1);
+  box-shadow: var(--elevation-1-shadow);
+}
 
-In dark mode, chart colors are lightened by 5% for visibility.
+.modal {
+  background: var(--elevation-3);
+  box-shadow: var(--elevation-3-shadow);
+}
+```
 
-### Sidebar Colors
+---
 
-| Variable                       | Source                                                             |
-| ------------------------------ | ------------------------------------------------------------------ |
-| `--sidebar`                    | `semantic.surfaceContainerLow` (light) / `semantic.surface` (dark) |
-| `--sidebar-foreground`         | Accessible text on sidebar                                         |
-| `--sidebar-primary`            | `semantic.primary`                                                 |
-| `--sidebar-primary-foreground` | `semantic.primaryForeground`                                       |
-| `--sidebar-accent`             | `semantic.accentContainer`                                         |
-| `--sidebar-accent-foreground`  | `semantic.accentContainerForeground`                               |
-| `--sidebar-border`             | `semantic.outlineVariant`                                          |
-| `--sidebar-ring`               | `semantic.primary`                                                 |
+## Shadow Scale
+
+**Config:** `shadows: boolean | ShadowConfig` (default: `false`)
+
+Exponential shadow scale independent of the elevation system:
+
+| Variable     | Description     |
+| ------------ | --------------- |
+| `--shadow-1` | Smallest shadow |
+| `--shadow-2` | Small shadow    |
+| `--shadow-3` | Medium shadow   |
+| `--shadow-4` | Large shadow    |
+| `--shadow-5` | Largest shadow  |
+
+Each level doubles blur and offset from the base. Shadow colors can be tinted with the primary hue.
+
+---
+
+## Border Radius Scale
+
+**Config:** `radius: boolean | RadiusConfig` (default: `false`)
+
+Exponential radius scale:
+
+| Variable     | Description     |
+| ------------ | --------------- |
+| `--radius-1` | Smallest radius |
+| `--radius-2` | ...             |
+| `--radius-N` | Largest radius  |
+
+---
+
+## Motion Tokens
+
+**Config:** `motion: boolean | MotionConfig` (default: `false`)
+
+### Duration Scale
+
+Exponential duration steps from a base value:
+
+| Variable       | Description    |
+| -------------- | -------------- |
+| `--duration-1` | Fastest (base) |
+| `--duration-N` | Slowest        |
+
+### Spring Physics
+
+Spring easing tokens derived from stiffness, damping, and mass parameters:
+
+```css
+--spring-ease: linear(...); /* CSS linear() approximation of spring curve */
+```
+
+### Reduced Motion
+
+When `reducedMotion` is enabled (default), outputs a `prefers-reduced-motion` media query that sets all durations to near-zero.
+
+---
+
+## Visual Effects
+
+**Config:** `effects: boolean | EffectsConfig` (default: `false`)
+
+All visual effects are theme-derived — colors come from the harmony palette, not arbitrary values.
+
+### Filters
+
+```
+--filter-grain     # SVG feTurbulence noise overlay
+--filter-glow      # Blur + brightness glow effect
+--filter-duotone   # feColorMatrix duotone mapping
+```
+
+Individual filters can be disabled: `effects: { filters: { grain: false } }`.
+
+### Glass (Glassmorphism)
+
+```css
+.glass {
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  background: oklch(from var(--glass-color) l c h / var(--glass-opacity));
+}
+```
+
+Colors default to primary and secondary harmony colors.
+
+### Blobs
+
+Organic SVG shapes using seeded PRNG and bezier curves. Generates `--blob-1` through `--blob-N` as SVG data URLs.
+
+### Patterns
+
+SVG background patterns:
+
+| Pattern Type         | Description          |
+| -------------------- | -------------------- |
+| `stripes-diagonal`   | 45° diagonal stripes |
+| `stripes-horizontal` | Horizontal stripes   |
+| `stripes-vertical`   | Vertical stripes     |
+| `dots`               | Dot grid             |
+| `crosshatch`         | Crosshatch pattern   |
+
+Density: `sm`, `md`, `lg`. All pattern colors come from the harmony palette.
+
+### Blend Modes
+
+CSS variables and utility classes for compositing:
+
+```css
+.blend-multiply {
+  mix-blend-mode: multiply;
+}
+.blend-screen {
+  mix-blend-mode: screen;
+}
+.blend-overlay {
+  mix-blend-mode: overlay;
+}
+```
+
+Default modes: multiply, screen, overlay, soft-light.
+
+### Stack
+
+Layer stacking variables for z-index and compositing management.
+
+---
+
+## Accessibility
+
+### Accessible Foreground Colors
+
+Every color AutoTheme generates comes with a `foreground` variable — a text color that meets **WCAG AAA** (7:1 contrast ratio) against that background. The default target is 7:1. Configure via `palette.contrastTarget`.
+
+### Contrast Checking
+
+```bash
+autotheme --color "#6439FF" --check-contrast aaa
+```
+
+Programmatically: `checkContrast()` validates token pairs against WCAG levels and returns a report.
+
+### Contrast Fixing
+
+`fixContrast()` adjusts colors that fail contrast requirements by modifying OKLCH lightness while preserving hue and chroma.
+
+### CVD Simulation
+
+```typescript
+import { simulateCVD } from "autotheme";
+
+simulateCVD(color, "protanopia"); // No red cones
+simulateCVD(color, "deuteranopia"); // No green cones
+simulateCVD(color, "tritanopia"); // No blue cones
+simulateCVD(color, "achromatopsia"); // No color vision
+```
+
+### P3 Wide Gamut
+
+OKLCH colors are gamut-mapped to sRGB by default. On wide-gamut displays (Display P3), the full chroma range is available.
+
+---
+
+## Shadcn UI Integration
+
+**Config:** `shadcn: boolean | ShadcnConfig` (default: `false`)
+
+Generates Shadcn UI compatible variables derived from semantic tokens:
+
+| Shadcn Variable            | Source                            |
+| -------------------------- | --------------------------------- |
+| `--background`             | Surface                           |
+| `--foreground`             | Surface foreground                |
+| `--primary`                | Accent                            |
+| `--primary-foreground`     | Accent foreground                 |
+| `--secondary`              | Secondary surface (soft bg)       |
+| `--secondary-foreground`   | Secondary surface foreground      |
+| `--muted`                  | Low-chroma surface                |
+| `--muted-foreground`       | Muted text                        |
+| `--accent`                 | Accent surface                    |
+| `--accent-foreground`      | Accent surface foreground         |
+| `--destructive`            | Error color                       |
+| `--destructive-foreground` | Error foreground                  |
+| `--border`                 | Border subtle                     |
+| `--input`                  | Border                            |
+| `--ring`                   | Accent                            |
+| `--card`                   | Elevated surface                  |
+| `--card-foreground`        | Card text                         |
+| `--popover`                | Elevated surface                  |
+| `--popover-foreground`     | Popover text                      |
+| `--radius`                 | Config value (default `0.625rem`) |
+
+Also generates chart colors (1–5) and sidebar colors derived from the palette.
 
 ---
 
@@ -200,30 +425,15 @@ In dark mode, chart colors are lightened by 5% for visibility.
 
 **Config:** `gradients: boolean` (default: `true`)
 
-### CSS Variables
-
 | Variable                       | Value                                             |
 | ------------------------------ | ------------------------------------------------- |
 | `--gradient-direction`         | `to right` (default)                              |
 | `--gradient-linear-secondary`  | Linear gradient from primary-500 to secondary-500 |
 | `--gradient-linear-tertiary`   | Linear gradient from primary-500 to tertiary-500  |
-| `--gradient-linear-quaternary` | (4-color harmonies only)                          |
+| `--gradient-linear-quaternary` | (4+ color harmonies only)                         |
 | `--gradient-linear-rainbow`    | 7-stop OKLCH rainbow gradient                     |
 
 Gradient variables use `var()` references to palette colors, so they update automatically in dark mode.
-
-### Usage
-
-```css
-/* Direct use */
-background: var(--gradient-linear-secondary);
-
-/* Override direction */
-.my-element {
-  --gradient-direction: to bottom;
-  background: var(--gradient-linear-secondary);
-}
-```
 
 ---
 
@@ -231,326 +441,113 @@ background: var(--gradient-linear-secondary);
 
 **Config:** `noise: boolean` (default: `true`)
 
-### What It Is
-
-An inline SVG using `<feTurbulence type="fractalNoise">` with:
-
-- Base frequency: 0.7
-- Octaves: 3
-- Stitch tiles: enabled (seamless tiling)
-
-Encoded as a data URL for zero network requests.
-
-### CSS Variable
+Inline SVG using `<feTurbulence type="fractalNoise">`. Encoded as a data URL for zero network requests.
 
 ```css
 --background-image-noise: url("data:image/svg+xml,...");
-```
-
-### Usage
-
-```css
-/* Direct */
-background-image: var(--background-image-noise);
-
-/* Blended with a surface color */
-background-color: var(--surface);
-background-image: var(--background-image-noise);
-background-blend-mode: soft-light;
 ```
 
 ---
 
 ## Typography Scale
 
-**Config:** `fontSize: number` (default: `1`), `scalar: number` (default: `1.618`)
+**Config:** `typography: boolean | TypographyConfig` (default: `true`)
 
-### CSS Variables
+Exponential scale from a base size using a ratio (default: 1.25):
 
-8 sizes generated using exponential scaling with the golden ratio:
+| Variable     | Description |
+| ------------ | ----------- |
+| `--text-xs`  | Smallest    |
+| `--text-sm`  | Small       |
+| `--text-md`  | Base        |
+| `--text-lg`  | Large       |
+| `--text-xl`  | Extra large |
+| `--text-2xl` | 2x large    |
+| `--text-3xl` | 3x large    |
 
-| Variable     | Default Value | Description     |
-| ------------ | ------------- | --------------- |
-| `--text-xs`  | `1.000rem`    | Base size       |
-| `--text-sm`  | `1.618rem`    | Base x scalar   |
-| `--text-md`  | `2.618rem`    | Base x scalar^2 |
-| `--text-lg`  | `4.236rem`    | Base x scalar^3 |
-| `--text-xl`  | `6.854rem`    | Base x scalar^4 |
-| `--text-2xl` | `11.090rem`   | Base x scalar^5 |
-| `--text-3xl` | `17.944rem`   | Base x scalar^6 |
-| `--text-4xl` | `29.034rem`   | Base x scalar^7 |
-
-### Customization
-
-```bash
-# Smaller base, tighter scale
-autotheme --font-size 0.875 --scalar 1.25
-```
+Supports fluid scaling via CSS `clamp()` when `typography.fluid: true`.
 
 ---
 
 ## Spacing Scale
 
-**Config:** `spacing: boolean` (default: `true`), `scalar: number` (default: `1.618`)
+**Config:** `spacing: boolean | SpacingConfig` (default: `true`)
 
-### CSS Variables
+10 spacing values using exponential scaling (default base: 0.25rem, ratio: 2):
 
-10 spacing values using the same golden ratio scaling:
+| Variable       | Description |
+| -------------- | ----------- |
+| `--spacing-1`  | Smallest    |
+| `--spacing-10` | Largest     |
 
-| Variable       | Default Value        |
-| -------------- | -------------------- |
-| `--spacing-1`  | `0.155rem` (~2.5px)  |
-| `--spacing-2`  | `0.251rem` (~4px)    |
-| `--spacing-3`  | `0.406rem` (~6.5px)  |
-| `--spacing-4`  | `0.657rem` (~10.5px) |
-| `--spacing-5`  | `1.062rem` (~17px)   |
-| `--spacing-6`  | `1.720rem` (~27.5px) |
-| `--spacing-7`  | `2.782rem` (~44.5px) |
-| `--spacing-8`  | `4.502rem` (~72px)   |
-| `--spacing-9`  | `7.284rem` (~116px)  |
-| `--spacing-10` | `11.786rem` (~188px) |
-
----
-
-## Utility Classes
-
-**Config:** `utilities: boolean` (default: `true`)
-
-### Gradient Utilities
-
-```css
-.gradient-linear {
-  background-image: linear-gradient(var(--gradient-direction, to right), var(--gradient-stops));
-}
-
-.gradient-radial {
-  background-image: radial-gradient(
-    var(--gradient-scale, 100% 100%) at var(--gradient-position, 50% 50%),
-    var(--gradient-stops)
-  );
-}
-```
-
-Customizable via `--gradient-from`, `--gradient-to`, `--gradient-from-position`, `--gradient-to-position`, `--gradient-scale`, `--gradient-position`.
-
-### Noise Utilities
-
-```css
-.bg-noise {
-  background-image: var(--background-image-noise);
-}
-
-.bg-noise-overlay {
-  position: relative;
-}
-.bg-noise-overlay::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: var(--background-image-noise);
-  opacity: 0.1;
-  pointer-events: none;
-}
-```
-
-### Semantic Surface Utilities
-
-```css
-.surface {
-  background-color: var(--surface);
-  color: var(--surface-foreground);
-}
-
-.surface-container {
-  background-color: var(--surface-container);
-  color: var(--surface-container-foreground);
-}
-
-.primary-surface {
-  background-color: var(--primary-container);
-  color: var(--primary-container-foreground);
-}
-
-.accent-surface {
-  background-color: var(--accent-container);
-  color: var(--accent-container-foreground);
-}
-
-.gradient-surface {
-  background: linear-gradient(
-    var(--gradient-direction, to bottom),
-    var(--surface),
-    var(--surface-dim)
-  );
-  color: var(--surface-foreground);
-}
-
-.gradient-accent-surface {
-  background: linear-gradient(135deg, var(--primary-container), var(--accent-container));
-  color: var(--primary-container-foreground);
-}
-
-.surface-noise {
-  background-color: var(--surface);
-  background-image: var(--background-image-noise);
-  background-blend-mode: soft-light;
-  color: var(--surface-foreground);
-}
-```
+Supports fluid scaling via CSS `clamp()` when `spacing.fluid: true`.
 
 ---
 
 ## Dark Mode
 
-### How It Works
+Dark mode activates with the `.dark` class on the root `<html>` element. AutoTheme generates overrides for all enabled features:
 
-Dark mode activates with the `.dark` class on the root `<html>` element. Three layers of dark overrides are emitted:
+1. **Semantic tokens**: Depth inverted, surfaces darkened, text lightened
+2. **Palette** (when enabled): Foreground and contrast colors recalculated
+3. **Elevation**: Surfaces lighten per level, shadows soften
+4. **Shadcn** (when enabled): All Shadcn variables re-derived from dark semantics
+5. **States**: Hover delta direction inverted
 
-1. **Raw palette** (`.dark`): Overrides `--color-{name}-foreground` and `--color-{name}-contrast` for each harmony color
-2. **Semantic tokens** (`.dark`): Full set of inverted semantic variables (surfaces, containers, outlines, etc.)
-3. **Shadcn variables** (`.dark`): Shadcn-specific dark overrides derived from semantic dark tokens
-
-### Dark Mode Script
-
-**Config:** `darkModeScript: boolean` (default: `false`)
-
-Generates a `darkmode.js` file that should be placed in `<head>` to prevent FOUC:
-
-```html
-<script src="/darkmode.js"></script>
-```
-
-**Features:**
-
-- Reads `localStorage.getItem("darkMode")` on load
-- Falls back to `window.matchMedia("(prefers-color-scheme: dark)")`
-- Listens for OS preference changes
-- Exposes `window.toggleDarkMode()` that toggles, persists, and returns state
+The dark mode script (`darkmode.js`) handles system preference detection, localStorage persistence, and FOUC prevention.
 
 ---
 
 ## Tailwind v4 Integration
 
-**Config:** `tailwind: boolean` (default: `false`)
+**Config:** `output.tailwind: boolean` (default: `false`)
 
-Generates a `.tailwind.css` file containing:
-
-### 1. All CSS Variables
-
-The full output from `generateCSS()` (all three layers + palette + typography + spacing + gradients + noise).
-
-### 2. `@theme` Directive
-
-Maps all tokens to Tailwind's token system so utility classes work:
+Generates Tailwind v4 CSS with `@theme` directives that map all tokens to Tailwind's utility system:
 
 ```css
 @theme {
-  /* Semantic tokens */
   --color-surface: var(--surface);
-  --color-surface-foreground: var(--surface-foreground);
-  --color-primary-container: var(--primary-container);
-  --color-error: var(--error);
-  --color-outline: var(--outline);
-  --color-inverse-surface: var(--inverse-surface);
-  /* ...all semantic tokens */
-
-  /* Shadcn (when enabled) */
-  --color-background: var(--background);
-  --color-card: var(--card);
-  --color-destructive: var(--destructive);
-  /* ...all shadcn tokens */
-
-  /* Radius */
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-
-  /* Typography + Spacing */
-  --text-xs: ...;
-  --spacing-1: ...;
+  --color-accent: var(--accent);
+  --color-primary-500: var(--color-primary-500);
+  /* ...all enabled tokens */
 }
 ```
 
-This enables classes like:
-
-```html
-<div class="bg-surface text-surface-foreground">
-  <div class="bg-primary-container text-primary-container-foreground">
-    <div class="bg-error text-error-foreground">
-      <div class="border-outline-variant"></div>
-    </div>
-  </div>
-</div>
-```
-
-### 3. Custom `@utility` Directives
-
-```css
-@utility radial-position-* {
-  --gradient-position: *;
-}
-@utility radial-scale-* {
-  --gradient-scale: *;
-}
-@utility gradient-from-* {
-  --gradient-from: *;
-}
-@utility gradient-to-* {
-  --gradient-to: *;
-}
-```
+This enables classes like `bg-surface`, `text-accent-foreground`, `bg-primary-500`, etc.
 
 ---
 
 ## HTML Preview
 
-**Config:** `preview: boolean` (default: `false`)
+**Config:** `output.preview: boolean` (default: `false`)
 
-Generates a `.preview.html` file — a self-contained page that visualizes the entire theme.
-
-### Sections
-
-1. **Semantic Tokens** — Grid of color boxes for surfaces, primary/secondary/tertiary/accent (base + container), muted, error, outline, and inverse
-2. **Color Palette** — Full swatches per harmony color: base (500), tints (50-400), shades (600-950), tones (T1-T4), with foreground text
-3. **Gradients** — Linear gradients to each harmony color, rainbow, and radial example
-4. **Noise** — Visual preview of the noise texture
-5. **Typography Scale** — All 8 sizes rendered with sample text
-
-Includes a dark mode toggle button (top-right) that toggles the `.dark` class in real time.
-
----
-
-## Accessibility
-
-AutoTheme targets **WCAG AAA** (7:1 contrast ratio) for all foreground colors by default.
-
-- `findAccessibleTextColor()` tests achromatic colors (black through white) to find the best contrast
-- Surfaces and containers are designed at lightness extremes to guarantee AAA compliance
-- Base colors (primary, secondary, etc.) achieve best-effort contrast — typically AA (4.5:1) or better, depending on the color's inherent lightness
-- The `contrastTarget` option (default: `7`) controls the target ratio. Set to `4.5` for AA, `3` for large text
+Generates a self-contained HTML file visualizing the entire theme — semantic tokens, palette scales, gradients, noise, and typography. Includes a dark mode toggle.
 
 ---
 
 ## Configuration Reference
 
-| Option           | Type      | Default                 | CLI Flag             | Description                       |
-| ---------------- | --------- | ----------------------- | -------------------- | --------------------------------- |
-| `color`          | `string`  | random                  | `--color`, `-c`      | Primary color (hex, rgb, hsl)     |
-| `harmony`        | `string`  | `"analogous"`           | `--harmony`, `-a`    | Color harmony type                |
-| `output`         | `string`  | `"./src/autotheme.css"` | `--output`, `-o`     | Output file path                  |
-| `prefix`         | `string`  | `"color"`               | `--prefix`           | CSS variable prefix               |
-| `fontSize`       | `number`  | `1`                     | `--font-size`        | Base font size in rem             |
-| `scalar`         | `number`  | `1.618`                 |                      | Golden ratio multiplier           |
-| `contrastTarget` | `number`  | `7`                     |                      | WCAG contrast ratio target (3-21) |
-| `radius`         | `string`  | `"0.625rem"`            |                      | Shadcn border radius              |
-| `preview`        | `boolean` | `false`                 | `--preview`          | Generate HTML preview             |
-| `tailwind`       | `boolean` | `false`                 | `--tailwind`         | Generate Tailwind v4 CSS          |
-| `darkModeScript` | `boolean` | `false`                 | `--dark-mode-script` | Generate dark mode script         |
-| `gradients`      | `boolean` | `true`                  | `--no-gradients`     | Gradient variables                |
-| `spacing`        | `boolean` | `true`                  | `--no-spacing`       | Spacing scale                     |
-| `noise`          | `boolean` | `true`                  | `--no-noise`         | Noise texture                     |
-| `shadcn`         | `boolean` | `true`                  | `--no-shadcn`        | Shadcn UI variables               |
-| `utilities`      | `boolean` | `true`                  | `--no-utilities`     | CSS utility classes               |
+| Option       | Type                | Default       | Description                           |
+| ------------ | ------------------- | ------------- | ------------------------------------- |
+| `color`      | `string`            | random        | Primary color (hex, rgb, hsl, oklch)  |
+| `harmony`    | `string`            | `"analogous"` | Harmony type (12 built-in + custom)   |
+| `mode`       | `string`            | `"both"`      | `"light"`, `"dark"`, or `"both"`      |
+| `palette`    | `boolean \| object` | `false`       | Full 50-950 palette scale             |
+| `semantics`  | `boolean \| object` | `true`        | Semantic tokens                       |
+| `states`     | `boolean \| object` | `false`       | Interactive state tokens              |
+| `elevation`  | `boolean \| object` | `false`       | Elevation system                      |
+| `typography` | `boolean \| object` | `true`        | Typography scale                      |
+| `spacing`    | `boolean \| object` | `true`        | Spacing scale                         |
+| `shadows`    | `boolean \| object` | `false`       | Shadow scale                          |
+| `radius`     | `boolean \| object` | `false`       | Border radius scale                   |
+| `motion`     | `boolean \| object` | `false`       | Motion tokens (spring, durations)     |
+| `gradients`  | `boolean`           | `true`        | Gradient variables                    |
+| `noise`      | `boolean`           | `true`        | Noise texture                         |
+| `utilities`  | `boolean`           | `true`        | CSS utility classes                   |
+| `patterns`   | `boolean \| object` | `false`       | SVG pattern utilities                 |
+| `effects`    | `boolean \| object` | `false`       | Visual effects (filters, glass, etc.) |
+| `shadcn`     | `boolean \| object` | `false`       | Shadcn UI variables                   |
 
-Priority: CLI flags > config file > defaults.
+All `boolean | object` options follow the same pattern: `true` enables with defaults, `false` disables, and an object enables with customization.
+
+Priority: CLI flags > config file > presets > defaults.

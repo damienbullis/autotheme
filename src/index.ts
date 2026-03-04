@@ -31,6 +31,19 @@ export type {
   SpacingConfig,
   MotionConfig,
   ShadcnConfig,
+  PatternsConfig,
+  PatternType,
+  PatternDensity,
+  EffectsConfig,
+  FiltersConfig,
+  FilterGrainConfig,
+  FilterGlowConfig,
+  FilterDuotoneConfig,
+  BlendModesConfig,
+  BlendMode,
+  GlassConfig,
+  BlobConfig,
+  StackConfig,
   OutputConfig,
   ColorFormat,
   ThemeMode,
@@ -39,6 +52,14 @@ export type {
 export type { Preset } from "./config/presets";
 export type { WCAGLevel, WCAGResult } from "./core/contrast";
 export type { HarmonyMeta } from "./core/harmony-meta";
+export type {
+  TokenPair,
+  ContrastCheckResult,
+  ContrastReport,
+  ContrastFixResult,
+  ContrastFixReport,
+} from "./core/accessibility";
+export type { CVDType } from "./core/cvd";
 
 // Core exports
 export * from "./core/color";
@@ -51,11 +72,19 @@ export * from "./core/harmony-meta";
 export * from "./core/variations";
 export * from "./core/palette";
 export * from "./core/background";
+export * from "./core/accessibility";
+export * from "./core/cvd";
 
 // Generator exports
 export * from "./generators/css";
 export * from "./generators/tailwind";
 export * from "./generators/preview";
+export * from "./generators/effects";
+export * from "./generators/filters";
+export * from "./generators/blendmodes";
+export * from "./generators/glass";
+export * from "./generators/blobs";
+export * from "./generators/stack";
 
 // Config exports
 export * from "./config/schema";

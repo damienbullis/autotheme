@@ -5,13 +5,16 @@ import { generateTheme } from "../core/theme";
 import { generateCSS, writeOutputs } from "../generators";
 import { PRESETS } from "../config/presets";
 import { runInit } from "./init";
+import type { FrameworkType } from "./init";
 import { log } from "./logger";
 
 export async function run(args: string[]): Promise<void> {
   // Handle init command
   if (args[0] === "init") {
     const skipPrompts = args.includes("-y") || args.includes("--yes");
-    await runInit(skipPrompts);
+    const frameworkIdx = args.indexOf("--framework");
+    const framework = frameworkIdx !== -1 ? (args[frameworkIdx + 1] as FrameworkType) : undefined;
+    await runInit({ skipPrompts, ...(framework ? { framework } : {}) });
     return;
   }
 

@@ -81,6 +81,34 @@ describe("generateTheme", () => {
     expect(theme.palette.palettes).toHaveLength(4);
   });
 
+  it("generates monochromatic harmony (3 colors)", () => {
+    const theme = generateTheme(makeConfig({ harmony: "monochromatic", palette: true }));
+    expect(theme.harmony.type).toBe("monochromatic");
+    expect(theme.harmony.colors).toHaveLength(3);
+    expect(theme.palette.palettes).toHaveLength(3);
+  });
+
+  it("generates double-split-complementary harmony (5 colors)", () => {
+    const theme = generateTheme(
+      makeConfig({ harmony: "double-split-complementary", palette: true }),
+    );
+    expect(theme.harmony.type).toBe("double-split-complementary");
+    expect(theme.harmony.colors).toHaveLength(5);
+    expect(theme.palette.palettes).toHaveLength(5);
+  });
+
+  it("generates theme with custom angles", () => {
+    const config = makeConfig({
+      harmony: "custom",
+      angles: [0, 72, 144, 216, 288],
+      palette: true,
+    });
+    const theme = generateTheme(config);
+    expect(theme.harmony.type).toBe("custom");
+    expect(theme.harmony.colors).toHaveLength(5);
+    expect(theme.palette.palettes).toHaveLength(5);
+  });
+
   it("throws for unknown custom harmony", () => {
     const config = makeConfig({ harmony: "nonexistent" });
     expect(() => generateTheme(config)).toThrow('Unknown harmony type: "nonexistent"');

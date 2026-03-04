@@ -12,6 +12,9 @@ const VALID_HARMONIES = [
   "aurelian",
   "bi-polar",
   "retrograde",
+  "monochromatic",
+  "double-split-complementary",
+  "custom",
 ] as const;
 
 const VALID_SWING_STRATEGIES = ["linear", "exponential", "alternating"] as const;
@@ -268,6 +271,117 @@ function validateScaleObject(
   return result;
 }
 
+function validateNumberRange(
+  value: unknown,
+  name: string,
+  min?: number,
+  max?: number,
+): number | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "number") throw new Error(`${name} must be a number`);
+  if (min !== undefined && value < min) throw new Error(`${name} must be >= ${min}`);
+  if (max !== undefined && value > max) throw new Error(`${name} must be <= ${max}`);
+  return value;
+}
+
+function validateEffectsObject(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+
+  if (obj.filters !== undefined) {
+    const v = validateBooleanOrObject(obj.filters, "effects.filters", (o) => {
+      const r: Record<string, unknown> = {};
+      if (o.grain !== undefined) {
+        const gv = validateBooleanOrObject(o.grain, "effects.filters.grain", (g) => {
+          const gr: Record<string, unknown> = {};
+          gr.frequency = validateNumberRange(g.frequency, "effects.filters.grain.frequency", 0);
+          gr.octaves = validateNumberRange(g.octaves, "effects.filters.grain.octaves", 1);
+          gr.opacity = validateNumberRange(g.opacity, "effects.filters.grain.opacity", 0, 1);
+          return Object.fromEntries(Object.entries(gr).filter(([, v]) => v !== undefined));
+        });
+        r.grain = gv;
+      }
+      if (o.glow !== undefined) {
+        const gv = validateBooleanOrObject(o.glow, "effects.filters.glow", (g) => {
+          const gr: Record<string, unknown> = {};
+          if (g.color !== undefined)
+            gr.color = validateString(g.color, "effects.filters.glow.color");
+          gr.blur = validateNumberRange(g.blur, "effects.filters.glow.blur", 0);
+          gr.intensity = validateNumberRange(g.intensity, "effects.filters.glow.intensity", 0, 1);
+          return Object.fromEntries(Object.entries(gr).filter(([, v]) => v !== undefined));
+        });
+        r.glow = gv;
+      }
+      if (o.duotone !== undefined) {
+        const dv = validateBooleanOrObject(o.duotone, "effects.filters.duotone", (d) => {
+          const dr: Record<string, unknown> = {};
+          if (d.shadow !== undefined)
+            dr.shadow = validateString(d.shadow, "effects.filters.duotone.shadow");
+          if (d.highlight !== undefined)
+            dr.highlight = validateString(d.highlight, "effects.filters.duotone.highlight");
+          return dr;
+        });
+        r.duotone = dv;
+      }
+      return r;
+    });
+    result.filters = v;
+  }
+
+  if (obj.blendModes !== undefined) {
+    const v = validateBooleanOrObject(obj.blendModes, "effects.blendModes", (o) => {
+      const r: Record<string, unknown> = {};
+      if (o.modes !== undefined) {
+        if (!Array.isArray(o.modes)) throw new Error("effects.blendModes.modes must be an array");
+        r.modes = o.modes;
+      }
+      return r;
+    });
+    result.blendModes = v;
+  }
+
+  if (obj.glass !== undefined) {
+    const v = validateBooleanOrObject(obj.glass, "effects.glass", (o) => {
+      const r: Record<string, unknown> = {};
+      r.blur = validateNumberRange(o.blur, "effects.glass.blur", 0);
+      r.opacity = validateNumberRange(o.opacity, "effects.glass.opacity", 0, 1);
+      r.saturation = validateNumberRange(o.saturation, "effects.glass.saturation", 0);
+      if (o.colors !== undefined) {
+        if (!Array.isArray(o.colors)) throw new Error("effects.glass.colors must be an array");
+        r.colors = o.colors;
+      }
+      return Object.fromEntries(Object.entries(r).filter(([, v]) => v !== undefined));
+    });
+    result.glass = v;
+  }
+
+  if (obj.blobs !== undefined) {
+    const v = validateBooleanOrObject(obj.blobs, "effects.blobs", (o) => {
+      const r: Record<string, unknown> = {};
+      r.count = validateNumberRange(o.count, "effects.blobs.count", 1);
+      r.points = validateNumberRange(o.points, "effects.blobs.points", 3);
+      r.randomness = validateNumberRange(o.randomness, "effects.blobs.randomness", 0, 1);
+      if (o.seed !== undefined) {
+        if (typeof o.seed !== "number") throw new Error("effects.blobs.seed must be a number");
+        r.seed = o.seed;
+      }
+      r.size = validateNumberRange(o.size, "effects.blobs.size", 0);
+      return Object.fromEntries(Object.entries(r).filter(([, v]) => v !== undefined));
+    });
+    result.blobs = v;
+  }
+
+  if (obj.stack !== undefined) {
+    const v = validateBooleanOrObject(obj.stack, "effects.stack", (o) => {
+      const r: Record<string, unknown> = {};
+      r.layers = validateNumberRange(o.layers, "effects.stack.layers", 1);
+      return Object.fromEntries(Object.entries(r).filter(([, v]) => v !== undefined));
+    });
+    result.stack = v;
+  }
+
+  return result;
+}
+
 export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
   if (typeof config !== "object" || config === null) {
     throw new Error("Config must be an object");
@@ -331,6 +445,22 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
       );
     }
     result.harmony = obj.harmony as AutoThemeConfig["harmony"];
+  }
+
+  // Validate angles
+  if (obj.angles !== undefined) {
+    if (!Array.isArray(obj.angles)) {
+      throw new Error("angles must be an array of numbers");
+    }
+    if (obj.angles.length < 2) {
+      throw new Error("angles must have at least 2 values");
+    }
+    for (let i = 0; i < obj.angles.length; i++) {
+      if (typeof obj.angles[i] !== "number") {
+        throw new Error(`angles[${i}] must be a number`);
+      }
+    }
+    result.angles = obj.angles as number[];
   }
 
   // Validate preset
@@ -415,6 +545,43 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
       return r;
     });
     if (v !== undefined) result.shadcn = v as AutoThemeConfig["shadcn"];
+  }
+
+  // Patterns
+  if (obj.patterns !== undefined) {
+    const v = validateBooleanOrObject(obj.patterns, "patterns", (o) => {
+      const r: Record<string, unknown> = {};
+      if (o.types !== undefined) {
+        if (!Array.isArray(o.types)) throw new Error("patterns.types must be an array");
+        const validTypes = [
+          "stripes-diagonal",
+          "stripes-horizontal",
+          "stripes-vertical",
+          "dots",
+          "crosshatch",
+        ];
+        for (const t of o.types) {
+          if (!validTypes.includes(t as string)) {
+            throw new Error(`patterns.types must contain only: ${validTypes.join(", ")}`);
+          }
+        }
+        r.types = o.types;
+      }
+      if (o.density !== undefined) {
+        if (!["sm", "md", "lg"].includes(o.density as string)) {
+          throw new Error('patterns.density must be "sm", "md", or "lg"');
+        }
+        r.density = o.density;
+      }
+      return r;
+    });
+    if (v !== undefined) result.patterns = v as AutoThemeConfig["patterns"];
+  }
+
+  // Effects
+  if (obj.effects !== undefined) {
+    const v = validateBooleanOrObject(obj.effects, "effects", validateEffectsObject);
+    if (v !== undefined) (result as Record<string, unknown>).effects = v;
   }
 
   // Simple boolean toggles

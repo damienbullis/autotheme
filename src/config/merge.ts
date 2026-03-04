@@ -10,6 +10,13 @@ import type {
   ShadowConfig,
   RadiusConfig,
   MotionConfig,
+  PatternsConfig,
+  EffectsConfig,
+  FiltersConfig,
+  BlendModesConfig,
+  GlassConfig,
+  BlobConfig,
+  StackConfig,
   ShadcnConfig,
   OutputConfig,
   DeepPartial,
@@ -24,6 +31,12 @@ import {
   DEFAULT_SHADOWS,
   DEFAULT_RADIUS,
   DEFAULT_MOTION,
+  DEFAULT_PATTERNS,
+  DEFAULT_FILTERS,
+  DEFAULT_BLEND_MODES,
+  DEFAULT_GLASS,
+  DEFAULT_BLOBS,
+  DEFAULT_STACK,
   DEFAULT_SHADCN,
   DEFAULT_OUTPUT,
 } from "./types";
@@ -136,6 +149,8 @@ function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
   if (args.shadows !== undefined) config.shadows = args.shadows;
   if (args.radius !== undefined) config.radius = args.radius;
   if (args.shadcn !== undefined) config.shadcn = args.shadcn;
+  if (args.patterns !== undefined) config.patterns = args.patterns;
+  if (args.effects !== undefined) config.effects = args.effects;
   if (args.spacing !== undefined) config.spacing = args.spacing;
   if (args.typography !== undefined) config.typography = args.typography;
 
@@ -161,6 +176,22 @@ function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
       (config.palette as DeepPartial<PaletteConfig>).prefix = args.prefix;
     } else if (config.palette !== false) {
       config.palette = { prefix: args.prefix };
+    }
+  }
+
+  // Custom angles
+  if (args.angles) {
+    const parsed = args.angles
+      .split(",")
+      .map((s) => s.trim())
+      .map(Number);
+    if (parsed.length < 2 || parsed.some((n) => Number.isNaN(n))) {
+      throw new Error("--angles must be at least 2 comma-separated numbers (e.g., '0,72,144')");
+    }
+    config.angles = parsed;
+    // Auto-set harmony to "custom" if not explicitly set
+    if (!args.harmony) {
+      config.harmony = "custom" as AutoThemeConfig["harmony"];
     }
   }
 
@@ -316,11 +347,61 @@ export function resolveToConfig(merged: DeepPartial<AutoThemeConfig>): ResolvedC
     },
     false,
   );
+  const patterns = resolveFeature<PatternsConfig>(
+    merged.patterns as boolean | DeepPartial<PatternsConfig> | undefined,
+    { ...DEFAULT_PATTERNS, types: [...DEFAULT_PATTERNS.types] },
+    false,
+  );
   const shadcn = resolveFeature<ShadcnConfig>(
     merged.shadcn as boolean | DeepPartial<ShadcnConfig> | undefined,
     { ...DEFAULT_SHADCN },
     false,
   );
+
+  // Effects: two-level resolution — outer feature then each sub-feature
+  let effects: false | EffectsConfig = false;
+  const effectsInput = merged.effects as boolean | DeepPartial<EffectsConfig> | undefined;
+  if (effectsInput !== undefined && effectsInput !== false) {
+    const effectsObj = effectsInput === true ? {} : effectsInput;
+
+    const filters = resolveFeature<FiltersConfig>(
+      effectsObj.filters as boolean | DeepPartial<FiltersConfig> | undefined,
+      {
+        ...DEFAULT_FILTERS,
+        grain: { ...(DEFAULT_FILTERS.grain as object) } as FiltersConfig["grain"],
+        glow: { ...(DEFAULT_FILTERS.glow as object) } as FiltersConfig["glow"],
+        duotone: { ...(DEFAULT_FILTERS.duotone as object) } as FiltersConfig["duotone"],
+      },
+      true,
+    );
+    const blendModes = resolveFeature<BlendModesConfig>(
+      effectsObj.blendModes as boolean | DeepPartial<BlendModesConfig> | undefined,
+      { ...DEFAULT_BLEND_MODES, modes: [...DEFAULT_BLEND_MODES.modes] },
+      true,
+    );
+    const glass = resolveFeature<GlassConfig>(
+      effectsObj.glass as boolean | DeepPartial<GlassConfig> | undefined,
+      { ...DEFAULT_GLASS, colors: [...DEFAULT_GLASS.colors] },
+      true,
+    );
+    const blobs = resolveFeature<BlobConfig>(
+      effectsObj.blobs as boolean | DeepPartial<BlobConfig> | undefined,
+      { ...DEFAULT_BLOBS },
+      true,
+    );
+
+    // Stack auto-enables when any other effect is on, unless explicitly false
+    const hasAnyPrimitive =
+      filters !== false || blendModes !== false || glass !== false || blobs !== false;
+    const stackDefault = hasAnyPrimitive;
+    const stack = resolveFeature<StackConfig>(
+      effectsObj.stack as boolean | DeepPartial<StackConfig> | undefined,
+      { ...DEFAULT_STACK },
+      stackDefault,
+    );
+
+    effects = { filters, blendModes, glass, blobs, stack };
+  }
 
   // Auto-enable semantics when shadcn is enabled
   let resolvedSemantics = semantics;
@@ -357,9 +438,12 @@ export function resolveToConfig(merged: DeepPartial<AutoThemeConfig>): ResolvedC
     gradients: merged.gradients ?? false,
     noise: merged.noise ?? false,
     utilities: merged.utilities ?? false,
+    patterns,
+    effects,
     shadcn,
     output: resolvedOutput,
     ...(merged.harmonies !== undefined ? { harmonies: merged.harmonies } : {}),
+    ...(merged.angles !== undefined ? { angles: merged.angles } : {}),
     ...(merged.silent !== undefined ? { silent: merged.silent } : {}),
   };
 

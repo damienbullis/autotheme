@@ -28,6 +28,10 @@ export interface CLIArgs {
   radius?: boolean | undefined;
   comments?: boolean | undefined;
   layers?: boolean | undefined;
+  patterns?: boolean | undefined;
+  effects?: boolean | undefined;
+  checkContrast?: string | undefined;
+  angles?: string | undefined;
   stdout?: boolean | undefined;
   silent?: boolean | undefined;
   help?: boolean | undefined;
@@ -65,6 +69,13 @@ export function parseArgs(args: string[]): CLIArgs {
       "Include metadata header and inline comments (use --no-comments to disable)",
     )
     .option("--layers", "Wrap CSS in @layer declarations (use --no-layers to disable)")
+    .option("--patterns", "Generate SVG pattern utilities (use --no-patterns to disable)")
+    .option(
+      "--effects",
+      "Generate visual effects (filters, glass, blobs) (use --no-effects to disable)",
+    )
+    .option("--check-contrast [level]", "Check contrast compliance (aa or aaa, default: aa)")
+    .option("--angles <angles>", "Custom harmony angles (comma-separated, e.g., '0,45,210')")
     .option("--stdout", "Output CSS to stdout instead of writing files")
     .option("-s, --silent", "Suppress output")
     .help()
@@ -97,6 +108,10 @@ export function parseArgs(args: string[]): CLIArgs {
     radius: parsed.options.radius as boolean | undefined,
     comments: parsed.options.comments as boolean | undefined,
     layers: parsed.options.layers as boolean | undefined,
+    patterns: parsed.options.patterns as boolean | undefined,
+    effects: parsed.options.effects as boolean | undefined,
+    checkContrast: parsed.options.checkContrast as string | undefined,
+    angles: parsed.options.angles as string | undefined,
     stdout: parsed.options.stdout as boolean | undefined,
     silent: parsed.options.silent as boolean | undefined,
     help: parsed.options.help as boolean | undefined,

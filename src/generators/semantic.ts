@@ -368,61 +368,110 @@ export function generateSemanticCSS(theme: GeneratedTheme): string {
 }
 
 /**
- * Generate @media (prefers-contrast: more) and (prefers-contrast: less) blocks
+ * Generate @media (prefers-contrast: more) and (prefers-contrast: less) blocks.
+ * Uses OKLCH-native colors derived from the semantic token surface hue.
+ * Supports light-dark() mode when config.output.lightDark is true.
  */
 function generateContrastAdaptiveCSS(palette: FullPalette, config: ResolvedConfig): string {
   const colorFormat = config.output.format;
   const comments = config.output.comments;
+  const useLightDark = config.output.lightDark && config.mode === "both";
+  const primaryHue = palette.palettes[0]!.base.oklch.h;
   const lines: string[] = [];
 
-  const primaryHsl = palette.palettes[0]!.base.hsl;
-
+  // High Contrast Mode
   if (comments) lines.push("/* High Contrast Mode */");
   lines.push("@media (prefers-contrast: more) {");
-  lines.push("  :root {");
-  const strongBorder = new Color({ h: primaryHsl.h, s: 10, l: 20, a: 1 });
-  lines.push(`    --border: ${strongBorder.formatAs(colorFormat)};`);
-  lines.push(`    --border-subtle: ${strongBorder.formatAs(colorFormat)};`);
-  const strongerBorder = new Color({ h: primaryHsl.h, s: 15, l: 10, a: 1 });
-  lines.push(`    --border-strong: ${strongerBorder.formatAs(colorFormat)};`);
-  const strongText = new Color({ h: 0, s: 0, l: 2, a: 1 });
-  lines.push(`    --text-1: ${strongText.formatAs(colorFormat)};`);
-  const text2 = new Color({ h: 0, s: 0, l: 15, a: 1 });
-  lines.push(`    --text-2: ${text2.formatAs(colorFormat)};`);
-  lines.push("  }");
-  lines.push("");
-  lines.push("  .dark {");
-  const darkStrongBorder = new Color({ h: primaryHsl.h, s: 10, l: 80, a: 1 });
-  lines.push(`    --border: ${darkStrongBorder.formatAs(colorFormat)};`);
-  lines.push(`    --border-subtle: ${darkStrongBorder.formatAs(colorFormat)};`);
-  const darkStrongerBorder = new Color({ h: primaryHsl.h, s: 15, l: 90, a: 1 });
-  lines.push(`    --border-strong: ${darkStrongerBorder.formatAs(colorFormat)};`);
-  const darkStrongText = new Color({ h: 0, s: 0, l: 98, a: 1 });
-  lines.push(`    --text-1: ${darkStrongText.formatAs(colorFormat)};`);
-  const darkText2 = new Color({ h: 0, s: 0, l: 85, a: 1 });
-  lines.push(`    --text-2: ${darkText2.formatAs(colorFormat)};`);
-  lines.push("  }");
+
+  // Light mode high-contrast values
+  const lightBorder = Color.fromOklch(0.25, 0.01, primaryHue);
+  const lightBorderStrong = Color.fromOklch(0.15, 0.015, primaryHue);
+  const lightText1 = Color.fromOklch(0.05, 0, 0);
+  const lightText2 = Color.fromOklch(0.2, 0, 0);
+
+  // Dark mode high-contrast values
+  const darkBorder = Color.fromOklch(0.8, 0.01, primaryHue);
+  const darkBorderStrong = Color.fromOklch(0.9, 0.015, primaryHue);
+  const darkText1 = Color.fromOklch(0.97, 0, 0);
+  const darkText2 = Color.fromOklch(0.85, 0, 0);
+
+  if (useLightDark) {
+    lines.push("  :root {");
+    lines.push(
+      `    --border: light-dark(${lightBorder.formatAs(colorFormat)}, ${darkBorder.formatAs(colorFormat)});`,
+    );
+    lines.push(
+      `    --border-subtle: light-dark(${lightBorder.formatAs(colorFormat)}, ${darkBorder.formatAs(colorFormat)});`,
+    );
+    lines.push(
+      `    --border-strong: light-dark(${lightBorderStrong.formatAs(colorFormat)}, ${darkBorderStrong.formatAs(colorFormat)});`,
+    );
+    lines.push(
+      `    --text-1: light-dark(${lightText1.formatAs(colorFormat)}, ${darkText1.formatAs(colorFormat)});`,
+    );
+    lines.push(
+      `    --text-2: light-dark(${lightText2.formatAs(colorFormat)}, ${darkText2.formatAs(colorFormat)});`,
+    );
+    lines.push("  }");
+  } else {
+    lines.push("  :root {");
+    lines.push(`    --border: ${lightBorder.formatAs(colorFormat)};`);
+    lines.push(`    --border-subtle: ${lightBorder.formatAs(colorFormat)};`);
+    lines.push(`    --border-strong: ${lightBorderStrong.formatAs(colorFormat)};`);
+    lines.push(`    --text-1: ${lightText1.formatAs(colorFormat)};`);
+    lines.push(`    --text-2: ${lightText2.formatAs(colorFormat)};`);
+    lines.push("  }");
+    if (config.mode === "both") {
+      lines.push("");
+      lines.push("  .dark {");
+      lines.push(`    --border: ${darkBorder.formatAs(colorFormat)};`);
+      lines.push(`    --border-subtle: ${darkBorder.formatAs(colorFormat)};`);
+      lines.push(`    --border-strong: ${darkBorderStrong.formatAs(colorFormat)};`);
+      lines.push(`    --text-1: ${darkText1.formatAs(colorFormat)};`);
+      lines.push(`    --text-2: ${darkText2.formatAs(colorFormat)};`);
+      lines.push("  }");
+    }
+  }
   lines.push("}");
 
   lines.push("");
 
+  // Low Contrast Mode
   if (comments) lines.push("/* Low Contrast Mode */");
   lines.push("@media (prefers-contrast: less) {");
-  lines.push("  :root {");
-  const softBorder = new Color({ h: primaryHsl.h, s: 5, l: 85, a: 1 });
-  lines.push(`    --border: ${softBorder.formatAs(colorFormat)};`);
-  lines.push(`    --border-strong: ${softBorder.formatAs(colorFormat)};`);
-  const softText = new Color({ h: 0, s: 0, l: 30, a: 1 });
-  lines.push(`    --text-1: ${softText.formatAs(colorFormat)};`);
-  lines.push("  }");
-  lines.push("");
-  lines.push("  .dark {");
-  const darkSoftBorder = new Color({ h: primaryHsl.h, s: 5, l: 25, a: 1 });
-  lines.push(`    --border: ${darkSoftBorder.formatAs(colorFormat)};`);
-  lines.push(`    --border-strong: ${darkSoftBorder.formatAs(colorFormat)};`);
-  const darkSoftText = new Color({ h: 0, s: 0, l: 70, a: 1 });
-  lines.push(`    --text-1: ${darkSoftText.formatAs(colorFormat)};`);
-  lines.push("  }");
+
+  const lightSoftBorder = Color.fromOklch(0.85, 0.005, primaryHue);
+  const lightSoftText = Color.fromOklch(0.35, 0, 0);
+  const darkSoftBorder = Color.fromOklch(0.3, 0.005, primaryHue);
+  const darkSoftText = Color.fromOklch(0.7, 0, 0);
+
+  if (useLightDark) {
+    lines.push("  :root {");
+    lines.push(
+      `    --border: light-dark(${lightSoftBorder.formatAs(colorFormat)}, ${darkSoftBorder.formatAs(colorFormat)});`,
+    );
+    lines.push(
+      `    --border-strong: light-dark(${lightSoftBorder.formatAs(colorFormat)}, ${darkSoftBorder.formatAs(colorFormat)});`,
+    );
+    lines.push(
+      `    --text-1: light-dark(${lightSoftText.formatAs(colorFormat)}, ${darkSoftText.formatAs(colorFormat)});`,
+    );
+    lines.push("  }");
+  } else {
+    lines.push("  :root {");
+    lines.push(`    --border: ${lightSoftBorder.formatAs(colorFormat)};`);
+    lines.push(`    --border-strong: ${lightSoftBorder.formatAs(colorFormat)};`);
+    lines.push(`    --text-1: ${lightSoftText.formatAs(colorFormat)};`);
+    lines.push("  }");
+    if (config.mode === "both") {
+      lines.push("");
+      lines.push("  .dark {");
+      lines.push(`    --border: ${darkSoftBorder.formatAs(colorFormat)};`);
+      lines.push(`    --border-strong: ${darkSoftBorder.formatAs(colorFormat)};`);
+      lines.push(`    --text-1: ${darkSoftText.formatAs(colorFormat)};`);
+      lines.push("  }");
+    }
+  }
   lines.push("}");
 
   return lines.join("\n");
@@ -430,19 +479,32 @@ function generateContrastAdaptiveCSS(palette: FullPalette, config: ResolvedConfi
 
 function generateReducedTransparencyCSS(config: ResolvedConfig, comments: boolean): string {
   const colorFormat = config.output.format;
+  const useLightDark = config.output.lightDark && config.mode === "both";
   const lines: string[] = [];
+
+  const lightOverlay = Color.fromOklch(0.15, 0, 0);
+  const darkOverlay = Color.fromOklch(0.08, 0, 0);
 
   if (comments) lines.push("/* Reduced Transparency Mode */");
   lines.push("@media (prefers-reduced-transparency) {");
-  lines.push("  :root {");
-  const opaqueOverlay = new Color({ h: 0, s: 0, l: 10, a: 1 });
-  lines.push(`    --surface-overlay: ${opaqueOverlay.formatAs(colorFormat)};`);
-  lines.push("  }");
-  lines.push("");
-  lines.push("  .dark {");
-  const darkOpaqueOverlay = new Color({ h: 0, s: 0, l: 5, a: 1 });
-  lines.push(`    --surface-overlay: ${darkOpaqueOverlay.formatAs(colorFormat)};`);
-  lines.push("  }");
+
+  if (useLightDark) {
+    lines.push("  :root {");
+    lines.push(
+      `    --surface-overlay: light-dark(${lightOverlay.formatAs(colorFormat)}, ${darkOverlay.formatAs(colorFormat)});`,
+    );
+    lines.push("  }");
+  } else {
+    lines.push("  :root {");
+    lines.push(`    --surface-overlay: ${lightOverlay.formatAs(colorFormat)};`);
+    lines.push("  }");
+    if (config.mode === "both") {
+      lines.push("");
+      lines.push("  .dark {");
+      lines.push(`    --surface-overlay: ${darkOverlay.formatAs(colorFormat)};`);
+      lines.push("  }");
+    }
+  }
   lines.push("}");
 
   return lines.join("\n");
@@ -463,7 +525,13 @@ function generateForcedColorsCSS(comments: boolean): string {
   lines.push("    --border-subtle: ButtonBorder;");
   lines.push("    --border-strong: CanvasText;");
   lines.push("    --accent: LinkText;");
+  lines.push("    --accent-foreground: LinkText;");
   lines.push("    --accent-secondary: Highlight;");
+  lines.push("    --accent-tertiary: Highlight;");
+  lines.push("    --surface-primary: Canvas;");
+  lines.push("    --surface-primary-foreground: CanvasText;");
+  lines.push("    --surface-secondary: Canvas;");
+  lines.push("    --surface-secondary-foreground: CanvasText;");
   lines.push("  }");
   lines.push("}");
 

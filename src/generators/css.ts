@@ -2,6 +2,7 @@ import { Color } from "../core/color";
 import type { ResolvedConfig } from "../config/types";
 import type { GeneratedTheme, GeneratorOutput } from "./types";
 import { generateNoiseSVG } from "./noise";
+import { generatePatternCSS } from "./patterns";
 import { generateDarkModeCSS } from "./dark-mode";
 import { generateUtilityClasses } from "./utilities";
 import { generateShadcnCSS } from "./shadcn";
@@ -11,11 +12,12 @@ import { generateShadowScale } from "./shadow";
 import { generateMotionCSS } from "./motion";
 import { fluidValue } from "./fluid";
 import { maxChromaAtHueAndLightness } from "../core/gamut";
+import { generateEffectsVars, generateEffectsUtilities } from "./effects";
 
 /**
  * Semantic names for harmony colors by index
  */
-const HARMONY_NAMES = ["primary", "secondary", "tertiary", "quaternary"] as const;
+const HARMONY_NAMES = ["primary", "secondary", "tertiary", "quaternary", "quinary"] as const;
 
 /**
  * Get the semantic name for a harmony color by index
@@ -85,9 +87,10 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
 
   // Layer order declaration
   if (layers) {
-    lines.push(
-      "@layer autotheme.palette, autotheme.semantics, autotheme.scales, autotheme.utilities;",
-    );
+    const layerNames = ["autotheme.palette", "autotheme.semantics", "autotheme.scales"];
+    if (config.effects !== false) layerNames.push("autotheme.effects");
+    layerNames.push("autotheme.utilities");
+    lines.push(`@layer ${layerNames.join(", ")};`);
     lines.push("");
   }
 
@@ -184,6 +187,21 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     lines.push("");
     if (comments) lines.push("    /* Background Images */");
     lines.push(`    --background-image-noise: ${generateNoiseSVG()};`);
+  }
+
+  // Patterns
+  if (config.patterns !== false) {
+    lines.push("");
+    const primaryColor = palette.palettes[0]!.base;
+    // Use a muted version of the primary as the pattern color
+    const borderColor = Color.fromOklch(
+      primaryColor.oklch.l > 0.5 ? 0.3 : 0.7,
+      0.02,
+      primaryColor.oklch.h,
+    );
+    lines.push(
+      generatePatternCSS(config.patterns, primaryColor, borderColor, colorFormat, comments),
+    );
   }
 
   // Gradients
@@ -401,6 +419,31 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
       lines.push("  }");
       if (layers) lines.push("}");
       lines.push("}");
+    }
+  }
+
+  // Effects system
+  if (config.effects !== false) {
+    lines.push("");
+    if (comments) {
+      lines.push("/* ========================================");
+      lines.push("   AutoTheme Visual Effects");
+      lines.push("   ======================================== */");
+      lines.push("");
+    }
+    if (layers) lines.push("@layer autotheme.effects {");
+    lines.push(":root {");
+    lines.push(generateEffectsVars(config.effects, palette, prefix, comments));
+    lines.push("}");
+    if (layers) lines.push("}");
+
+    // Effects utility classes (in utilities layer)
+    const effectsUtilities = generateEffectsUtilities(config.effects, palette, prefix, comments);
+    if (effectsUtilities) {
+      lines.push("");
+      if (layers) lines.push("@layer autotheme.utilities {");
+      lines.push(effectsUtilities);
+      if (layers) lines.push("}");
     }
   }
 

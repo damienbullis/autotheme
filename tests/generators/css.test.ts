@@ -12,12 +12,12 @@ import { Color } from "../../src/core/color";
 import { createTestTheme } from "../helpers/test-theme";
 
 describe("getHarmonyName", () => {
-  it("returns semantic names for indices 0-3, then color-N", () => {
+  it("returns semantic names for indices 0-4, then color-N", () => {
     expect(getHarmonyName(0)).toBe("primary");
     expect(getHarmonyName(1)).toBe("secondary");
     expect(getHarmonyName(2)).toBe("tertiary");
     expect(getHarmonyName(3)).toBe("quaternary");
-    expect(getHarmonyName(4)).toBe("color-5");
+    expect(getHarmonyName(4)).toBe("quinary");
     expect(getHarmonyName(5)).toBe("color-6");
   });
 });
