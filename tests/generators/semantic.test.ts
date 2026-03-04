@@ -252,6 +252,68 @@ describe("generateSemanticCSS", () => {
   });
 });
 
+describe("states integration", () => {
+  it("states populated when enabled", () => {
+    const theme = createTestTheme({ states: {} });
+    const tokens = generateSemanticTokens(theme.palette, theme.config, "light");
+    expect(tokens.states).toBeDefined();
+    expect(tokens.states!.length).toBe(6);
+  });
+
+  it("states undefined when disabled", () => {
+    const theme = createTestTheme();
+    const tokens = generateSemanticTokens(theme.palette, theme.config, "light");
+    expect(tokens.states).toBeUndefined();
+  });
+
+  it("CSS output contains state tokens when states enabled", () => {
+    const theme = createTestTheme({ states: {} });
+    const css = generateSemanticCSS(theme);
+    expect(css).toContain("--state-hover:");
+    expect(css).toContain("--focus-ring-color:");
+  });
+});
+
+describe("elevation integration", () => {
+  it("elevation populated when enabled", () => {
+    const theme = createTestTheme({ elevation: {} });
+    const tokens = generateSemanticTokens(theme.palette, theme.config, "light");
+    expect(tokens.elevation).toBeDefined();
+    expect(tokens.elevation!.length).toBe(8); // 4 levels * 2
+  });
+
+  it("elevation undefined when disabled", () => {
+    const theme = createTestTheme();
+    const tokens = generateSemanticTokens(theme.palette, theme.config, "light");
+    expect(tokens.elevation).toBeUndefined();
+  });
+
+  it("CSS output contains elevation tokens when elevation enabled", () => {
+    const theme = createTestTheme({ elevation: {} });
+    const css = generateSemanticCSS(theme);
+    expect(css).toContain("--elevation-1:");
+    expect(css).toContain("--elevation-1-shadow:");
+  });
+
+  it("elevation token naming uses elevation-N (not elevation-N-surface)", () => {
+    const theme = createTestTheme({ elevation: {} });
+    const css = generateSemanticCSS(theme);
+    // v2 naming: elevation-N for surface, not elevation-N-surface
+    expect(css).toContain("--elevation-1:");
+    expect(css).not.toContain("--elevation-1-surface:");
+  });
+});
+
+describe("applyOverrides with rawCSS tokens", () => {
+  it("overrides rawCSS tokens by replacing rawCSS string", () => {
+    const theme = createTestTheme({ states: {} });
+    const tokens = generateSemanticTokens(theme.palette, theme.config, "light");
+    applyOverrides(tokens, { "state-hover": "0.1" });
+    const hover = tokens.states!.find((t) => t.name === "state-hover")!;
+    expect(hover.rawCSS).toBe("0.1");
+  });
+});
+
 describe("generateCSS integration", () => {
   it("default config produces semantic tokens (semantics ON by default)", () => {
     const theme = createTestTheme();

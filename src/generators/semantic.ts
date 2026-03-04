@@ -4,6 +4,8 @@ import type { FullPalette } from "../core/types";
 import type { ResolvedConfig, SemanticsConfig, ColorFormat } from "../config/types";
 import type { GeneratedTheme } from "./types";
 import { getHarmonyName } from "./css";
+import { generateStateTokens } from "./states";
+import { generateElevationTokens } from "./elevation";
 
 export interface SemanticToken {
   name: string;
@@ -61,6 +63,21 @@ export function generateSemanticTokens(
   const tintedSurfaces = generateTintedSurfaces(palette, depth, primaryOklch.c, isDark);
 
   const tokens: SemanticTokenSet = { surfaces, borders, text, accents, tintedSurfaces };
+
+  // Opt-in features
+  if (config.states !== false) {
+    tokens.states = generateStateTokens(config.states, mode);
+  }
+  if (config.elevation !== false) {
+    tokens.elevation = generateElevationTokens(
+      config.elevation,
+      depth,
+      primaryOklch.h,
+      sem.surfaces.chroma,
+      isDark,
+      config.output.format,
+    );
+  }
 
   if (sem.overrides) {
     applyOverrides(tokens, sem.overrides);
@@ -469,9 +486,16 @@ export function applyOverrides(tokens: SemanticTokenSet, overrides: Record<strin
   for (const group of allGroups) {
     for (const token of group) {
       if (overrides[token.name] !== undefined) {
-        token.value = new Color(overrides[token.name]!);
-        delete token.ref;
-        delete token.rawCSS;
+        const override = overrides[token.name]!;
+        if (token.rawCSS !== undefined) {
+          // rawCSS tokens: replace the raw string directly
+          token.rawCSS = override;
+        } else {
+          // Color tokens: parse as color
+          token.value = new Color(override);
+          delete token.ref;
+          delete token.rawCSS;
+        }
       }
     }
   }
