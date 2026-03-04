@@ -1,6 +1,11 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { resolveConfig, generateRandomColor } from "../../src/config/merge";
-import { DEFAULT_CONFIG } from "../../src/config/types";
+import { resolveConfig, generateRandomColor, resolveFeature } from "../../src/config/merge";
+import {
+  DEFAULT_OUTPUT,
+  DEFAULT_PALETTE,
+  DEFAULT_SEMANTICS,
+  DEFAULT_SPACING,
+} from "../../src/config/types";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
 
 describe("generateRandomColor", () => {
@@ -27,6 +32,33 @@ describe("generateRandomColor", () => {
   });
 });
 
+describe("resolveFeature", () => {
+  const DEFAULTS = { a: 1, b: 2 };
+
+  it("returns defaults when enabled by default and input is undefined", () => {
+    const result = resolveFeature(undefined, DEFAULTS, true);
+    expect(result).toEqual({ a: 1, b: 2 });
+  });
+
+  it("returns false when not enabled by default and input is undefined", () => {
+    expect(resolveFeature(undefined, DEFAULTS, false)).toBe(false);
+  });
+
+  it("returns defaults when input is true", () => {
+    const result = resolveFeature(true, DEFAULTS, false);
+    expect(result).toEqual({ a: 1, b: 2 });
+  });
+
+  it("returns false when input is false", () => {
+    expect(resolveFeature(false, DEFAULTS, true)).toBe(false);
+  });
+
+  it("deep merges partial config with defaults", () => {
+    const result = resolveFeature({ a: 99 }, DEFAULTS, false);
+    expect(result).toEqual({ a: 99, b: 2 });
+  });
+});
+
 describe("resolveConfig", () => {
   afterEach(() => {
     if (existsSync("autotheme.json")) {
@@ -35,22 +67,64 @@ describe("resolveConfig", () => {
   });
 
   describe("defaults", () => {
-    it("uses default values when no args provided", async () => {
+    it("uses default output values when no args provided", async () => {
       const config = await resolveConfig({});
 
-      expect(config.harmony).toBe(DEFAULT_CONFIG.harmony);
-      expect(config.output.path).toBe(DEFAULT_CONFIG.output.path);
-      expect(config.output.preview).toBe(DEFAULT_CONFIG.output.preview);
-      expect(config.output.tailwind).toBe(DEFAULT_CONFIG.output.tailwind);
-      expect(config.output.darkModeScript).toBe(DEFAULT_CONFIG.output.darkModeScript);
-      expect(config.typography.ratio).toBe(DEFAULT_CONFIG.typography.ratio);
-      expect(config.palette.contrastTarget).toBe(DEFAULT_CONFIG.palette.contrastTarget);
+      expect(config.harmony).toBe("analogous");
+      expect(config.output.path).toBe(DEFAULT_OUTPUT.path);
+      expect(config.output.preview).toBe(DEFAULT_OUTPUT.preview);
+      expect(config.output.tailwind).toBe(DEFAULT_OUTPUT.tailwind);
+      expect(config.output.format).toBe("oklch");
     });
 
     it("generates random color when not provided", async () => {
       const config = await resolveConfig({});
 
       expect(config.color).toMatch(/^#[0-9a-f]{6}$/);
+    });
+
+    it("semantics is ON by default", async () => {
+      const config = await resolveConfig({ color: "#ff0000" });
+
+      expect(config.semantics).not.toBe(false);
+    });
+
+    it("palette is OFF by default", async () => {
+      const config = await resolveConfig({ color: "#ff0000" });
+
+      expect(config.palette).toBe(false);
+    });
+
+    it("most features are OFF by default", async () => {
+      const config = await resolveConfig({ color: "#ff0000" });
+
+      expect(config.states).toBe(false);
+      expect(config.elevation).toBe(false);
+      expect(config.typography).toBe(false);
+      expect(config.spacing).toBe(false);
+      expect(config.shadows).toBe(false);
+      expect(config.radius).toBe(false);
+      expect(config.shadcn).toBe(false);
+      expect(config.gradients).toBe(false);
+      expect(config.noise).toBe(false);
+    });
+
+    it("mode defaults to 'both'", async () => {
+      const config = await resolveConfig({ color: "#ff0000" });
+
+      expect(config.mode).toBe("both");
+    });
+
+    it("lightDark defaults to true when mode is 'both'", async () => {
+      const config = await resolveConfig({ color: "#ff0000" });
+
+      expect(config.output.lightDark).toBe(true);
+    });
+
+    it("lightDark defaults to false when mode is 'light'", async () => {
+      const config = await resolveConfig({ color: "#ff0000", mode: "light" });
+
+      expect(config.output.lightDark).toBe(false);
     });
   });
 
@@ -62,7 +136,6 @@ describe("resolveConfig", () => {
         output: "./custom.css",
         preview: true,
         tailwind: true,
-        darkModeScript: true,
         silent: true,
       });
 
@@ -71,7 +144,6 @@ describe("resolveConfig", () => {
       expect(config.output.path).toBe("./custom.css");
       expect(config.output.preview).toBe(true);
       expect(config.output.tailwind).toBe(true);
-      expect(config.output.darkModeScript).toBe(true);
       expect(config.silent).toBe(true);
     });
 
@@ -166,30 +238,35 @@ describe("resolveConfig", () => {
 
     it("strips preset from final config", async () => {
       const config = await resolveConfig({ preset: "ocean" });
-      expect(config.preset).toBeUndefined();
+      expect((config as Record<string, unknown>).preset).toBeUndefined();
     });
   });
 
   describe("deep merge", () => {
-    it("preserves nested defaults when merging partial semantics config", async () => {
+    it("preserves nested semantics defaults when merging partial semantics config", async () => {
       writeFileSync(
         "autotheme.json",
         JSON.stringify({
           color: "#ff0000",
-          semantics: { states: { enabled: true } },
+          semantics: { depth: 0.5 },
         }),
       );
 
       const config = await resolveConfig({});
 
-      // states.enabled should be true from file
-      expect(config.semantics.states.enabled).toBe(true);
-      // states.hoverShift should be preserved from defaults (not wiped)
-      expect(config.semantics.states.hoverShift).toBe(DEFAULT_CONFIG.semantics.states.hoverShift);
-      expect(config.semantics.states.activeShift).toBe(DEFAULT_CONFIG.semantics.states.activeShift);
+      // semantics should be enabled (object, not false)
+      expect(config.semantics).not.toBe(false);
+      if (config.semantics !== false) {
+        // depth should be overridden from file
+        expect(config.semantics.depth).toBe(0.5);
+        // text defaults should be preserved (not wiped)
+        expect(config.semantics.text.levels).toBe(DEFAULT_SEMANTICS.text.levels);
+        expect(config.semantics.borders.chroma).toBe(DEFAULT_SEMANTICS.borders.chroma);
+        expect(config.semantics.surfaces.chroma).toBe(DEFAULT_SEMANTICS.surfaces.chroma);
+      }
     });
 
-    it("preserves 3+ levels of nesting when merging", async () => {
+    it("preserves 3+ levels of nesting when merging palette config", async () => {
       writeFileSync(
         "autotheme.json",
         JSON.stringify({
@@ -200,12 +277,16 @@ describe("resolveConfig", () => {
 
       const config = await resolveConfig({});
 
-      // bg should be overridden
-      expect(config.palette.alphaSteps.bg).toBe(20);
-      // Other alpha steps should be preserved from defaults
-      expect(config.palette.alphaSteps.border).toBe(DEFAULT_CONFIG.palette.alphaSteps.border);
-      expect(config.palette.alphaSteps.glow).toBe(DEFAULT_CONFIG.palette.alphaSteps.glow);
-      expect(config.palette.alphaSteps.hover).toBe(DEFAULT_CONFIG.palette.alphaSteps.hover);
+      // palette should be enabled (object, not false) because config file provided object
+      expect(config.palette).not.toBe(false);
+      if (config.palette !== false) {
+        // bg should be overridden
+        expect(config.palette.alphaSteps.bg).toBe(20);
+        // Other alpha steps should be preserved from defaults
+        expect(config.palette.alphaSteps.border).toBe(DEFAULT_PALETTE.alphaSteps.border);
+        expect(config.palette.alphaSteps.glow).toBe(DEFAULT_PALETTE.alphaSteps.glow);
+        expect(config.palette.alphaSteps.hover).toBe(DEFAULT_PALETTE.alphaSteps.hover);
+      }
     });
   });
 
@@ -213,15 +294,41 @@ describe("resolveConfig", () => {
     it("enables semantics when shadcn is enabled", async () => {
       const config = await resolveConfig({ color: "#ff0000", shadcn: true });
 
-      expect(config.shadcn.enabled).toBe(true);
-      expect(config.semantics.enabled).toBe(true);
+      // shadcn should be resolved to a config object (not false)
+      expect(config.shadcn).not.toBe(false);
+      // semantics should also be a config object (auto-enabled by shadcn)
+      expect(config.semantics).not.toBe(false);
     });
 
     it("does not disable explicitly enabled semantics when shadcn is off", async () => {
       const config = await resolveConfig({ color: "#ff0000", semantics: true });
 
-      expect(config.shadcn.enabled).toBe(false);
-      expect(config.semantics.enabled).toBe(true);
+      // shadcn is off by default
+      expect(config.shadcn).toBe(false);
+      // semantics should be enabled (resolved to config object)
+      expect(config.semantics).not.toBe(false);
+    });
+
+    it("semantics can be explicitly disabled", async () => {
+      const config = await resolveConfig({ color: "#ff0000", semantics: false });
+
+      expect(config.semantics).toBe(false);
+    });
+  });
+
+  describe("tailwind auto-enables palette", () => {
+    it("palette is enabled when tailwind is true", async () => {
+      const config = await resolveConfig({ color: "#ff0000", tailwind: true });
+
+      expect(config.output.tailwind).toBe(true);
+      expect(config.palette).not.toBe(false);
+    });
+
+    it("palette stays off when tailwind is false", async () => {
+      const config = await resolveConfig({ color: "#ff0000" });
+
+      expect(config.output.tailwind).toBe(false);
+      expect(config.palette).toBe(false);
     });
   });
 
@@ -231,14 +338,42 @@ describe("resolveConfig", () => {
 
       expect(config.color).toBe("#6366F1");
       expect(config.mode).toBe("dark");
-      expect(config.semantics.enabled).toBe(true);
-      expect(config.semantics.surfaceDepth).toBe(6);
-      expect(config.semantics.textLevels).toBe(4);
-      expect(config.shadcn.enabled).toBe(true);
-      expect(config.shadcn.radius).toBe("0.5rem");
-      expect(config.spacing.enabled).toBe(true);
-      // Defaults should be preserved
-      expect(config.semantics.states.hoverShift).toBe(DEFAULT_CONFIG.semantics.states.hoverShift);
+      // semantics is ON by default, and also auto-enabled via shadcn
+      expect(config.semantics).not.toBe(false);
+      // shadcn should be resolved with custom radius
+      expect(config.shadcn).not.toBe(false);
+      if (config.shadcn !== false) {
+        expect(config.shadcn.radius).toBe("0.5rem");
+      }
+      // spacing is explicitly enabled in preset
+      expect(config.spacing).not.toBe(false);
+      if (config.spacing !== false) {
+        expect(config.spacing.base).toBe(DEFAULT_SPACING.base);
+      }
+    });
+
+    it("applies mode-dependent defaults for dark mode preset", async () => {
+      const config = await resolveConfig({ preset: "dashboard-dark" });
+
+      if (config.semantics !== false) {
+        // Dark mode: depth should default to 0.13
+        expect(config.semantics.depth).toBe(0.13);
+        // Dark mode: text.anchor should default to 0.95
+        expect(config.semantics.text.anchor).toBe(0.95);
+        // text.floor should be 0.55
+        expect(config.semantics.text.floor).toBe(0.55);
+      }
+    });
+
+    it("applies mode-dependent defaults for light mode", async () => {
+      const config = await resolveConfig({ color: "#ff0000", mode: "light" });
+
+      if (config.semantics !== false) {
+        // Light mode: depth should default to 0.97
+        expect(config.semantics.depth).toBe(0.97);
+        // Light mode: text.anchor should default to 0.15
+        expect(config.semantics.text.anchor).toBe(0.15);
+      }
     });
   });
 

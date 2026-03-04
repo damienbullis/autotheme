@@ -11,7 +11,7 @@ const DEFAULT_SHADE_SCALE_POINTS = [600, 700, 800, 900, 950];
  */
 export function generateReactiveCSS(theme: GeneratedTheme): string {
   const { palette, config } = theme;
-  const prefix = config.palette.prefix;
+  const prefix = config.palette !== false ? config.palette.prefix : "color";
   const comments = config.output.comments;
   const lines: string[] = [];
 

@@ -1,8 +1,4 @@
-import type { AutoThemeConfig } from "./types";
-
-type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
+import type { AutoThemeConfig, DeepPartial } from "./types";
 
 export interface Preset {
   name: string;
@@ -18,7 +14,6 @@ export const PRESETS: Record<string, Preset> = {
       color: "#1E6091",
       harmony: "analogous",
       mode: "both",
-      semantics: { enabled: true, surfaceDepth: 4, textLevels: 3 },
     },
   },
   sunset: {
@@ -28,7 +23,6 @@ export const PRESETS: Record<string, Preset> = {
       color: "#E85D26",
       harmony: "split-complementary",
       mode: "both",
-      semantics: { enabled: true, surfaceDepth: 4, textLevels: 3 },
     },
   },
   forest: {
@@ -38,7 +32,6 @@ export const PRESETS: Record<string, Preset> = {
       color: "#2D6A4F",
       harmony: "triadic",
       mode: "both",
-      semantics: { enabled: true, surfaceDepth: 4, textLevels: 3 },
     },
   },
   lavender: {
@@ -48,7 +41,6 @@ export const PRESETS: Record<string, Preset> = {
       color: "#7B68AE",
       harmony: "analogous",
       mode: "both",
-      semantics: { enabled: true, surfaceDepth: 3, textLevels: 3 },
     },
   },
   ember: {
@@ -58,7 +50,6 @@ export const PRESETS: Record<string, Preset> = {
       color: "#B22234",
       harmony: "complementary",
       mode: "both",
-      semantics: { enabled: true, surfaceDepth: 4, textLevels: 3 },
     },
   },
   arctic: {
@@ -68,7 +59,6 @@ export const PRESETS: Record<string, Preset> = {
       color: "#48B9C7",
       harmony: "aurelian",
       mode: "both",
-      semantics: { enabled: true, surfaceDepth: 3, textLevels: 3 },
     },
   },
   midnight: {
@@ -78,7 +68,7 @@ export const PRESETS: Record<string, Preset> = {
       color: "#2C2C6E",
       harmony: "square",
       mode: "both",
-      semantics: { enabled: true, surfaceDepth: 5, textLevels: 3 },
+      semantics: { depth: 0.1 },
     },
   },
   terracotta: {
@@ -88,7 +78,6 @@ export const PRESETS: Record<string, Preset> = {
       color: "#C4704B",
       harmony: "retrograde",
       mode: "both",
-      semantics: { enabled: true, surfaceDepth: 4, textLevels: 3 },
     },
   },
   neon: {
@@ -98,7 +87,6 @@ export const PRESETS: Record<string, Preset> = {
       color: "#FF2E97",
       harmony: "drift",
       mode: "both",
-      semantics: { enabled: true, surfaceDepth: 4, textLevels: 3 },
     },
   },
   sage: {
@@ -108,12 +96,8 @@ export const PRESETS: Record<string, Preset> = {
       color: "#8FA98C",
       harmony: "bi-polar",
       mode: "both",
-      semantics: { enabled: true, surfaceDepth: 3, textLevels: 3 },
     },
   },
-
-  // New presets
-
   "dashboard-dark": {
     name: "Dashboard Dark",
     description: "Dark-mode dashboard with deep surfaces and clear hierarchy",
@@ -121,9 +105,8 @@ export const PRESETS: Record<string, Preset> = {
       color: "#6366F1",
       harmony: "analogous",
       mode: "dark",
-      semantics: { enabled: true, surfaceDepth: 6, textLevels: 4 },
-      shadcn: { enabled: true, radius: "0.5rem" },
-      spacing: { enabled: true },
+      shadcn: { radius: "0.5rem" },
+      spacing: true,
     },
   },
   "marketing-light": {
@@ -133,7 +116,6 @@ export const PRESETS: Record<string, Preset> = {
       color: "#8B5CF6",
       harmony: "split-complementary",
       mode: "light",
-      semantics: { enabled: true, surfaceDepth: 3, textLevels: 3 },
       gradients: true,
       noise: true,
       typography: { base: 1.125, ratio: 1.333, steps: 7 },
@@ -146,9 +128,7 @@ export const PRESETS: Record<string, Preset> = {
       color: "#475569",
       harmony: "analogous",
       mode: "both",
-      semantics: { enabled: true, surfaceDepth: 2, textLevels: 3 },
       typography: { base: 1, ratio: 1.2, steps: 7 },
-      palette: { contrastTarget: 7 },
     },
   },
 };

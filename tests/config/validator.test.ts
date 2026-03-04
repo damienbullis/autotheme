@@ -73,11 +73,21 @@ describe("validateConfig", () => {
     });
   });
 
-  describe("palette validation", () => {
+  describe("palette validation (boolean | object pattern)", () => {
+    it("accepts true to enable with defaults", () => {
+      const result = validateConfig({ palette: true });
+      expect(result.palette).toBe(true);
+    });
+
+    it("accepts false to disable", () => {
+      const result = validateConfig({ palette: false });
+      expect(result.palette).toBe(false);
+    });
+
     it("accepts valid palette object", () => {
       const result = validateConfig({ palette: { prefix: "at", contrastTarget: 7 } });
-      expect(result.palette?.prefix).toBe("at");
-      expect(result.palette?.contrastTarget).toBe(7);
+      expect((result.palette as Record<string, unknown>).prefix).toBe("at");
+      expect((result.palette as Record<string, unknown>).contrastTarget).toBe(7);
     });
 
     it("validates prefix format", () => {
@@ -86,23 +96,118 @@ describe("validateConfig", () => {
       );
     });
 
-    it("validates contrastTarget range", () => {
-      expect(() => validateConfig({ palette: { contrastTarget: 2 } })).toThrow(
-        "palette.contrastTarget must be between 3 and 21",
+    it("validates contrastTarget is a positive number", () => {
+      expect(() => validateConfig({ palette: { contrastTarget: 0 } })).toThrow(
+        "palette.contrastTarget must be a positive number",
+      );
+      expect(() => validateConfig({ palette: { contrastTarget: -1 } })).toThrow(
+        "palette.contrastTarget must be a positive number",
       );
     });
 
-    it("throws for non-object palette", () => {
-      expect(() => validateConfig({ palette: "bad" })).toThrow("palette must be an object");
+    it("accepts palette.swing and palette.swingStrategy", () => {
+      const result = validateConfig({
+        palette: { swing: 1.5, swingStrategy: "exponential" },
+      });
+      const p = result.palette as Record<string, unknown>;
+      expect(p.swing).toBe(1.5);
+      expect(p.swingStrategy).toBe("exponential");
+    });
+
+    it("throws for invalid types (string, number, array)", () => {
+      expect(() => validateConfig({ palette: "bad" })).toThrow(
+        "palette must be a boolean or an object",
+      );
+      expect(() => validateConfig({ palette: 123 })).toThrow(
+        "palette must be a boolean or an object",
+      );
+      expect(() => validateConfig({ palette: [1, 2] })).toThrow(
+        "palette must be a boolean or an object",
+      );
     });
   });
 
-  describe("typography validation", () => {
+  describe("semantics validation (boolean | object pattern)", () => {
+    it("accepts true to enable with defaults", () => {
+      const result = validateConfig({ semantics: true });
+      expect(result.semantics).toBe(true);
+    });
+
+    it("accepts false to disable", () => {
+      const result = validateConfig({ semantics: false });
+      expect(result.semantics).toBe(false);
+    });
+
+    it("accepts semantics object with depth", () => {
+      const result = validateConfig({ semantics: { depth: 0.5 } });
+      expect((result.semantics as Record<string, unknown>).depth).toBe(0.5);
+    });
+
+    it("validates depth range 0-1", () => {
+      expect(() => validateConfig({ semantics: { depth: -0.1 } })).toThrow(
+        "semantics.depth must be between 0 and 1",
+      );
+      expect(() => validateConfig({ semantics: { depth: 1.5 } })).toThrow(
+        "semantics.depth must be between 0 and 1",
+      );
+    });
+
+    it("validates text sub-object", () => {
+      const result = validateConfig({
+        semantics: { text: { levels: 3, anchor: 0.95, floor: 0.55 } },
+      });
+      const sem = result.semantics as Record<string, unknown>;
+      const text = sem.text as Record<string, unknown>;
+      expect(text.levels).toBe(3);
+      expect(text.anchor).toBe(0.95);
+    });
+
+    it("validates surfaces sub-object", () => {
+      const result = validateConfig({
+        semantics: { surfaces: { chroma: 0.01, sunkenDelta: -0.02 } },
+      });
+      const sem = result.semantics as Record<string, unknown>;
+      const surfaces = sem.surfaces as Record<string, unknown>;
+      expect(surfaces.chroma).toBe(0.01);
+    });
+
+    it("validates borders sub-object", () => {
+      const result = validateConfig({
+        semantics: { borders: { offsets: [0.08, 0.15, 0.25], chroma: 0.012 } },
+      });
+      const sem = result.semantics as Record<string, unknown>;
+      const borders = sem.borders as Record<string, unknown>;
+      expect(borders.offsets).toEqual([0.08, 0.15, 0.25]);
+    });
+
+    it("validates mapping sub-object", () => {
+      const result = validateConfig({
+        semantics: { mapping: { accent: "primary", secondary: "secondary" } },
+      });
+      const sem = result.semantics as Record<string, unknown>;
+      const mapping = sem.mapping as Record<string, unknown>;
+      expect(mapping.accent).toBe("primary");
+    });
+
+    it("throws for invalid types", () => {
+      expect(() => validateConfig({ semantics: "bad" })).toThrow(
+        "semantics must be a boolean or an object",
+      );
+    });
+  });
+
+  describe("typography validation (boolean | object pattern)", () => {
+    it("accepts true to enable with defaults", () => {
+      const result = validateConfig({ typography: true });
+      expect(result.typography).toBe(true);
+    });
+
     it("accepts valid typography object", () => {
       const result = validateConfig({ typography: { base: 0.875, ratio: 1.5, steps: 6 } });
-      expect(result.typography?.base).toBe(0.875);
-      expect(result.typography?.ratio).toBe(1.5);
-      expect(result.typography?.steps).toBe(6);
+      const t = result.typography as Record<string, unknown>;
+      expect(t.base).toBe(0.875);
+      expect(t.ratio).toBe(1.5);
+      expect(t.steps).toBe(6);
     });
 
     it("throws for non-positive base", () => {
@@ -111,40 +216,99 @@ describe("validateConfig", () => {
       );
     });
 
-    it("throws for non-object typography", () => {
-      expect(() => validateConfig({ typography: "bad" })).toThrow("typography must be an object");
+    it("throws for invalid types", () => {
+      expect(() => validateConfig({ typography: "bad" })).toThrow(
+        "typography must be a boolean or an object",
+      );
+      expect(() => validateConfig({ typography: 42 })).toThrow(
+        "typography must be a boolean or an object",
+      );
     });
   });
 
-  describe("spacing validation", () => {
+  describe("spacing validation (boolean | object pattern)", () => {
+    it("accepts true to enable with defaults", () => {
+      const result = validateConfig({ spacing: true });
+      expect(result.spacing).toBe(true);
+    });
+
+    it("accepts false to disable", () => {
+      const result = validateConfig({ spacing: false });
+      expect(result.spacing).toBe(false);
+    });
+
     it("accepts valid spacing object", () => {
-      const result = validateConfig({ spacing: { enabled: true, base: 0.25, ratio: 2, steps: 8 } });
-      expect(result.spacing?.enabled).toBe(true);
-      expect(result.spacing?.base).toBe(0.25);
+      const result = validateConfig({ spacing: { base: 0.25, ratio: 2, steps: 8 } });
+      const s = result.spacing as Record<string, unknown>;
+      expect(s.base).toBe(0.25);
+      expect(s.ratio).toBe(2);
+      expect(s.steps).toBe(8);
     });
 
-    it("throws for non-boolean enabled", () => {
-      expect(() => validateConfig({ spacing: { enabled: "yes" } })).toThrow(
-        "spacing.enabled must be a boolean",
+    it("throws for invalid types", () => {
+      expect(() => validateConfig({ spacing: "bad" })).toThrow(
+        "spacing must be a boolean or an object",
       );
-    });
-
-    it("throws for non-object spacing", () => {
-      expect(() => validateConfig({ spacing: "bad" })).toThrow("spacing must be an object");
+      expect(() => validateConfig({ spacing: 99 })).toThrow(
+        "spacing must be a boolean or an object",
+      );
     });
   });
 
-  describe("shadcn validation", () => {
-    it("accepts valid shadcn object", () => {
-      const result = validateConfig({ shadcn: { enabled: true, radius: "1rem" } });
-      expect(result.shadcn?.enabled).toBe(true);
-      expect(result.shadcn?.radius).toBe("1rem");
+  describe("shadows validation (boolean | object pattern)", () => {
+    it("accepts true to enable with defaults", () => {
+      const result = validateConfig({ shadows: true });
+      expect(result.shadows).toBe(true);
     });
 
-    it("throws for non-boolean enabled", () => {
-      expect(() => validateConfig({ shadcn: { enabled: "yes" } })).toThrow(
-        "shadcn.enabled must be a boolean",
+    it("accepts valid shadows object", () => {
+      const result = validateConfig({ shadows: { base: 1, ratio: 2, steps: 5 } });
+      const s = result.shadows as Record<string, unknown>;
+      expect(s.base).toBe(1);
+      expect(s.steps).toBe(5);
+    });
+
+    it("throws for invalid types", () => {
+      expect(() => validateConfig({ shadows: "bad" })).toThrow(
+        "shadows must be a boolean or an object",
       );
+    });
+  });
+
+  describe("radius validation (boolean | object pattern)", () => {
+    it("accepts true to enable with defaults", () => {
+      const result = validateConfig({ radius: true });
+      expect(result.radius).toBe(true);
+    });
+
+    it("accepts valid radius object", () => {
+      const result = validateConfig({ radius: { base: 0.125, ratio: 2, steps: 6 } });
+      const r = result.radius as Record<string, unknown>;
+      expect(r.base).toBe(0.125);
+      expect(r.steps).toBe(6);
+    });
+
+    it("throws for invalid types", () => {
+      expect(() => validateConfig({ radius: "bad" })).toThrow(
+        "radius must be a boolean or an object",
+      );
+    });
+  });
+
+  describe("shadcn validation (boolean | object pattern)", () => {
+    it("accepts true to enable with defaults", () => {
+      const result = validateConfig({ shadcn: true });
+      expect(result.shadcn).toBe(true);
+    });
+
+    it("accepts false to disable", () => {
+      const result = validateConfig({ shadcn: false });
+      expect(result.shadcn).toBe(false);
+    });
+
+    it("accepts valid shadcn object", () => {
+      const result = validateConfig({ shadcn: { radius: "1rem" } });
+      expect((result.shadcn as Record<string, unknown>).radius).toBe("1rem");
     });
 
     it("throws for non-string radius", () => {
@@ -153,20 +317,94 @@ describe("validateConfig", () => {
       );
     });
 
-    it("throws for non-object shadcn", () => {
-      expect(() => validateConfig({ shadcn: "bad" })).toThrow("shadcn must be an object");
+    it("throws for invalid types", () => {
+      expect(() => validateConfig({ shadcn: "bad" })).toThrow(
+        "shadcn must be a boolean or an object",
+      );
+      expect(() => validateConfig({ shadcn: 42 })).toThrow("shadcn must be a boolean or an object");
+    });
+  });
+
+  describe("elevation validation (boolean | object pattern)", () => {
+    it("accepts true to enable with defaults", () => {
+      const result = validateConfig({ elevation: true });
+      expect(result.elevation).toBe(true);
+    });
+
+    it("accepts valid elevation object", () => {
+      const result = validateConfig({ elevation: { levels: 4, delta: 0.03 } });
+      const e = result.elevation as Record<string, unknown>;
+      expect(e.levels).toBe(4);
+      expect(e.delta).toBe(0.03);
+    });
+
+    it("throws for invalid types", () => {
+      expect(() => validateConfig({ elevation: "bad" })).toThrow(
+        "elevation must be a boolean or an object",
+      );
+    });
+  });
+
+  describe("states validation (boolean | object pattern)", () => {
+    it("accepts true to enable with defaults", () => {
+      const result = validateConfig({ states: true });
+      expect(result.states).toBe(true);
+    });
+
+    it("accepts valid states object", () => {
+      const result = validateConfig({ states: { hover: 0.04, active: -0.02 } });
+      const s = result.states as Record<string, unknown>;
+      expect(s.hover).toBe(0.04);
+      expect(s.active).toBe(-0.02);
+    });
+
+    it("throws for invalid types", () => {
+      expect(() => validateConfig({ states: "bad" })).toThrow(
+        "states must be a boolean or an object",
+      );
+    });
+  });
+
+  describe("motion validation (boolean | object pattern)", () => {
+    it("accepts true to enable with defaults", () => {
+      const result = validateConfig({ motion: true });
+      expect(result.motion).toBe(true);
+    });
+
+    it("accepts false to disable", () => {
+      const result = validateConfig({ motion: false });
+      expect(result.motion).toBe(false);
+    });
+
+    it("throws for invalid types", () => {
+      expect(() => validateConfig({ motion: "bad" })).toThrow(
+        "motion must be a boolean or an object",
+      );
     });
   });
 
   describe("output validation", () => {
     it("accepts valid output object", () => {
       const result = validateConfig({
-        output: { path: "./custom.css", tailwind: true, preview: true, darkModeScript: false },
+        output: { path: "./custom.css", tailwind: true, preview: true, format: "oklch" },
       });
       expect(result.output?.path).toBe("./custom.css");
       expect(result.output?.tailwind).toBe(true);
       expect(result.output?.preview).toBe(true);
-      expect(result.output?.darkModeScript).toBe(false);
+      expect(result.output?.format).toBe("oklch");
+    });
+
+    it("validates output.format values", () => {
+      for (const format of ["oklch", "hsl", "rgb", "hex"]) {
+        const result = validateConfig({ output: { format } });
+        expect(result.output?.format).toBe(format);
+      }
+    });
+
+    it("throws for invalid output.format", () => {
+      expect(() => validateConfig({ output: { format: "xyz" } })).toThrow(
+        'output.format must be one of: "oklch", "hsl", "rgb", "hex"',
+      );
     });
 
     it("throws for non-string path", () => {
@@ -199,42 +437,6 @@ describe("validateConfig", () => {
       expect(() => validateConfig({ gradients: "true" })).toThrow("gradients must be a boolean");
       expect(() => validateConfig({ noise: "yes" })).toThrow("noise must be a boolean");
       expect(() => validateConfig({ utilities: "no" })).toThrow("utilities must be a boolean");
-    });
-  });
-
-  describe("swing validation", () => {
-    it("accepts valid positive number", () => {
-      expect(validateConfig({ swing: 1.5 }).swing).toBe(1.5);
-      expect(validateConfig({ swing: 0.5 }).swing).toBe(0.5);
-      expect(validateConfig({ swing: 1 }).swing).toBe(1);
-    });
-
-    it("throws for zero swing", () => {
-      expect(() => validateConfig({ swing: 0 })).toThrow("swing must be a positive number");
-    });
-
-    it("throws for negative swing", () => {
-      expect(() => validateConfig({ swing: -1 })).toThrow("swing must be a positive number");
-    });
-
-    it("throws for non-number swing", () => {
-      expect(() => validateConfig({ swing: "1.5" })).toThrow("swing must be a positive number");
-    });
-  });
-
-  describe("swingStrategy validation", () => {
-    it("accepts valid swing strategies", () => {
-      expect(validateConfig({ swingStrategy: "linear" }).swingStrategy).toBe("linear");
-      expect(validateConfig({ swingStrategy: "exponential" }).swingStrategy).toBe("exponential");
-      expect(validateConfig({ swingStrategy: "alternating" }).swingStrategy).toBe("alternating");
-    });
-
-    it("throws for invalid swing strategy", () => {
-      expect(() => validateConfig({ swingStrategy: "invalid" })).toThrow("Invalid swingStrategy");
-    });
-
-    it("throws for non-string swing strategy", () => {
-      expect(() => validateConfig({ swingStrategy: 123 })).toThrow("Invalid swingStrategy");
     });
   });
 
@@ -310,30 +512,59 @@ describe("validateConfig", () => {
     });
   });
 
+  describe("mode validation", () => {
+    it("accepts valid modes", () => {
+      for (const mode of ["light", "dark", "both"]) {
+        const result = validateConfig({ mode });
+        expect(result.mode).toBe(mode);
+      }
+    });
+
+    it("throws for invalid mode", () => {
+      expect(() => validateConfig({ mode: "invalid" })).toThrow(
+        'mode must be one of: "light", "dark", "both"',
+      );
+    });
+  });
+
   describe("complete config validation", () => {
     it("validates full nested config object", () => {
       const result = validateConfig({
         color: "#6439FF",
         harmony: "triadic",
-        swing: 1.5,
-        swingStrategy: "exponential",
-        palette: { prefix: "at", contrastTarget: 7 },
+        mode: "both",
+        palette: { prefix: "at", contrastTarget: 7, swing: 1.5, swingStrategy: "exponential" },
+        semantics: { depth: 0.13 },
         typography: { base: 0.875, ratio: 1.618, steps: 8 },
-        spacing: { enabled: true, base: 0.155, ratio: 1.618, steps: 10 },
+        spacing: { base: 0.155, ratio: 1.618, steps: 10 },
+        shadows: true,
+        radius: true,
         gradients: false,
         noise: true,
         utilities: true,
-        shadcn: { enabled: false, radius: "0.625rem" },
-        output: { path: "./theme.css", tailwind: false, preview: true, darkModeScript: true },
+        shadcn: { radius: "0.625rem" },
+        elevation: { levels: 4, delta: 0.03 },
+        states: true,
+        motion: false,
+        output: { path: "./theme.css", format: "oklch", tailwind: false, preview: true },
       });
 
       expect(result.color).toBe("#6439FF");
       expect(result.harmony).toBe("triadic");
-      expect(result.palette?.prefix).toBe("at");
-      expect(result.typography?.base).toBe(0.875);
-      expect(result.spacing?.enabled).toBe(true);
-      expect(result.shadcn?.enabled).toBe(false);
+      expect(result.mode).toBe("both");
+      expect((result.palette as Record<string, unknown>).prefix).toBe("at");
+      expect((result.palette as Record<string, unknown>).swing).toBe(1.5);
+      expect((result.typography as Record<string, unknown>).base).toBe(0.875);
+      expect(result.spacing).toEqual({ base: 0.155, ratio: 1.618, steps: 10 });
+      expect(result.shadows).toBe(true);
+      expect(result.radius).toBe(true);
+      expect(result.gradients).toBe(false);
+      expect((result.shadcn as Record<string, unknown>).radius).toBe("0.625rem");
+      expect((result.elevation as Record<string, unknown>).levels).toBe(4);
+      expect(result.states).toBe(true);
+      expect(result.motion).toBe(false);
       expect(result.output?.path).toBe("./theme.css");
+      expect(result.output?.format).toBe("oklch");
       expect(result.output?.preview).toBe(true);
     });
   });

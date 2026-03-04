@@ -138,8 +138,8 @@ function buildShadcnMapping(
  */
 export function generateShadcnCSS(theme: GeneratedTheme, radius: string = "0.625rem"): string {
   const { config, palette } = theme;
-  const prefix = config.palette.prefix;
-  const colorFormat = config.colorFormat;
+  const prefix = config.palette !== false ? config.palette.prefix : "color";
+  const colorFormat = config.output.format;
   const primaryHue = palette.palettes[0]!.base.hsl.h;
   const paletteCount = palette.palettes.length;
   const mode = config.mode;

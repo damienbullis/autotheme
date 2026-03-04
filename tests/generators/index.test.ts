@@ -30,12 +30,20 @@ describe("generators integration", () => {
     expect(generatePreview(theme).filename).toBe("./test-output/autotheme.preview.html");
   });
 
-  it("Tailwind output includes same palette variables as base CSS", () => {
-    const theme = createTestTheme();
+  it("Tailwind output includes same palette variables as base CSS when palette enabled", () => {
+    const theme = createTestTheme({ palette: {} });
     const tw = generateTailwindCSS(theme);
 
     expect(tw.content).toContain("--color-primary-500:");
     expect(tw.content).toContain("--color-primary-50:");
     expect(tw.content).toContain("--color-secondary-500:");
+  });
+
+  it("Tailwind output includes base-only color registrations when palette disabled", () => {
+    const theme = createTestTheme();
+    const tw = generateTailwindCSS(theme);
+
+    expect(tw.content).toContain("--color-primary: var(--color-primary)");
+    expect(tw.content).not.toContain("--color-primary-500:");
   });
 });

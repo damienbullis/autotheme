@@ -12,19 +12,19 @@ This milestone implements the core philosophy: **one color → complete design s
 
 ## What Changes
 
-| Area | v1 (current) | v2 (this milestone) |
-|---|---|---|
-| Config pattern | `{ enabled: boolean, ...params }` | `boolean \| ConfigObject` |
-| Generation pipeline | HSL + OKLCH on output | OKLCH-only, native |
-| Semantic abstraction | `surfaceDepth`, `textLevels`, `temperature` | `depth` (single OKLCH L value) |
-| Semantic tokens | Off by default (opt-in) | On by default (core value) |
-| Accent system | 3 tokens (accent, foreground, secondary) | Per-harmony pairs (scales with harmony type) |
-| Tinted surfaces | Not supported | Generated per harmony color |
-| Default palette | Full 50-950 scale per harmony | Base colors only (~3-4 tokens) |
-| Full scale | Always generated | Opt-in via `palette: true` or `output.tailwind: true` |
-| Text curve | String (`"linear"`, `"ease-out"`) or bezier | Number (exponent: 1 = linear, 0.5 = ease-out) |
-| Light/dark mode | Separate codepaths | `1 - L` reflection with explicit overrides |
-| `hueSource` per block | Per-block config | Removed — always primary hue |
+| Area                  | v1 (current)                                | v2 (this milestone)                                   |
+| --------------------- | ------------------------------------------- | ----------------------------------------------------- |
+| Config pattern        | `{ enabled: boolean, ...params }`           | `boolean \| ConfigObject`                             |
+| Generation pipeline   | HSL + OKLCH on output                       | OKLCH-only, native                                    |
+| Semantic abstraction  | `surfaceDepth`, `textLevels`, `temperature` | `depth` (single OKLCH L value)                        |
+| Semantic tokens       | Off by default (opt-in)                     | On by default (core value)                            |
+| Accent system         | 3 tokens (accent, foreground, secondary)    | Per-harmony pairs (scales with harmony type)          |
+| Tinted surfaces       | Not supported                               | Generated per harmony color                           |
+| Default palette       | Full 50-950 scale per harmony               | Base colors only (~3-4 tokens)                        |
+| Full scale            | Always generated                            | Opt-in via `palette: true` or `output.tailwind: true` |
+| Text curve            | String (`"linear"`, `"ease-out"`) or bezier | Number (exponent: 1 = linear, 0.5 = ease-out)         |
+| Light/dark mode       | Separate codepaths                          | `1 - L` reflection with explicit overrides            |
+| `hueSource` per block | Per-block config                            | Removed — always primary hue                          |
 
 ## Current State
 
@@ -119,12 +119,12 @@ Config: `semantics.text.levels` (3), `.anchor`/`.floor` (derived from mode), `.c
 Every harmony color gets a token pair. The count scales with the harmony type:
 
 ```css
---accent:                       oklch(0.65 0.15 250);
---accent-foreground:            oklch(0.98 0.01 250);
---accent-secondary:             oklch(0.65 0.12 220);
---accent-secondary-foreground:  oklch(0.98 0.01 220);
---accent-tertiary:              oklch(0.65 0.10 280);
---accent-tertiary-foreground:   oklch(0.98 0.01 280);
+--accent: oklch(0.65 0.15 250);
+--accent-foreground: oklch(0.98 0.01 250);
+--accent-secondary: oklch(0.65 0.12 220);
+--accent-secondary-foreground: oklch(0.98 0.01 220);
+--accent-tertiary: oklch(0.65 0.1 280);
+--accent-tertiary-foreground: oklch(0.98 0.01 280);
 ```
 
 Values are direct OKLCH — the 50-950 scale doesn't exist by default.
@@ -134,13 +134,14 @@ Values are direct OKLCH — the 50-950 scale doesn't exist by default.
 Each harmony color produces a low-chroma surface variant — tinted backgrounds for cards, sections, callouts:
 
 ```css
---surface-primary:              oklch(0.16 0.025 250);
---surface-primary-foreground:   oklch(0.85 0.040 250);
---surface-secondary:            oklch(0.16 0.025 130);
---surface-secondary-foreground: oklch(0.85 0.040 130);
+--surface-primary: oklch(0.16 0.025 250);
+--surface-primary-foreground: oklch(0.85 0.04 250);
+--surface-secondary: oklch(0.16 0.025 130);
+--surface-secondary-foreground: oklch(0.85 0.04 130);
 ```
 
 Derivation:
+
 - **L:** depth + elevatedDelta (same lightness as a raised surface)
 - **C:** tint chroma — derived from primary chroma scaled down (~15% of full), or configurable
 - **H:** each harmony color's actual hue
@@ -174,9 +175,9 @@ Several existing features need their config updated to the `boolean | Config` pa
 **Default output — base harmony colors only:**
 
 ```css
---color-primary:   oklch(0.65 0.15 250);
+--color-primary: oklch(0.65 0.15 250);
 --color-secondary: oklch(0.65 0.12 220);
---color-tertiary:  oklch(0.65 0.10 280);
+--color-tertiary: oklch(0.65 0.1 280);
 ```
 
 ~3-4 tokens depending on harmony type. These exist for decorative use, custom gradients, brand elements — things that don't fit a semantic role.
@@ -189,7 +190,7 @@ Activated by `palette: true` or `output.tailwind: true`. Generates:
 --color-primary-50: oklch(...);
 --color-primary-100: oklch(...);
 /* ... */
---color-primary-500: oklch(...);     /* same value as --color-primary */
+--color-primary-500: oklch(...); /* same value as --color-primary */
 /* ... */
 --color-primary-950: oklch(...);
 --color-primary-foreground: oklch(...);
@@ -201,6 +202,7 @@ Activated by `palette: true` or `output.tailwind: true`. Generates:
 What `palette: true` controls: 50-950 scale, foreground + contrast, tones, alpha variants (if configured).
 
 **Palette tuning params** (only relevant when palette is enabled):
+
 - `tints`/`shades`/`tones` — count of each variation type
 - `swing`/`swingStrategy` — hue rotation across the scale
 - `chromaBalance` — perceptual chroma normalization across harmony colors
@@ -249,38 +251,38 @@ See the full TypeScript interface in [`docs/v2-design-direction.md`](../v2-desig
 
 ```typescript
 interface AutoThemeConfig {
-  color: string
-  harmony?: HarmonyType | string       // "analogous"
-  mode?: "light" | "dark" | "both"     // "both"
+  color: string;
+  harmony?: HarmonyType | string; // "analogous"
+  mode?: "light" | "dark" | "both"; // "both"
 
-  palette?: boolean | PaletteConfig    // OFF by default
-  semantics?: boolean | SemanticsConfig // ON by default
+  palette?: boolean | PaletteConfig; // OFF by default
+  semantics?: boolean | SemanticsConfig; // ON by default
 
   output?: {
-    path?: string                      // "./autotheme.css"
-    format?: "oklch" | "hsl" | "rgb" | "hex"
-    tailwind?: boolean                 // activates full palette
-    preview?: boolean
-    comments?: boolean                 // true
-    layers?: boolean                   // true
-    lightDark?: boolean                // true when mode="both"
-  }
+    path?: string; // "./autotheme.css"
+    format?: "oklch" | "hsl" | "rgb" | "hex";
+    tailwind?: boolean; // activates full palette
+    preview?: boolean;
+    comments?: boolean; // true
+    layers?: boolean; // true
+    lightDark?: boolean; // true when mode="both"
+  };
 }
 ```
 
 ## Files That Change
 
-| File | Change |
-|---|---|
-| `src/config/types.ts` | New `AutoThemeConfig` interface, remove old config types |
-| `src/config/schema.ts` | Updated JSON schema for new shape |
-| `src/config/merge.ts` | Default merging for `boolean \| Config` pattern |
+| File                         | Change                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| `src/config/types.ts`        | New `AutoThemeConfig` interface, remove old config types                 |
+| `src/config/schema.ts`       | Updated JSON schema for new shape                                        |
+| `src/config/merge.ts`        | Default merging for `boolean \| Config` pattern                          |
 | `src/generators/semantic.ts` | Full rewrite: OKLCH-only, depth-based, expanded accents, tinted surfaces |
-| `src/generators/css.ts` | Updated token output, conditional palette |
-| `src/generators/tailwind.ts` | Palette scale activation via config |
-| `src/generators/palette.ts` | Conditional generation (base-only vs full scale) |
-| `src/cli/` | Updated flag parsing for new config shape |
-| Tests | New test suite for entire pipeline |
+| `src/generators/css.ts`      | Updated token output, conditional palette                                |
+| `src/generators/tailwind.ts` | Palette scale activation via config                                      |
+| `src/generators/palette.ts`  | Conditional generation (base-only vs full scale)                         |
+| `src/cli/`                   | Updated flag parsing for new config shape                                |
+| Tests                        | New test suite for entire pipeline                                       |
 
 ## Open Questions
 

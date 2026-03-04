@@ -1,11 +1,9 @@
 import { Color } from "../core/color";
-import { getContrastRatio } from "../core/contrast";
+import { getContrastRatio, findAccessibleTextColor } from "../core/contrast";
 import type { FullPalette } from "../core/types";
-import type { AutoThemeConfig, ColorFormat } from "../config/types";
+import type { ResolvedConfig, SemanticsConfig, ColorFormat } from "../config/types";
 import type { GeneratedTheme } from "./types";
 import { getHarmonyName } from "./css";
-import { generateStateTokens } from "./states";
-import { generateElevationTokens } from "./elevation";
 
 export interface SemanticToken {
   name: string;
@@ -19,232 +17,207 @@ export interface SemanticTokenSet {
   borders: SemanticToken[];
   text: SemanticToken[];
   accents: SemanticToken[];
+  tintedSurfaces: SemanticToken[];
   states?: SemanticToken[];
   elevation?: SemanticToken[];
 }
 
 /**
  * Main orchestrator: generate all semantic tokens for a given mode.
+ * All generation is OKLCH-native — no HSL round-trips.
  */
 export function generateSemanticTokens(
   palette: FullPalette,
-  config: AutoThemeConfig,
+  config: ResolvedConfig,
   mode: "light" | "dark",
 ): SemanticTokenSet {
-  const isDark = mode === "dark";
-  const primaryPalette = palette.palettes[0]!;
-  const primaryHsl = primaryPalette.base.hsl;
-  const depth = config.semantics.surfaceDepth;
-  const temperature = config.semantics.temperature ?? 0;
-
-  // Apply temperature bias to surface hue
-  // temperature: -1 = cool (250°), 0 = neutral (use primary), +1 = warm (60°)
-  let surfaceHue = primaryHsl.h;
-  if (temperature !== 0) {
-    const targetHue = temperature > 0 ? 60 : 250;
-    surfaceHue = primaryHsl.h + (targetHue - primaryHsl.h) * Math.abs(temperature) * 0.5;
-    // Normalize hue to 0-360
-    surfaceHue = ((surfaceHue % 360) + 360) % 360;
+  if (config.semantics === false) {
+    return { surfaces: [], borders: [], text: [], accents: [], tintedSurfaces: [] };
   }
 
-  // Surface anchor lightness
-  const surfaceAnchorL = isDark ? depth * 1.5 : 100 - depth;
+  const sem = config.semantics;
+  const isDark = mode === "dark";
+  const primaryOklch = palette.palettes[0]!.base.oklch;
 
-  const surfaces = generateSurfaces(surfaceHue, primaryHsl.s, surfaceAnchorL, depth, isDark);
-  const borders = generateBorders(surfaceHue, primaryHsl.s, surfaceAnchorL, isDark);
-  const surfaceColor = surfaces[0]!.value;
-  const text = generateTextHierarchy(
-    surfaceHue,
-    surfaceColor,
-    config.semantics.textLevels,
-    config.palette.contrastTarget,
+  // Depth: for "both" mode, derive per-mode depth
+  const depth = isDark ? sem.depth : 1 - sem.depth;
+
+  const surfaces = generateSurfaces(
+    primaryOklch.h,
+    sem.surfaces.chroma,
+    depth,
+    sem.surfaces.sunkenDelta,
+  );
+  const borders = generateBorders(
+    primaryOklch.h,
+    sem.borders.chroma,
+    depth,
+    sem.borders.offsets,
     isDark,
   );
-  const accents = generateAccents(palette, config.semantics.mapping, config.palette.prefix, isDark);
+  const surfaceColor = surfaces[0]!.value;
+  const text = generateTextHierarchy(primaryOklch.h, surfaceColor, sem.text, isDark);
+  const accents = generateAccents(palette, sem.mapping, isDark);
+  const tintedSurfaces = generateTintedSurfaces(palette, depth, primaryOklch.c, isDark);
 
-  const tokens: SemanticTokenSet = { surfaces, borders, text, accents };
+  const tokens: SemanticTokenSet = { surfaces, borders, text, accents, tintedSurfaces };
 
-  if (config.semantics.states.enabled) {
-    tokens.states = generateStateTokens(tokens, config.semantics.states, mode);
-  }
-
-  if (config.semantics.elevation.enabled) {
-    const surfaceColor = surfaces[0]!.value;
-    const primaryHue = primaryHsl.h;
-    tokens.elevation = generateElevationTokens(
-      surfaceColor,
-      primaryHue,
-      config.semantics.elevation.levels,
-      isDark,
-      config.colorFormat,
-    );
-  }
-
-  if (config.semantics.overrides) {
-    applyOverrides(tokens, config.semantics.overrides);
+  if (sem.overrides) {
+    applyOverrides(tokens, sem.overrides);
   }
 
   return tokens;
 }
 
 /**
- * Generate surface tokens: surface, surface-elevated, surface-sunken, surface-overlay.
+ * Generate surface tokens: surface, surface-sunken.
+ * OKLCH-native generation.
  */
 export function generateSurfaces(
   hue: number,
-  primarySat: number,
-  anchorL: number,
-  _depth: number,
-  isDark: boolean,
+  chroma: number,
+  depth: number,
+  sunkenDelta: number,
 ): SemanticToken[] {
-  const sat = Math.min(15, primarySat * 0.2);
-
-  const elevatedL = isDark ? anchorL + 4 : anchorL + 2;
-  const sunkenL = isDark ? anchorL - 2 : anchorL - 4;
-
-  const surface = new Color({ h: hue, s: sat, l: clampL(anchorL), a: 1 });
-  const elevated = new Color({ h: hue, s: sat, l: clampL(elevatedL), a: 1 });
-  const sunken = new Color({ h: hue, s: sat, l: clampL(sunkenL), a: 1 });
-
-  const overlayL = isDark ? 0 : 10;
-  const overlayA = isDark ? 0.6 : 0.5;
-  const overlay = new Color({ h: hue, s: sat, l: overlayL, a: overlayA });
+  const surface = Color.fromOklch(clamp01(depth), chroma, hue);
+  const sunken = Color.fromOklch(clamp01(depth + sunkenDelta), chroma, hue);
 
   return [
     { name: "surface", value: surface },
-    { name: "surface-elevated", value: elevated },
     { name: "surface-sunken", value: sunken },
-    { name: "surface-overlay", value: overlay },
   ];
 }
 
 /**
- * Generate border tokens: border, border-subtle, border-strong.
+ * Generate border tokens with L offsets from depth.
+ * Sign flips: borders are darker in light mode, lighter in dark mode.
  */
 export function generateBorders(
   hue: number,
-  primarySat: number,
-  surfaceAnchorL: number,
+  chroma: number,
+  depth: number,
+  offsets: [number, number, number],
   isDark: boolean,
 ): SemanticToken[] {
-  const sat = Math.min(10, primarySat * 0.15);
-
-  // Offsets from surface anchor — borders sit between surface and text
-  const subtleOffset = isDark ? 8 : -8;
-  const normalOffset = isDark ? 15 : -15;
-  const strongOffset = isDark ? 25 : -25;
+  // In dark mode, borders are lighter (positive offset). In light mode, darker (negative offset).
+  const sign = isDark ? 1 : -1;
 
   return [
     {
       name: "border-subtle",
-      value: new Color({ h: hue, s: sat, l: clampL(surfaceAnchorL + subtleOffset), a: 1 }),
+      value: Color.fromOklch(clamp01(depth + sign * offsets[0]), chroma, hue),
     },
     {
       name: "border",
-      value: new Color({ h: hue, s: sat, l: clampL(surfaceAnchorL + normalOffset), a: 1 }),
+      value: Color.fromOklch(clamp01(depth + sign * offsets[1]), chroma, hue),
     },
     {
       name: "border-strong",
-      value: new Color({ h: hue, s: sat, l: clampL(surfaceAnchorL + strongOffset), a: 1 }),
+      value: Color.fromOklch(clamp01(depth + sign * offsets[2]), chroma, hue),
     },
   ];
 }
 
 /**
- * Generate text hierarchy tokens: text-1 (strongest) through text-N.
- * text-1 meets contrastTarget (AAA default), all subsequent meet AA (4.5:1).
+ * Generate text hierarchy using formulaic OKLCH L interpolation.
+ * text-1 = strongest contrast (anchor), text-N = weakest (floor).
+ * Post-generation contrast check nudges L if needed.
  */
 export function generateTextHierarchy(
   hue: number,
   surface: Color,
-  textLevels: number,
-  contrastTarget: number,
+  textConfig: SemanticsConfig["text"],
   isDark: boolean,
 ): SemanticToken[] {
+  const { levels, anchor, floor, curve, chroma } = textConfig;
+  const [chromaAnchor, chromaFloor] = chroma;
   const tokens: SemanticToken[] = [];
 
-  // text-1: strongest contrast
-  const startL = isDark ? 98 : 2;
-  const text1 = findTextWithContrast(hue, surface, startL, contrastTarget, isDark, 1.0);
-  tokens.push({ name: "text-1", value: text1 });
+  for (let i = 1; i <= levels; i++) {
+    const t = levels === 1 ? 0 : (i - 1) / (levels - 1);
+    const tCurved = Math.pow(t, curve);
 
-  if (textLevels <= 1) return tokens;
+    let L = anchor - (anchor - floor) * tCurved;
+    const C = chromaAnchor - (chromaAnchor - chromaFloor) * tCurved;
 
-  // Interpolate lightness between text-1 and surface for remaining levels
-  const text1L = text1.hsl.l;
-  const surfaceL = surface.hsl.l;
-  const midL = (text1L + surfaceL) / 2;
-
-  for (let i = 2; i <= textLevels; i++) {
-    // Each level moves closer to surface (less contrast)
-    const t = (i - 1) / textLevels;
-    const targetL = text1L + (midL - text1L) * t;
-    // Reduce hue tinting for lower levels
-    const hueTint = Math.max(0, 1.0 - (i - 1) * 0.3);
-    const sat = Math.min(8, 8 * hueTint);
-
-    const candidate = new Color({ h: hue, s: sat, l: clampL(targetL), a: 1 });
+    const candidate = Color.fromOklch(clamp01(L), C, hue);
     const ratio = getContrastRatio(candidate, surface);
 
-    // Ensure minimum AA contrast (4.5:1)
-    if (ratio >= 4.5) {
-      tokens.push({ name: `text-${i}`, value: candidate });
-    } else {
-      // Fall back: find a color that meets AA
-      const fallback = findTextWithContrast(hue, surface, targetL, 4.5, isDark, hueTint);
-      tokens.push({ name: `text-${i}`, value: fallback });
+    // Nudge L if text-1 doesn't meet AA (4.5:1) against surface
+    if (i === 1 && ratio < 4.5) {
+      L = isDark ? Math.min(1, L + 0.1) : Math.max(0, L - 0.1);
     }
+
+    tokens.push({ name: `text-${i}`, value: Color.fromOklch(clamp01(L), C, hue) });
   }
 
   return tokens;
 }
 
 /**
- * Generate accent tokens referencing palette vars.
+ * Generate accent tokens — one pair per harmony color.
+ * Values are direct OKLCH, not var() references.
  */
 export function generateAccents(
   palette: FullPalette,
-  mapping: { accent: string; accentSecondary: string },
-  prefix: string,
+  mapping: SemanticsConfig["mapping"],
+  _isDark: boolean,
+): SemanticToken[] {
+  const tokens: SemanticToken[] = [];
+  const names = ["accent", "secondary", "tertiary"] as const;
+  const mappingKeys = [mapping.accent, mapping.secondary, mapping.tertiary];
+
+  for (let i = 0; i < mappingKeys.length; i++) {
+    const harmonyName = mappingKeys[i]!;
+    const harmonyIndex = findHarmonyIndex(palette, harmonyName);
+    if (harmonyIndex >= palette.palettes.length) continue;
+
+    const baseColor = palette.palettes[harmonyIndex]!.base;
+    const fgColor = findAccessibleTextColor(baseColor);
+
+    const tokenName = i === 0 ? "accent" : `accent-${names[i]}`;
+    const fgTokenName = i === 0 ? "accent-foreground" : `accent-${names[i]}-foreground`;
+
+    tokens.push({ name: tokenName, value: baseColor });
+    tokens.push({ name: fgTokenName, value: fgColor });
+  }
+
+  return tokens;
+}
+
+/**
+ * Generate tinted surfaces — one pair per harmony color.
+ * Low-chroma surface variants for cards, sections, callouts.
+ */
+export function generateTintedSurfaces(
+  palette: FullPalette,
+  depth: number,
+  primaryChroma: number,
   isDark: boolean,
 ): SemanticToken[] {
-  const accentIndex = findHarmonyIndex(palette, mapping.accent);
-  const secondaryIndex = findHarmonyIndex(palette, mapping.accentSecondary);
+  const tokens: SemanticToken[] = [];
+  const tintChroma = primaryChroma * 0.15; // ~15% of primary chroma
+  const elevatedDelta = isDark ? 0.03 : -0.03;
+  const surfaceL = clamp01(depth + elevatedDelta);
 
-  const accentName = getHarmonyName(accentIndex);
-  const secondaryName = getHarmonyName(secondaryIndex);
+  for (let i = 0; i < palette.palettes.length; i++) {
+    const name = getHarmonyName(i);
+    const harmonyHue = palette.palettes[i]!.base.oklch.h;
 
-  const accentColor = palette.palettes[accentIndex]!.base;
-  const subtleColor = isDark
-    ? (palette.palettes[accentIndex]!.shades[0] ?? accentColor)
-    : (palette.palettes[accentIndex]!.tints[0] ?? accentColor);
-  const secondaryColor = palette.palettes[secondaryIndex]!.base;
+    const surfaceColor = Color.fromOklch(surfaceL, tintChroma, harmonyHue);
+    // Foreground carries slightly more chroma than the surface
+    const fgL = isDark ? 0.85 : 0.25;
+    const fgColor = Color.fromOklch(fgL, tintChroma * 2, harmonyHue);
 
-  // Subtle uses a lighter tint (light) or darker shade (dark)
-  const subtleScale = isDark ? 600 : 400;
+    tokens.push({ name: `surface-${name}`, value: surfaceColor });
+    tokens.push({ name: `surface-${name}-foreground`, value: fgColor });
+  }
 
-  return [
-    {
-      name: "accent",
-      ref: `--${prefix}-${accentName}-500`,
-      value: accentColor,
-    },
-    {
-      name: "accent-subtle",
-      ref: `--${prefix}-${accentName}-${subtleScale}`,
-      value: subtleColor,
-    },
-    {
-      name: "accent-secondary",
-      ref: `--${prefix}-${secondaryName}-500`,
-      value: secondaryColor,
-    },
-  ];
+  return tokens;
 }
 
 /**
  * Generate semantic CSS using CSS light-dark() function.
- * Produces a single :root block with light-dark(lightVal, darkVal) for each token.
  */
 export function generateLightDarkSemanticCSS(theme: GeneratedTheme): string {
   const { palette, config } = theme;
@@ -267,23 +240,16 @@ export function generateLightDarkSemanticCSS(theme: GeneratedTheme): string {
 
   lines.push("}");
 
-  // Accessibility queries still apply
-  const a11y = config.semantics.accessibility ?? {
-    contrastAdaptive: false,
-    reducedTransparency: false,
-    forcedColors: false,
-    contrastAlgorithm: "wcag2" as const,
-  };
-
-  if (a11y.contrastAdaptive) {
+  // Accessibility queries
+  if (config.output.contrastMedia) {
     lines.push("");
     lines.push(generateContrastAdaptiveCSS(palette, config));
   }
-  if (a11y.reducedTransparency) {
+  if (config.output.reducedTransparency) {
     lines.push("");
     lines.push(generateReducedTransparencyCSS(config, comments));
   }
-  if (a11y.forcedColors) {
+  if (config.output.forcedColors) {
     lines.push("");
     lines.push(generateForcedColorsCSS(comments));
   }
@@ -303,6 +269,7 @@ function pairTokenSets(
     { section: "Borders", light: light.borders, dark: dark.borders },
     { section: "Text Hierarchy", light: light.text, dark: dark.text },
     { section: "Accents", light: light.accents, dark: dark.accents },
+    { section: "Tinted Surfaces", light: light.tintedSurfaces, dark: dark.tintedSurfaces },
   ];
 
   if (light.states && dark.states) {
@@ -316,7 +283,7 @@ function pairTokenSets(
     section,
     tokens: l.map((lightToken, i) => {
       const darkToken = d[i];
-      const colorFormat = "oklch" as const; // light-dark always uses oklch for consistency
+      const colorFormat = "oklch" as const;
       return {
         name: lightToken.name,
         lightVal: formatTokenValueDirect(lightToken, colorFormat),
@@ -340,14 +307,8 @@ function formatTokenValueDirect(token: SemanticToken, colorFormat: ColorFormat):
 export function generateSemanticCSS(theme: GeneratedTheme): string {
   const { palette, config } = theme;
   const mode = config.mode;
-  const colorFormat = config.colorFormat;
+  const colorFormat = config.output.format;
   const comments = config.output.comments;
-  const a11y = config.semantics.accessibility ?? {
-    contrastAdaptive: false,
-    reducedTransparency: false,
-    forcedColors: false,
-    contrastAlgorithm: "wcag2" as const,
-  };
   const lines: string[] = [];
 
   if (mode === "light" || mode === "both") {
@@ -371,17 +332,17 @@ export function generateSemanticCSS(theme: GeneratedTheme): string {
   }
 
   // Accessibility adaptive media queries
-  if (a11y.contrastAdaptive) {
+  if (config.output.contrastMedia) {
     lines.push("");
     lines.push(generateContrastAdaptiveCSS(palette, config));
   }
 
-  if (a11y.reducedTransparency) {
+  if (config.output.reducedTransparency) {
     lines.push("");
     lines.push(generateReducedTransparencyCSS(config, comments));
   }
 
-  if (a11y.forcedColors) {
+  if (config.output.forcedColors) {
     lines.push("");
     lines.push(generateForcedColorsCSS(comments));
   }
@@ -392,34 +353,27 @@ export function generateSemanticCSS(theme: GeneratedTheme): string {
 /**
  * Generate @media (prefers-contrast: more) and (prefers-contrast: less) blocks
  */
-function generateContrastAdaptiveCSS(palette: FullPalette, config: AutoThemeConfig): string {
-  const colorFormat = config.colorFormat;
+function generateContrastAdaptiveCSS(palette: FullPalette, config: ResolvedConfig): string {
+  const colorFormat = config.output.format;
   const comments = config.output.comments;
   const lines: string[] = [];
 
-  // High contrast mode: increase border contrast, strengthen text
+  const primaryHsl = palette.palettes[0]!.base.hsl;
+
   if (comments) lines.push("/* High Contrast Mode */");
   lines.push("@media (prefers-contrast: more) {");
   lines.push("  :root {");
-
-  // Stronger borders
-  const primaryHsl = palette.palettes[0]!.base.hsl;
   const strongBorder = new Color({ h: primaryHsl.h, s: 10, l: 20, a: 1 });
   lines.push(`    --border: ${strongBorder.formatAs(colorFormat)};`);
   lines.push(`    --border-subtle: ${strongBorder.formatAs(colorFormat)};`);
   const strongerBorder = new Color({ h: primaryHsl.h, s: 15, l: 10, a: 1 });
   lines.push(`    --border-strong: ${strongerBorder.formatAs(colorFormat)};`);
-
-  // Stronger text
   const strongText = new Color({ h: 0, s: 0, l: 2, a: 1 });
   lines.push(`    --text-1: ${strongText.formatAs(colorFormat)};`);
   const text2 = new Color({ h: 0, s: 0, l: 15, a: 1 });
   lines.push(`    --text-2: ${text2.formatAs(colorFormat)};`);
-
   lines.push("  }");
   lines.push("");
-
-  // Dark mode high contrast
   lines.push("  .dark {");
   const darkStrongBorder = new Color({ h: primaryHsl.h, s: 10, l: 80, a: 1 });
   lines.push(`    --border: ${darkStrongBorder.formatAs(colorFormat)};`);
@@ -435,7 +389,6 @@ function generateContrastAdaptiveCSS(palette: FullPalette, config: AutoThemeConf
 
   lines.push("");
 
-  // Low contrast mode: soften borders and text
   if (comments) lines.push("/* Low Contrast Mode */");
   lines.push("@media (prefers-contrast: less) {");
   lines.push("  :root {");
@@ -458,17 +411,13 @@ function generateContrastAdaptiveCSS(palette: FullPalette, config: AutoThemeConf
   return lines.join("\n");
 }
 
-/**
- * Generate @media (prefers-reduced-transparency) with opaque alpha fallbacks
- */
-function generateReducedTransparencyCSS(config: AutoThemeConfig, comments: boolean): string {
-  const colorFormat = config.colorFormat;
+function generateReducedTransparencyCSS(config: ResolvedConfig, comments: boolean): string {
+  const colorFormat = config.output.format;
   const lines: string[] = [];
 
   if (comments) lines.push("/* Reduced Transparency Mode */");
   lines.push("@media (prefers-reduced-transparency) {");
   lines.push("  :root {");
-  // Replace semi-transparent overlay with opaque equivalent
   const opaqueOverlay = new Color({ h: 0, s: 0, l: 10, a: 1 });
   lines.push(`    --surface-overlay: ${opaqueOverlay.formatAs(colorFormat)};`);
   lines.push("  }");
@@ -482,9 +431,6 @@ function generateReducedTransparencyCSS(config: AutoThemeConfig, comments: boole
   return lines.join("\n");
 }
 
-/**
- * Generate @media (forced-colors: active) mapping to system colors
- */
 function generateForcedColorsCSS(comments: boolean): string {
   const lines: string[] = [];
 
@@ -492,7 +438,6 @@ function generateForcedColorsCSS(comments: boolean): string {
   lines.push("@media (forced-colors: active) {");
   lines.push("  :root {");
   lines.push("    --surface: Canvas;");
-  lines.push("    --surface-elevated: Canvas;");
   lines.push("    --surface-sunken: Canvas;");
   lines.push("    --text-1: CanvasText;");
   lines.push("    --text-2: CanvasText;");
@@ -501,7 +446,6 @@ function generateForcedColorsCSS(comments: boolean): string {
   lines.push("    --border-subtle: ButtonBorder;");
   lines.push("    --border-strong: CanvasText;");
   lines.push("    --accent: LinkText;");
-  lines.push("    --accent-subtle: LinkText;");
   lines.push("    --accent-secondary: Highlight;");
   lines.push("  }");
   lines.push("}");
@@ -510,10 +454,16 @@ function generateForcedColorsCSS(comments: boolean): string {
 }
 
 /**
- * Replace token values with user-provided overrides, clearing ref.
+ * Replace token values with user-provided overrides.
  */
 export function applyOverrides(tokens: SemanticTokenSet, overrides: Record<string, string>): void {
-  const allGroups = [tokens.surfaces, tokens.borders, tokens.text, tokens.accents];
+  const allGroups = [
+    tokens.surfaces,
+    tokens.borders,
+    tokens.text,
+    tokens.accents,
+    tokens.tintedSurfaces,
+  ];
   if (tokens.states) allGroups.push(tokens.states);
   if (tokens.elevation) allGroups.push(tokens.elevation);
   for (const group of allGroups) {
@@ -558,6 +508,14 @@ function writeTokenBlock(
     lines.push(`    --${t.name}: ${formatTokenValue(t, colorFormat)};`);
   }
 
+  if (tokens.tintedSurfaces.length > 0) {
+    lines.push("");
+    if (comments) lines.push("    /* Tinted Surfaces */");
+    for (const t of tokens.tintedSurfaces) {
+      lines.push(`    --${t.name}: ${formatTokenValue(t, colorFormat)};`);
+    }
+  }
+
   if (tokens.states && tokens.states.length > 0) {
     lines.push("");
     if (comments) lines.push("    /* States */");
@@ -576,61 +534,17 @@ function writeTokenBlock(
 }
 
 function formatTokenValue(token: SemanticToken, colorFormat: ColorFormat): string {
-  if (token.rawCSS) {
-    return token.rawCSS;
-  }
-  if (token.ref) {
-    return `var(${token.ref})`;
-  }
+  if (token.rawCSS) return token.rawCSS;
+  if (token.ref) return `var(${token.ref})`;
   return token.value.formatAs(colorFormat);
 }
 
-function clampL(l: number): number {
-  return Math.max(0, Math.min(100, l));
+function clamp01(v: number): number {
+  return Math.max(0, Math.min(1, v));
 }
 
 /**
- * Find a text color at approximately targetL that meets the given contrast ratio.
- * Adjusts away from surface if the initial attempt doesn't meet the target.
- */
-function findTextWithContrast(
-  hue: number,
-  surface: Color,
-  startL: number,
-  targetRatio: number,
-  isDark: boolean,
-  hueTint: number,
-): Color {
-  const sat = Math.min(8, 8 * hueTint);
-  const step = isDark ? -1 : 1;
-
-  let bestColor = new Color({ h: hue, s: sat, l: clampL(startL), a: 1 });
-  let bestRatio = getContrastRatio(bestColor, surface);
-
-  if (bestRatio >= targetRatio) return bestColor;
-
-  // Walk lightness toward the extreme (0 for light mode, 100 for dark mode)
-  let currentL = startL;
-  for (let i = 0; i < 100; i++) {
-    currentL -= step;
-    if (currentL < 0 || currentL > 100) break;
-
-    const candidate = new Color({ h: hue, s: sat, l: clampL(currentL), a: 1 });
-    const ratio = getContrastRatio(candidate, surface);
-
-    if (ratio > bestRatio) {
-      bestRatio = ratio;
-      bestColor = candidate;
-    }
-
-    if (ratio >= targetRatio) return candidate;
-  }
-
-  return bestColor;
-}
-
-/**
- * Map a harmony name ("primary", "secondary", ...) to a palette index.
+ * Map a harmony name to a palette index.
  */
 function findHarmonyIndex(palette: FullPalette, name: string): number {
   const names = palette.palettes.map((_, i) => getHarmonyName(i));

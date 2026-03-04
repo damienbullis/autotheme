@@ -4,18 +4,18 @@ import { createTestTheme } from "../helpers/test-theme";
 
 describe("generatePreview", () => {
   it("generates valid HTML preview with palette swatches and typography", () => {
-    const theme = createTestTheme();
+    const theme = createTestTheme({ palette: {} });
     const result = generatePreview(theme);
 
     // Correct filename derived from output path
-    expect(result.filename).toBe("./autotheme.preview.html");
+    expect(result.filename).toBe("./src/autotheme.preview.html");
 
     // Valid HTML5 document
     expect(result.content).toContain("<!DOCTYPE html>");
     expect(result.content).toContain("</html>");
 
     // Links to generated CSS
-    expect(result.content).toContain('href="./autotheme.css"');
+    expect(result.content).toContain('href="./src/autotheme.css"');
 
     // Shows theme info
     expect(result.content).toContain("analogous");

@@ -3,7 +3,7 @@ import type { SemanticToken, SemanticTokenSet } from "./semantic";
 
 /**
  * Generate interactive state tokens for accent and surface colors.
- * In light mode, hover/active darken; in dark mode, they lighten.
+ * v2: States use OKLCH L deltas instead of HSL shifts.
  */
 export function generateStateTokens(
   tokens: SemanticTokenSet,
@@ -13,29 +13,31 @@ export function generateStateTokens(
   const isDark = mode === "dark";
   const stateTokens: SemanticToken[] = [];
 
-  // Find accent, accent-secondary, and surface tokens
   const accent = tokens.accents.find((t) => t.name === "accent");
   const accentSecondary = tokens.accents.find((t) => t.name === "accent-secondary");
   const surface = tokens.surfaces.find((t) => t.name === "surface");
 
   if (accent) {
     const base = accent.value;
-    const hover = isDark ? base.lighten(config.hoverShift) : base.darken(config.hoverShift);
-    const active = isDark ? base.lighten(config.activeShift) : base.darken(config.activeShift);
-    const focusRing = base.alpha(config.focusRingAlpha / 100);
-    const disabled = base.desaturate(config.disabledDesat).alpha(config.disabledAlpha / 100);
+    // In dark mode lighten on hover, in light mode darken
+    const hoverDelta = isDark ? config.hover : -config.hover;
+    const activeDelta = isDark ? -config.active : config.active;
+    const hover = base.lighten(Math.abs(hoverDelta) * 100 * (hoverDelta > 0 ? 1 : -1));
+    const active = base.darken(Math.abs(activeDelta) * 100 * (activeDelta > 0 ? 1 : -1));
+    const disabled = base.desaturate(60).alpha(config.disabled.opacity);
 
     stateTokens.push({ name: "accent-hover", value: hover });
     stateTokens.push({ name: "accent-active", value: active });
-    stateTokens.push({ name: "accent-focus-ring", value: focusRing });
     stateTokens.push({ name: "accent-disabled", value: disabled });
   }
 
   if (accentSecondary) {
     const base = accentSecondary.value;
-    const hover = isDark ? base.lighten(config.hoverShift) : base.darken(config.hoverShift);
-    const active = isDark ? base.lighten(config.activeShift) : base.darken(config.activeShift);
-    const disabled = base.desaturate(config.disabledDesat).alpha(config.disabledAlpha / 100);
+    const hoverDelta = isDark ? config.hover : -config.hover;
+    const activeDelta = isDark ? -config.active : config.active;
+    const hover = base.lighten(Math.abs(hoverDelta) * 100 * (hoverDelta > 0 ? 1 : -1));
+    const active = base.darken(Math.abs(activeDelta) * 100 * (activeDelta > 0 ? 1 : -1));
+    const disabled = base.desaturate(60).alpha(config.disabled.opacity);
 
     stateTokens.push({ name: "accent-secondary-hover", value: hover });
     stateTokens.push({ name: "accent-secondary-active", value: active });
@@ -44,8 +46,10 @@ export function generateStateTokens(
 
   if (surface) {
     const base = surface.value;
-    const hover = isDark ? base.lighten(config.hoverShift) : base.darken(config.hoverShift);
-    const active = isDark ? base.lighten(config.activeShift) : base.darken(config.activeShift);
+    const hoverDelta = isDark ? config.hover : -config.hover;
+    const activeDelta = isDark ? -config.active : config.active;
+    const hover = base.lighten(Math.abs(hoverDelta) * 100 * (hoverDelta > 0 ? 1 : -1));
+    const active = base.darken(Math.abs(activeDelta) * 100 * (activeDelta > 0 ? 1 : -1));
 
     stateTokens.push({ name: "surface-hover", value: hover });
     stateTokens.push({ name: "surface-active", value: active });

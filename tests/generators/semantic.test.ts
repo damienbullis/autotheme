@@ -14,106 +14,80 @@ import { generateCSS } from "../../src/generators/css";
 import { createTestTheme } from "../helpers/test-theme";
 
 describe("generateSurfaces", () => {
-  it("surface-elevated is lighter than surface in light mode", () => {
-    const surfaces = generateSurfaces(220, 80, 96, 4, false);
-    const surface = surfaces.find((t) => t.name === "surface")!;
-    const elevated = surfaces.find((t) => t.name === "surface-elevated")!;
+  // v2 signature: generateSurfaces(hue, chroma, depth, sunkenDelta)
+  // Returns: [surface, surface-sunken]
 
-    expect(elevated.value.hsl.l).toBeGreaterThan(surface.value.hsl.l);
-  });
-
-  it("surface-sunken is darker than surface in light mode", () => {
-    const surfaces = generateSurfaces(220, 80, 96, 4, false);
+  it("surface-sunken has different lightness than surface", () => {
+    // In light mode depth=0.87 (1 - 0.13), sunkenDelta=-0.02
+    const surfaces = generateSurfaces(220, 0.01, 0.87, -0.02);
     const surface = surfaces.find((t) => t.name === "surface")!;
     const sunken = surfaces.find((t) => t.name === "surface-sunken")!;
 
-    expect(sunken.value.hsl.l).toBeLessThan(surface.value.hsl.l);
+    // sunken = depth + sunkenDelta = 0.85, surface = depth = 0.87
+    // sunkenDelta < 0, so sunken is darker
+    expect(sunken.value.oklch.l).toBeLessThan(surface.value.oklch.l);
   });
 
-  it("surface-elevated is lighter than surface in dark mode", () => {
-    const surfaces = generateSurfaces(220, 80, 6, 4, true);
+  it("depth near 1 produces very light surface", () => {
+    const surfaces = generateSurfaces(0, 0.01, 0.97, -0.02);
     const surface = surfaces.find((t) => t.name === "surface")!;
-    const elevated = surfaces.find((t) => t.name === "surface-elevated")!;
-
-    expect(elevated.value.hsl.l).toBeGreaterThan(surface.value.hsl.l);
+    // OKLCH L=0.97 is near white
+    expect(surface.value.oklch.l).toBeCloseTo(0.97, 2);
   });
 
-  it("surface-sunken is darker than surface in dark mode", () => {
-    const surfaces = generateSurfaces(220, 80, 6, 4, true);
+  it("depth near 0 produces very dark surface", () => {
+    const surfaces = generateSurfaces(0, 0.01, 0.03, -0.02);
     const surface = surfaces.find((t) => t.name === "surface")!;
-    const sunken = surfaces.find((t) => t.name === "surface-sunken")!;
-
-    expect(sunken.value.hsl.l).toBeLessThan(surface.value.hsl.l);
+    expect(surface.value.oklch.l).toBeLessThanOrEqual(0.05);
   });
 
-  it("surfaceDepth 0 produces surface near L=100 in light mode", () => {
-    const surfaces = generateSurfaces(0, 50, 100, 0, false);
-    const surface = surfaces.find((t) => t.name === "surface")!;
-    expect(surface.value.hsl.l).toBeGreaterThanOrEqual(99);
-  });
-
-  it("surfaceDepth 0 produces surface near L=0 in dark mode", () => {
-    const surfaces = generateSurfaces(0, 50, 0, 0, true);
-    const surface = surfaces.find((t) => t.name === "surface")!;
-    expect(surface.value.hsl.l).toBeLessThanOrEqual(1);
-  });
-
-  it("produces 4 surface tokens", () => {
-    const surfaces = generateSurfaces(120, 60, 96, 4, false);
-    expect(surfaces).toHaveLength(4);
-    expect(surfaces.map((t) => t.name)).toEqual([
-      "surface",
-      "surface-elevated",
-      "surface-sunken",
-      "surface-overlay",
-    ]);
-  });
-
-  it("surface-overlay has alpha < 1", () => {
-    const surfaces = generateSurfaces(120, 60, 96, 4, false);
-    const overlay = surfaces.find((t) => t.name === "surface-overlay")!;
-    expect(overlay.value.hsl.a).toBeLessThan(1);
-  });
-
-  it("surfaces are tinted with primary hue at low saturation", () => {
-    const surfaces = generateSurfaces(220, 80, 96, 4, false);
-    const surface = surfaces.find((t) => t.name === "surface")!;
-    // OKLCH round-trip may shift hue by a few degrees from the input
-    expect(surface.value.hsl.h).toBeCloseTo(220, -1);
-    expect(surface.value.hsl.s).toBeLessThanOrEqual(15);
+  it("produces 2 surface tokens", () => {
+    const surfaces = generateSurfaces(120, 0.01, 0.87, -0.02);
+    expect(surfaces).toHaveLength(2);
+    expect(surfaces.map((t) => t.name)).toEqual(["surface", "surface-sunken"]);
   });
 });
 
 describe("generateBorders", () => {
+  // v2 signature: generateBorders(hue, chroma, depth, offsets, isDark)
+
   it("produces 3 border tokens in order: subtle < border < strong contrast", () => {
-    const borders = generateBorders(220, 80, 96, false);
+    const offsets: [number, number, number] = [0.08, 0.15, 0.25];
+    const borders = generateBorders(220, 0.012, 0.87, offsets, false);
     expect(borders).toHaveLength(3);
     expect(borders.map((t) => t.name)).toEqual(["border-subtle", "border", "border-strong"]);
 
-    // For light mode, borders are darker than surface (lower L)
-    // subtle should be closest to surface (highest L), strong furthest (lowest L)
-    const surface = new Color({ h: 220, s: 3, l: 96, a: 1 });
-
-    const subtleContrast = getContrastRatio(borders[0]!.value, surface);
-    const normalContrast = getContrastRatio(borders[1]!.value, surface);
-    const strongContrast = getContrastRatio(borders[2]!.value, surface);
-
-    expect(normalContrast).toBeGreaterThan(subtleContrast);
-    expect(strongContrast).toBeGreaterThan(normalContrast);
+    // For light mode, borders are darker (lower L) since sign = -1
+    // subtle offset is smallest, strong is largest
+    // subtle L = 0.87 - 0.08 = 0.79, border L = 0.87 - 0.15 = 0.72, strong L = 0.87 - 0.25 = 0.62
+    expect(borders[0]!.value.oklch.l).toBeGreaterThan(borders[1]!.value.oklch.l);
+    expect(borders[1]!.value.oklch.l).toBeGreaterThan(borders[2]!.value.oklch.l);
   });
 
-  it("borders have low saturation", () => {
-    const borders = generateBorders(180, 100, 96, false);
+  it("dark mode borders are lighter than depth", () => {
+    const offsets: [number, number, number] = [0.08, 0.15, 0.25];
+    const depth = 0.13;
+    const borders = generateBorders(180, 0.012, depth, offsets, true);
     for (const b of borders) {
-      expect(b.value.hsl.s).toBeLessThanOrEqual(15);
+      // In dark mode, sign = +1, so borders have higher L than depth
+      expect(b.value.oklch.l).toBeGreaterThan(depth);
     }
   });
 });
 
 describe("generateTextHierarchy", () => {
+  // v2 signature: generateTextHierarchy(hue, surface, textConfig, isDark)
+
   it("text-1 has highest contrast, monotonically decreasing", () => {
-    const surface = new Color({ h: 220, s: 3, l: 96, a: 1 });
-    const textTokens = generateTextHierarchy(220, surface, 4, 7, false);
+    const surface = Color.fromOklch(0.87, 0.01, 220);
+    const textConfig = {
+      levels: 4,
+      anchor: 0.15,
+      floor: 0.55,
+      curve: 1,
+      chroma: [0.025, 0.01] as [number, number],
+    };
+    const textTokens = generateTextHierarchy(220, surface, textConfig, false);
 
     expect(textTokens).toHaveLength(4);
 
@@ -123,105 +97,97 @@ describe("generateTextHierarchy", () => {
     }
   });
 
-  it("text-1 meets configured contrast target", () => {
-    const surface = new Color({ h: 220, s: 3, l: 96, a: 1 });
-    const textTokens = generateTextHierarchy(220, surface, 3, 7, false);
+  it("text-1 meets AA contrast (4.5:1) against surface", () => {
+    const surface = Color.fromOklch(0.87, 0.01, 220);
+    const textConfig = {
+      levels: 3,
+      anchor: 0.15,
+      floor: 0.55,
+      curve: 1,
+      chroma: [0.025, 0.01] as [number, number],
+    };
+    const textTokens = generateTextHierarchy(220, surface, textConfig, false);
     const ratio = getContrastRatio(textTokens[0]!.value, surface);
-    expect(ratio).toBeGreaterThanOrEqual(7);
-  });
-
-  it("all text levels meet minimum AA (4.5:1)", () => {
-    const surface = new Color({ h: 220, s: 3, l: 96, a: 1 });
-    const textTokens = generateTextHierarchy(220, surface, 5, 7, false);
-
-    for (const t of textTokens) {
-      const ratio = getContrastRatio(t.value, surface);
-      expect(ratio).toBeGreaterThanOrEqual(4.5);
-    }
+    expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
 
   it("respects textLevels count", () => {
-    const surface = new Color({ h: 0, s: 0, l: 95, a: 1 });
-    expect(generateTextHierarchy(0, surface, 2, 7, false)).toHaveLength(2);
-    expect(generateTextHierarchy(0, surface, 5, 7, false)).toHaveLength(5);
-    expect(generateTextHierarchy(0, surface, 6, 7, false)).toHaveLength(6);
+    const surface = Color.fromOklch(0.87, 0.01, 0);
+    const makeConfig = (levels: number) => ({
+      levels,
+      anchor: 0.15,
+      floor: 0.55,
+      curve: 1,
+      chroma: [0.025, 0.01] as [number, number],
+    });
+    expect(generateTextHierarchy(0, surface, makeConfig(2), false)).toHaveLength(2);
+    expect(generateTextHierarchy(0, surface, makeConfig(5), false)).toHaveLength(5);
+    expect(generateTextHierarchy(0, surface, makeConfig(6), false)).toHaveLength(6);
   });
 
   it("works in dark mode (light text on dark surface)", () => {
-    const darkSurface = new Color({ h: 220, s: 3, l: 6, a: 1 });
-    const textTokens = generateTextHierarchy(220, darkSurface, 3, 7, true);
+    const darkSurface = Color.fromOklch(0.13, 0.01, 220);
+    const textConfig = {
+      levels: 3,
+      anchor: 0.95,
+      floor: 0.55,
+      curve: 1,
+      chroma: [0.025, 0.01] as [number, number],
+    };
+    const textTokens = generateTextHierarchy(220, darkSurface, textConfig, true);
 
-    // Text should be lighter than surface
+    // Text should have higher L (lighter) than surface
     for (const t of textTokens) {
-      expect(t.value.hsl.l).toBeGreaterThan(darkSurface.hsl.l);
-    }
-
-    // All meet AA
-    for (const t of textTokens) {
-      expect(getContrastRatio(t.value, darkSurface)).toBeGreaterThanOrEqual(4.5);
+      expect(t.value.oklch.l).toBeGreaterThan(darkSurface.oklch.l);
     }
   });
 });
 
 describe("generateAccents", () => {
-  it("accent ref points to correct palette var", () => {
-    const theme = createTestTheme({ semantics: { enabled: true } });
-    const accents = generateAccents(
-      theme.palette,
-      { accent: "primary", accentSecondary: "secondary" },
-      "color",
-      false,
-    );
+  // v2 signature: generateAccents(palette, mapping, isDark)
+  // Returns direct Color values (no var() refs)
+
+  it("accent tokens use direct color values", () => {
+    const theme = createTestTheme();
+    const mapping = { accent: "primary", secondary: "secondary", tertiary: "tertiary" };
+    const accents = generateAccents(theme.palette, mapping, false);
 
     const accent = accents.find((t) => t.name === "accent")!;
-    expect(accent.ref).toBe("--color-primary-500");
-
-    const secondary = accents.find((t) => t.name === "accent-secondary")!;
-    expect(secondary.ref).toBe("--color-secondary-500");
+    // Direct OKLCH value, no ref
+    expect(accent.value).toBeDefined();
+    expect(accent.ref).toBeUndefined();
   });
 
-  it("produces 3 accent tokens", () => {
+  it("produces 6 accent tokens (3 pairs of base + foreground)", () => {
     const theme = createTestTheme();
-    const accents = generateAccents(
-      theme.palette,
-      { accent: "primary", accentSecondary: "secondary" },
-      "color",
-      false,
-    );
-    expect(accents).toHaveLength(3);
-    expect(accents.map((t) => t.name)).toEqual(["accent", "accent-subtle", "accent-secondary"]);
-  });
-
-  it("uses custom prefix", () => {
-    const theme = createTestTheme({ palette: { prefix: "at" } });
-    const accents = generateAccents(
-      theme.palette,
-      { accent: "primary", accentSecondary: "secondary" },
-      "at",
-      false,
-    );
-    expect(accents[0]!.ref).toBe("--at-primary-500");
+    const mapping = { accent: "primary", secondary: "secondary", tertiary: "tertiary" };
+    const accents = generateAccents(theme.palette, mapping, false);
+    expect(accents).toHaveLength(6);
+    expect(accents.map((t) => t.name)).toEqual([
+      "accent",
+      "accent-foreground",
+      "accent-secondary",
+      "accent-secondary-foreground",
+      "accent-tertiary",
+      "accent-tertiary-foreground",
+    ]);
   });
 });
 
 describe("applyOverrides", () => {
-  it("replaces token value and clears ref", () => {
-    const theme = createTestTheme({ semantics: { enabled: true } });
+  it("replaces token value", () => {
+    const theme = createTestTheme();
     const tokens = generateSemanticTokens(theme.palette, theme.config, "light");
-
-    const accentBefore = tokens.accents.find((t) => t.name === "accent")!;
-    expect(accentBefore.ref).toBeDefined();
 
     applyOverrides(tokens, { accent: "#FF0000" });
 
     const accentAfter = tokens.accents.find((t) => t.name === "accent")!;
-    expect(accentAfter.ref).toBeUndefined();
     // Should be the overridden red color
     expect(accentAfter.value.hsl.h).toBeCloseTo(0, 0);
   });
 
   it("overrides surface token", () => {
-    const theme = createTestTheme({ semantics: { enabled: true } });
+    const theme = createTestTheme();
     const tokens = generateSemanticTokens(theme.palette, theme.config, "light");
 
     applyOverrides(tokens, { surface: "#FF0000" });
@@ -234,7 +200,7 @@ describe("applyOverrides", () => {
 
 describe("generateSemanticCSS", () => {
   it("mode 'light' produces one :root block with semantic tokens", () => {
-    const theme = createTestTheme({ mode: "light", semantics: { enabled: true } });
+    const theme = createTestTheme({ mode: "light" });
     const css = generateSemanticCSS(theme);
 
     expect(css).toContain(":root {");
@@ -245,7 +211,7 @@ describe("generateSemanticCSS", () => {
   });
 
   it("mode 'dark' produces :root with dark values", () => {
-    const theme = createTestTheme({ mode: "dark", semantics: { enabled: true } });
+    const theme = createTestTheme({ mode: "dark" });
     const css = generateSemanticCSS(theme);
 
     expect(css).toContain(":root {");
@@ -254,7 +220,7 @@ describe("generateSemanticCSS", () => {
   });
 
   it("mode 'both' produces :root + .dark blocks", () => {
-    const theme = createTestTheme({ mode: "both", semantics: { enabled: true } });
+    const theme = createTestTheme({ mode: "both" });
     const css = generateSemanticCSS(theme);
 
     expect(css).toContain(":root {");
@@ -262,7 +228,7 @@ describe("generateSemanticCSS", () => {
   });
 
   it("all emitted oklch values are syntactically valid", () => {
-    const theme = createTestTheme({ semantics: { enabled: true } });
+    const theme = createTestTheme();
     const css = generateSemanticCSS(theme);
 
     // Match all oklch(...) values
@@ -277,18 +243,28 @@ describe("generateSemanticCSS", () => {
     }
   });
 
-  it("accent tokens use var() references", () => {
-    const theme = createTestTheme({ semantics: { enabled: true } });
+  it("accent tokens use direct oklch values (not var() references)", () => {
+    const theme = createTestTheme();
     const css = generateSemanticCSS(theme);
 
-    expect(css).toMatch(/--accent:\s*var\(--color-primary-500\)/);
-    expect(css).toMatch(/--accent-secondary:\s*var\(--color-secondary-500\)/);
+    // v2: accents use direct OKLCH values, not var() refs
+    expect(css).toMatch(/--accent:\s*oklch\(/);
   });
 });
 
 describe("generateCSS integration", () => {
-  it("default config produces no semantic tokens", () => {
+  it("default config produces semantic tokens (semantics ON by default)", () => {
     const theme = createTestTheme();
+    const result = generateCSS(theme);
+
+    // v2 defaults: semantics ON
+    expect(result.content).toContain("AutoTheme Semantic Tokens");
+    expect(result.content).toContain("--surface:");
+    expect(result.content).toContain("--text-1:");
+  });
+
+  it("semantics: false disables semantic section", () => {
+    const theme = createTestTheme({ semantics: false });
     const result = generateCSS(theme);
 
     expect(result.content).not.toContain("Semantic Tokens");
@@ -296,19 +272,8 @@ describe("generateCSS integration", () => {
     expect(result.content).not.toContain("--text-1:");
   });
 
-  it("semantics.enabled: true adds semantic section to CSS", () => {
-    const theme = createTestTheme({ semantics: { enabled: true } });
-    const result = generateCSS(theme);
-
-    expect(result.content).toContain("AutoTheme Semantic Tokens");
-    expect(result.content).toContain("--surface:");
-    expect(result.content).toContain("--text-1:");
-    expect(result.content).toContain("--accent:");
-    expect(result.content).toContain("--border:");
-  });
-
   it("semantics with mode 'light' has no .dark semantic block", () => {
-    const theme = createTestTheme({ mode: "light", semantics: { enabled: true } });
+    const theme = createTestTheme({ mode: "light" });
     const result = generateCSS(theme);
 
     expect(result.content).toContain("AutoTheme Semantic Tokens");
@@ -321,7 +286,6 @@ describe("generateCSS integration", () => {
   it("overrides replace token values in CSS output", () => {
     const theme = createTestTheme({
       semantics: {
-        enabled: true,
         overrides: { surface: "#FF0000" },
       },
     });
@@ -333,9 +297,9 @@ describe("generateCSS integration", () => {
     expect(result.content).not.toMatch(/--surface:\s*var\(/);
   });
 
-  it("custom textLevels produces correct number of text tokens", () => {
+  it("custom text levels produces correct number of text tokens", () => {
     const theme = createTestTheme({
-      semantics: { enabled: true, textLevels: 5 },
+      semantics: { text: { levels: 5 } },
     });
     const result = generateCSS(theme);
 

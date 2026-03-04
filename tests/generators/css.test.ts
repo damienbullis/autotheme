@@ -126,18 +126,43 @@ describe("generateTypographyNames", () => {
 });
 
 describe("generateCSS", () => {
-  it("generates complete CSS with palette colors and typography for default config", () => {
+  it("generates CSS with base colors and semantic tokens for default config", () => {
     const theme = createTestTheme();
     const result = generateCSS(theme);
 
-    // Correct filename
-    expect(result.filename).toBe("./autotheme.css");
+    // Correct filename (default output.path)
+    expect(result.filename).toBe("./src/autotheme.css");
 
-    // Has root and dark mode blocks
+    // Has root block
     expect(result.content).toContain(":root {");
-    expect(result.content).toContain(".dark {");
 
-    // Has full color scale for primary (50-950 + foreground + contrast + tones)
+    // Default: palette OFF = base colors only (no 50-950 scale)
+    const oklchPattern = /oklch\([^)]+\)/;
+    expect(result.content).toMatch(new RegExp(`--color-primary:\\s*${oklchPattern.source}`));
+    expect(result.content).toMatch(new RegExp(`--color-secondary:\\s*${oklchPattern.source}`));
+    expect(result.content).toMatch(new RegExp(`--color-tertiary:\\s*${oklchPattern.source}`));
+
+    // No full scale when palette is off
+    expect(result.content).not.toContain("--color-primary-500:");
+    expect(result.content).not.toContain("--color-primary-50:");
+
+    // Default: semantics ON - has semantic tokens
+    expect(result.content).toContain("--surface:");
+    expect(result.content).toContain("--text-1:");
+    expect(result.content).toContain("--accent:");
+
+    // Does NOT have optional features by default
+    expect(result.content).not.toContain("Spacing Scale");
+    expect(result.content).not.toContain("Background Images");
+    expect(result.content).not.toContain("Gradients");
+    expect(result.content).not.toContain("Shadcn UI");
+    expect(result.content).not.toContain("Utility Classes");
+  });
+
+  it("generates full palette scale when palette is enabled", () => {
+    const theme = createTestTheme({ palette: {} });
+    const result = generateCSS(theme);
+
     const oklchPattern = /oklch\([^)]+\)/;
     expect(result.content).toMatch(new RegExp(`--color-primary-50:\\s*${oklchPattern.source}`));
     expect(result.content).toMatch(new RegExp(`--color-primary-500:\\s*${oklchPattern.source}`));
@@ -149,27 +174,14 @@ describe("generateCSS", () => {
       new RegExp(`--color-primary-contrast:\\s*${oklchPattern.source}`),
     );
     expect(result.content).toMatch(new RegExp(`--color-primary-tone-1:\\s*${oklchPattern.source}`));
-
-    // Has secondary colors (analogous = 3 colors)
     expect(result.content).toMatch(new RegExp(`--color-secondary-500:\\s*${oklchPattern.source}`));
     expect(result.content).toMatch(new RegExp(`--color-tertiary-500:\\s*${oklchPattern.source}`));
-
-    // Has typography scale (centered, 7 steps default)
-    expect(result.content).toMatch(/--text-base:\s*[\d.]+rem/);
-    expect(result.content).toMatch(/--text-xl:\s*[\d.]+rem/);
-
-    // Does NOT have optional features by default
-    expect(result.content).not.toContain("Spacing Scale");
-    expect(result.content).not.toContain("Background Images");
-    expect(result.content).not.toContain("Gradients");
-    expect(result.content).not.toContain("Shadcn UI");
-    expect(result.content).not.toContain("Utility Classes");
   });
 
   it("includes all optional sections when features are enabled", () => {
     const theme = createTestTheme({
-      shadcn: { enabled: true },
-      spacing: { enabled: true },
+      shadcn: {},
+      spacing: {},
       noise: true,
       gradients: true,
       utilities: true,
@@ -210,15 +222,17 @@ describe("generateCSS", () => {
     expect(result.content).not.toContain(".dark {");
   });
 
-  it("mode 'dark' puts dark values under :root and has no .dark block", () => {
+  it("mode 'dark' produces :root block with dark semantic values and no .dark block", () => {
     const theme = createTestTheme({ mode: "dark" });
     const result = generateCSS(theme);
 
-    // Should have dark overrides under :root
+    // Should have :root
     expect(result.content).toContain(":root {");
+    // No .dark block in dark-only mode
     expect(result.content).not.toContain(".dark {");
-    // Dark mode CSS is emitted under :root
-    expect(result.content).toMatch(/:root \{[\s\S]*Dark Mode/);
+    // Semantic tokens are emitted under :root
+    expect(result.content).toContain("--surface:");
+    expect(result.content).toContain("--text-1:");
   });
 
   it("mode 'both' matches current behavior with :root and .dark", () => {
@@ -262,7 +276,7 @@ describe("generateCSS", () => {
 
   it("generates spacing with independent config when enabled", () => {
     const theme = createTestTheme({
-      spacing: { enabled: true, base: 0.25, ratio: 2, steps: 4 },
+      spacing: { base: 0.25, ratio: 2, steps: 4 },
     });
     const result = generateCSS(theme);
 
@@ -275,7 +289,7 @@ describe("generateCSS", () => {
 
   it("uses manual spacing values when provided", () => {
     const theme = createTestTheme({
-      spacing: { enabled: true, values: [0.5, 1, 2, 4] },
+      spacing: { values: [0.5, 1, 2, 4] },
     });
     const result = generateCSS(theme);
 
@@ -286,7 +300,7 @@ describe("generateCSS", () => {
   });
 
   it("omits typography when disabled", () => {
-    const theme = createTestTheme({ typography: { enabled: false } });
+    const theme = createTestTheme({ typography: false, semantics: false });
     const result = generateCSS(theme);
 
     expect(result.content).not.toContain("Typography Scale");
@@ -294,7 +308,7 @@ describe("generateCSS", () => {
   });
 
   it("uses OKLCH color format for palette and var() refs for shadcn", () => {
-    const theme = createTestTheme({ shadcn: { enabled: true }, semantics: { enabled: true } });
+    const theme = createTestTheme({ palette: {}, shadcn: {} });
     const result = generateCSS(theme);
 
     // Palette colors use OKLCH
@@ -317,9 +331,8 @@ describe("generateCSS", () => {
   it("omits all CSS comments when comments: false", () => {
     const theme = createTestTheme({
       output: { comments: false },
-      semantics: { enabled: true },
-      shadcn: { enabled: true },
-      spacing: { enabled: true },
+      shadcn: {},
+      spacing: {},
       noise: true,
       gradients: true,
       utilities: true,
@@ -329,36 +342,36 @@ describe("generateCSS", () => {
     expect(result.content).not.toContain("*/");
   });
 
-  it("colorFormat 'oklch' outputs oklch() values", () => {
-    const theme = createTestTheme({ colorFormat: "oklch" });
+  it("output.format 'oklch' outputs oklch() values", () => {
+    const theme = createTestTheme({ palette: {}, output: { format: "oklch" } });
     const result = generateCSS(theme);
     expect(result.content).toMatch(/--color-primary-500:\s*oklch\(/);
   });
 
-  it("colorFormat 'hsl' outputs hsl() values", () => {
-    const theme = createTestTheme({ colorFormat: "hsl" });
+  it("output.format 'hsl' outputs hsl() values", () => {
+    const theme = createTestTheme({ palette: {}, output: { format: "hsl" } });
     const result = generateCSS(theme);
     expect(result.content).toMatch(/--color-primary-500:\s*hsl\(/);
     expect(result.content).not.toMatch(/--color-primary-500:\s*oklch\(/);
   });
 
-  it("colorFormat 'rgb' outputs rgb() values", () => {
-    const theme = createTestTheme({ colorFormat: "rgb" });
+  it("output.format 'rgb' outputs rgb() values", () => {
+    const theme = createTestTheme({ palette: {}, output: { format: "rgb" } });
     const result = generateCSS(theme);
     expect(result.content).toMatch(/--color-primary-500:\s*rgb\(/);
   });
 
-  it("colorFormat 'hex' outputs # values", () => {
-    const theme = createTestTheme({ colorFormat: "hex" });
+  it("output.format 'hex' outputs # values", () => {
+    const theme = createTestTheme({ palette: {}, output: { format: "hex" } });
     const result = generateCSS(theme);
     expect(result.content).toMatch(/--color-primary-500:\s*#[0-9a-f]+;/i);
   });
 
-  it("colorFormat is used consistently across all generators", () => {
+  it("output.format is used consistently across all generators", () => {
     const theme = createTestTheme({
-      colorFormat: "hsl",
-      semantics: { enabled: true },
-      shadcn: { enabled: true },
+      palette: {},
+      output: { format: "hsl" },
+      shadcn: {},
     });
     const result = generateCSS(theme);
     // Palette colors use hsl
@@ -369,7 +382,7 @@ describe("generateCSS", () => {
   });
 
   it("generates radius scale when enabled", () => {
-    const theme = createTestTheme({ radius: { enabled: true, base: 0.125, ratio: 2, steps: 4 } });
+    const theme = createTestTheme({ radius: { base: 0.125, ratio: 2, steps: 4 } });
     const result = generateCSS(theme);
     expect(result.content).toContain("--radius-1: 0.125rem;");
     expect(result.content).toContain("--radius-2: 0.250rem;");
@@ -379,7 +392,7 @@ describe("generateCSS", () => {
 
   it("uses manual radius values when provided", () => {
     const theme = createTestTheme({
-      radius: { enabled: true, values: [0.25, 0.5, 1, 2] },
+      radius: { values: [0.25, 0.5, 1, 2] },
     });
     const result = generateCSS(theme);
     expect(result.content).toContain("--radius-1: 0.250rem;");
@@ -388,8 +401,8 @@ describe("generateCSS", () => {
 
   it("radius does not conflict with Shadcn radius", () => {
     const theme = createTestTheme({
-      radius: { enabled: true, steps: 3 },
-      shadcn: { enabled: true },
+      radius: { steps: 3 },
+      shadcn: {},
     });
     const result = generateCSS(theme);
     // Our numeric radius
@@ -420,14 +433,9 @@ describe("generateCSS", () => {
     expect(result.content).not.toContain("elevation-");
   });
 
-  it("all Phase 3 features enabled together produce complete CSS", () => {
+  it("alpha variants enabled produce alpha CSS variables in palette block", () => {
     const theme = createTestTheme({
       palette: { alphaVariants: true },
-      semantics: {
-        enabled: true,
-        states: { enabled: true },
-        elevation: { enabled: true, levels: 4 },
-      },
     });
     const result = generateCSS(theme);
 
@@ -435,15 +443,5 @@ describe("generateCSS", () => {
     expect(result.content).toContain("--color-primary-bg:");
     expect(result.content).toContain("--color-primary-glow:");
     expect(result.content).toContain("--color-secondary-border:");
-
-    // State tokens in semantic block
-    expect(result.content).toContain("--accent-hover:");
-    expect(result.content).toContain("--accent-focus-ring:");
-    expect(result.content).toContain("--surface-hover:");
-
-    // Elevation tokens in semantic block
-    expect(result.content).toContain("--elevation-1-surface:");
-    expect(result.content).toContain("--elevation-4-shadow:");
-    expect(result.content).toContain("--elevation-4-border:");
   });
 });

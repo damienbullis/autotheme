@@ -1,4 +1,4 @@
-import type { AutoThemeConfig } from "./types";
+import type { AutoThemeConfig, DeepPartial } from "./types";
 import { Color } from "../core/color";
 
 const VALID_HARMONIES = [
@@ -16,9 +16,257 @@ const VALID_HARMONIES = [
 
 const VALID_SWING_STRATEGIES = ["linear", "exponential", "alternating"] as const;
 
-type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
+/**
+ * Validate a `boolean | object` field.
+ * Returns the validated value or throws.
+ */
+function validateBooleanOrObject(
+  value: unknown,
+  name: string,
+  objectValidator?: (obj: Record<string, unknown>) => Record<string, unknown>,
+): boolean | Record<string, unknown> | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+    return objectValidator
+      ? objectValidator(value as Record<string, unknown>)
+      : (value as Record<string, unknown>);
+  }
+  throw new Error(`${name} must be a boolean or an object`);
+}
+
+function validatePositiveNumber(value: unknown, name: string): number | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "number" || value <= 0) {
+    throw new Error(`${name} must be a positive number`);
+  }
+  return value;
+}
+
+function validatePositiveInt(value: unknown, name: string): number | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "number" || value < 1) {
+    throw new Error(`${name} must be at least 1`);
+  }
+  return value;
+}
+
+function validateBoolean(value: unknown, name: string): boolean | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "boolean") {
+    throw new Error(`${name} must be a boolean`);
+  }
+  return value;
+}
+
+function validateString(value: unknown, name: string): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string") {
+    throw new Error(`${name} must be a string`);
+  }
+  return value;
+}
+
+function validatePaletteObject(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  if (obj.prefix !== undefined) {
+    if (typeof obj.prefix !== "string") throw new Error("palette.prefix must be a string");
+    if (!/^[a-zA-Z][a-zA-Z0-9-]*$/.test(obj.prefix)) {
+      throw new Error(
+        "palette.prefix must start with a letter and contain only letters, numbers, and hyphens",
+      );
+    }
+    result.prefix = obj.prefix;
+  }
+  const numFields = [
+    "contrastTarget",
+    "tints",
+    "shades",
+    "tones",
+    "tintIncrement",
+    "shadeIncrement",
+    "toneIncrement",
+    "swing",
+  ] as const;
+  for (const key of numFields) {
+    if (obj[key] !== undefined) {
+      if (typeof obj[key] !== "number" || (obj[key] as number) <= 0) {
+        throw new Error(`palette.${key} must be a positive number`);
+      }
+      result[key] = obj[key];
+    }
+  }
+  if (obj.chromaBalance !== undefined)
+    result.chromaBalance = validateBoolean(obj.chromaBalance, "palette.chromaBalance");
+  if (obj.alphaVariants !== undefined)
+    result.alphaVariants = validateBoolean(obj.alphaVariants, "palette.alphaVariants");
+  if (obj.swingStrategy !== undefined) {
+    if (
+      typeof obj.swingStrategy !== "string" ||
+      !VALID_SWING_STRATEGIES.includes(obj.swingStrategy as (typeof VALID_SWING_STRATEGIES)[number])
+    ) {
+      throw new Error(`palette.swingStrategy must be one of: ${VALID_SWING_STRATEGIES.join(", ")}`);
+    }
+    result.swingStrategy = obj.swingStrategy;
+  }
+  if (obj.alphaSteps !== undefined) {
+    if (
+      typeof obj.alphaSteps !== "object" ||
+      obj.alphaSteps === null ||
+      Array.isArray(obj.alphaSteps)
+    ) {
+      throw new Error("palette.alphaSteps must be an object");
+    }
+    const a = obj.alphaSteps as Record<string, unknown>;
+    const alphaResult: Record<string, number> = {};
+    for (const key of ["bg", "border", "glow", "hover"] as const) {
+      if (a[key] !== undefined) {
+        if (typeof a[key] !== "number")
+          throw new Error(`palette.alphaSteps.${key} must be a number`);
+        alphaResult[key] = a[key] as number;
+      }
+    }
+    result.alphaSteps = alphaResult;
+  }
+  return result;
+}
+
+function validateSemanticsObject(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  if (obj.depth !== undefined) {
+    if (typeof obj.depth !== "number" || obj.depth < 0 || obj.depth > 1) {
+      throw new Error("semantics.depth must be between 0 and 1");
+    }
+    result.depth = obj.depth;
+  }
+  if (obj.text !== undefined) {
+    if (typeof obj.text !== "object" || obj.text === null || Array.isArray(obj.text)) {
+      throw new Error("semantics.text must be an object");
+    }
+    const t = obj.text as Record<string, unknown>;
+    const textResult: Record<string, unknown> = {};
+    if (t.levels !== undefined)
+      textResult.levels = validatePositiveInt(t.levels, "semantics.text.levels");
+    if (t.anchor !== undefined) {
+      if (typeof t.anchor !== "number") throw new Error("semantics.text.anchor must be a number");
+      textResult.anchor = t.anchor;
+    }
+    if (t.floor !== undefined) {
+      if (typeof t.floor !== "number") throw new Error("semantics.text.floor must be a number");
+      textResult.floor = t.floor;
+    }
+    if (t.curve !== undefined)
+      textResult.curve = validatePositiveNumber(t.curve, "semantics.text.curve");
+    if (t.chroma !== undefined) {
+      if (
+        !Array.isArray(t.chroma) ||
+        t.chroma.length !== 2 ||
+        typeof t.chroma[0] !== "number" ||
+        typeof t.chroma[1] !== "number"
+      ) {
+        throw new Error("semantics.text.chroma must be [number, number]");
+      }
+      textResult.chroma = t.chroma;
+    }
+    result.text = textResult;
+  }
+  if (obj.surfaces !== undefined) {
+    if (typeof obj.surfaces !== "object" || obj.surfaces === null || Array.isArray(obj.surfaces)) {
+      throw new Error("semantics.surfaces must be an object");
+    }
+    const s = obj.surfaces as Record<string, unknown>;
+    const surfResult: Record<string, unknown> = {};
+    if (s.chroma !== undefined) {
+      if (typeof s.chroma !== "number")
+        throw new Error("semantics.surfaces.chroma must be a number");
+      surfResult.chroma = s.chroma;
+    }
+    if (s.sunkenDelta !== undefined) {
+      if (typeof s.sunkenDelta !== "number")
+        throw new Error("semantics.surfaces.sunkenDelta must be a number");
+      surfResult.sunkenDelta = s.sunkenDelta;
+    }
+    result.surfaces = surfResult;
+  }
+  if (obj.borders !== undefined) {
+    if (typeof obj.borders !== "object" || obj.borders === null || Array.isArray(obj.borders)) {
+      throw new Error("semantics.borders must be an object");
+    }
+    const b = obj.borders as Record<string, unknown>;
+    const borderResult: Record<string, unknown> = {};
+    if (b.offsets !== undefined) {
+      if (
+        !Array.isArray(b.offsets) ||
+        b.offsets.length !== 3 ||
+        !b.offsets.every((v: unknown) => typeof v === "number")
+      ) {
+        throw new Error("semantics.borders.offsets must be [number, number, number]");
+      }
+      borderResult.offsets = b.offsets;
+    }
+    if (b.chroma !== undefined) {
+      if (typeof b.chroma !== "number")
+        throw new Error("semantics.borders.chroma must be a number");
+      borderResult.chroma = b.chroma;
+    }
+    result.borders = borderResult;
+  }
+  if (obj.mapping !== undefined) {
+    if (typeof obj.mapping !== "object" || obj.mapping === null || Array.isArray(obj.mapping)) {
+      throw new Error("semantics.mapping must be an object");
+    }
+    const m = obj.mapping as Record<string, unknown>;
+    const mapResult: Record<string, unknown> = {};
+    for (const key of ["accent", "secondary", "tertiary"] as const) {
+      if (m[key] !== undefined) {
+        if (typeof m[key] !== "string")
+          throw new Error(`semantics.mapping.${key} must be a string`);
+        mapResult[key] = m[key];
+      }
+    }
+    result.mapping = mapResult;
+  }
+  if (obj.overrides !== undefined) {
+    if (
+      typeof obj.overrides !== "object" ||
+      obj.overrides === null ||
+      Array.isArray(obj.overrides)
+    ) {
+      throw new Error("semantics.overrides must be an object");
+    }
+    result.overrides = obj.overrides;
+  }
+  return result;
+}
+
+function validateScaleObject(
+  obj: Record<string, unknown>,
+  prefix: string,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  if (obj.base !== undefined) result.base = validatePositiveNumber(obj.base, `${prefix}.base`);
+  if (obj.ratio !== undefined) result.ratio = validatePositiveNumber(obj.ratio, `${prefix}.ratio`);
+  if (obj.steps !== undefined) result.steps = validatePositiveInt(obj.steps, `${prefix}.steps`);
+  if (obj.fluid !== undefined) result.fluid = validateBoolean(obj.fluid, `${prefix}.fluid`);
+  if (obj.fluidRange !== undefined) {
+    if (
+      !Array.isArray(obj.fluidRange) ||
+      obj.fluidRange.length !== 2 ||
+      typeof obj.fluidRange[0] !== "number" ||
+      typeof obj.fluidRange[1] !== "number"
+    ) {
+      throw new Error(`${prefix}.fluidRange must be [number, number]`);
+    }
+    result.fluidRange = obj.fluidRange;
+  }
+  if (obj.names !== undefined) result.names = obj.names;
+  if (obj.values !== undefined) result.values = obj.values;
+  if (obj.colorTint !== undefined) {
+    if (typeof obj.colorTint !== "number") throw new Error(`${prefix}.colorTint must be a number`);
+    result.colorTint = obj.colorTint;
+  }
+  return result;
+}
 
 export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
   if (typeof config !== "object" || config === null) {
@@ -28,19 +276,9 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
   const result: DeepPartial<AutoThemeConfig> = {};
   const obj = config as Record<string, unknown>;
 
-  // Validate version
-  if (obj.version !== undefined) {
-    if (obj.version !== 2) {
-      throw new Error("version must be 2");
-    }
-    result.version = 2;
-  }
-
   // Validate color
   if (obj.color !== undefined) {
-    if (typeof obj.color !== "string") {
-      throw new Error("color must be a string");
-    }
+    if (typeof obj.color !== "string") throw new Error("color must be a string");
     try {
       new Color(obj.color);
       result.color = obj.color;
@@ -82,9 +320,8 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
 
   // Validate harmony
   if (obj.harmony !== undefined) {
-    if (typeof obj.harmony !== "string") {
+    if (typeof obj.harmony !== "string")
       throw new Error(`Invalid harmony: ${obj.harmony}. Must be a string.`);
-    }
     const isBuiltIn = VALID_HARMONIES.includes(obj.harmony as (typeof VALID_HARMONIES)[number]);
     const customHarmonies = obj.harmonies as Record<string, unknown> | undefined;
     const isCustom = customHarmonies && obj.harmony in customHarmonies;
@@ -98,227 +335,8 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
 
   // Validate preset
   if (obj.preset !== undefined) {
-    if (typeof obj.preset !== "string") {
-      throw new Error("preset must be a string");
-    }
-    result.preset = obj.preset;
-  }
-
-  // Validate swing
-  if (obj.swing !== undefined) {
-    if (typeof obj.swing !== "number" || obj.swing <= 0) {
-      throw new Error("swing must be a positive number");
-    }
-    result.swing = obj.swing;
-  }
-
-  // Validate swingStrategy
-  if (obj.swingStrategy !== undefined) {
-    if (
-      typeof obj.swingStrategy !== "string" ||
-      !VALID_SWING_STRATEGIES.includes(obj.swingStrategy as (typeof VALID_SWING_STRATEGIES)[number])
-    ) {
-      throw new Error(
-        `Invalid swingStrategy: ${obj.swingStrategy}. Must be one of: ${VALID_SWING_STRATEGIES.join(", ")}`,
-      );
-    }
-    result.swingStrategy = obj.swingStrategy as AutoThemeConfig["swingStrategy"];
-  }
-
-  // Validate palette (nested object)
-  if (obj.palette !== undefined) {
-    if (typeof obj.palette !== "object" || obj.palette === null || Array.isArray(obj.palette)) {
-      throw new Error("palette must be an object");
-    }
-    const paletteObj = obj.palette as Record<string, unknown>;
-    result.palette = {};
-
-    if (paletteObj.prefix !== undefined) {
-      if (typeof paletteObj.prefix !== "string") {
-        throw new Error("palette.prefix must be a string");
-      }
-      if (!/^[a-zA-Z][a-zA-Z0-9-]*$/.test(paletteObj.prefix)) {
-        throw new Error(
-          "palette.prefix must start with a letter and contain only letters, numbers, and hyphens",
-        );
-      }
-      result.palette.prefix = paletteObj.prefix;
-    }
-
-    if (paletteObj.contrastTarget !== undefined) {
-      if (
-        typeof paletteObj.contrastTarget !== "number" ||
-        paletteObj.contrastTarget < 3 ||
-        paletteObj.contrastTarget > 21
-      ) {
-        throw new Error("palette.contrastTarget must be between 3 and 21");
-      }
-      result.palette.contrastTarget = paletteObj.contrastTarget;
-    }
-
-    for (const key of ["tints", "shades", "tones"] as const) {
-      if (paletteObj[key] !== undefined) {
-        if (typeof paletteObj[key] !== "number" || (paletteObj[key] as number) < 1) {
-          throw new Error(`palette.${key} must be a positive integer`);
-        }
-        result.palette[key] = paletteObj[key] as number;
-      }
-    }
-
-    for (const key of ["tintIncrement", "shadeIncrement", "toneIncrement"] as const) {
-      if (paletteObj[key] !== undefined) {
-        if (typeof paletteObj[key] !== "number" || (paletteObj[key] as number) <= 0) {
-          throw new Error(`palette.${key} must be a positive number`);
-        }
-        result.palette[key] = paletteObj[key] as number;
-      }
-    }
-
-    if (paletteObj.alphaVariants !== undefined) {
-      if (typeof paletteObj.alphaVariants !== "boolean") {
-        throw new Error("palette.alphaVariants must be a boolean");
-      }
-      result.palette.alphaVariants = paletteObj.alphaVariants;
-    }
-
-    if (paletteObj.alphaSteps !== undefined) {
-      if (
-        typeof paletteObj.alphaSteps !== "object" ||
-        paletteObj.alphaSteps === null ||
-        Array.isArray(paletteObj.alphaSteps)
-      ) {
-        throw new Error("palette.alphaSteps must be an object");
-      }
-      const alphaObj = paletteObj.alphaSteps as Record<string, unknown>;
-      result.palette.alphaSteps = {} as Record<string, number>;
-      for (const key of ["bg", "border", "glow", "hover"] as const) {
-        if (alphaObj[key] !== undefined) {
-          if (typeof alphaObj[key] !== "number") {
-            throw new Error(`palette.alphaSteps.${key} must be a number`);
-          }
-          (result.palette.alphaSteps as Record<string, number>)[key] = alphaObj[key] as number;
-        }
-      }
-    }
-  }
-
-  // Validate typography (nested object)
-  if (obj.typography !== undefined) {
-    if (
-      typeof obj.typography !== "object" ||
-      obj.typography === null ||
-      Array.isArray(obj.typography)
-    ) {
-      throw new Error("typography must be an object");
-    }
-    const typoObj = obj.typography as Record<string, unknown>;
-    result.typography = {};
-
-    if (typoObj.base !== undefined) {
-      if (typeof typoObj.base !== "number" || typoObj.base <= 0) {
-        throw new Error("typography.base must be a positive number");
-      }
-      result.typography.base = typoObj.base;
-    }
-
-    if (typoObj.ratio !== undefined) {
-      if (typeof typoObj.ratio !== "number" || typoObj.ratio <= 0) {
-        throw new Error("typography.ratio must be a positive number");
-      }
-      result.typography.ratio = typoObj.ratio;
-    }
-
-    if (typoObj.steps !== undefined) {
-      if (typeof typoObj.steps !== "number" || typoObj.steps < 1) {
-        throw new Error("typography.steps must be at least 1");
-      }
-      result.typography.steps = typoObj.steps;
-    }
-
-    if (typoObj.fluid !== undefined) {
-      if (typeof typoObj.fluid !== "boolean") {
-        throw new Error("typography.fluid must be a boolean");
-      }
-      result.typography.fluid = typoObj.fluid;
-    }
-
-    if (typoObj.fluidRange !== undefined) {
-      if (
-        !Array.isArray(typoObj.fluidRange) ||
-        typoObj.fluidRange.length !== 2 ||
-        typeof typoObj.fluidRange[0] !== "number" ||
-        typeof typoObj.fluidRange[1] !== "number"
-      ) {
-        throw new Error("typography.fluidRange must be an array of two numbers [min, max]");
-      }
-      result.typography.fluidRange = typoObj.fluidRange as [number, number];
-    }
-  }
-
-  // Validate spacing (nested object)
-  if (obj.spacing !== undefined) {
-    if (typeof obj.spacing !== "object" || obj.spacing === null || Array.isArray(obj.spacing)) {
-      throw new Error("spacing must be an object");
-    }
-    const spacingObj = obj.spacing as Record<string, unknown>;
-    result.spacing = {};
-
-    if (spacingObj.enabled !== undefined) {
-      if (typeof spacingObj.enabled !== "boolean") {
-        throw new Error("spacing.enabled must be a boolean");
-      }
-      result.spacing.enabled = spacingObj.enabled;
-    }
-
-    if (spacingObj.base !== undefined) {
-      if (typeof spacingObj.base !== "number" || spacingObj.base <= 0) {
-        throw new Error("spacing.base must be a positive number");
-      }
-      result.spacing.base = spacingObj.base;
-    }
-
-    if (spacingObj.ratio !== undefined) {
-      if (typeof spacingObj.ratio !== "number" || spacingObj.ratio <= 0) {
-        throw new Error("spacing.ratio must be a positive number");
-      }
-      result.spacing.ratio = spacingObj.ratio;
-    }
-
-    if (spacingObj.steps !== undefined) {
-      if (typeof spacingObj.steps !== "number" || spacingObj.steps < 1) {
-        throw new Error("spacing.steps must be at least 1");
-      }
-      result.spacing.steps = spacingObj.steps;
-    }
-
-    if (spacingObj.fluid !== undefined) {
-      if (typeof spacingObj.fluid !== "boolean") {
-        throw new Error("spacing.fluid must be a boolean");
-      }
-      result.spacing.fluid = spacingObj.fluid;
-    }
-
-    if (spacingObj.fluidRange !== undefined) {
-      if (
-        !Array.isArray(spacingObj.fluidRange) ||
-        spacingObj.fluidRange.length !== 2 ||
-        typeof spacingObj.fluidRange[0] !== "number" ||
-        typeof spacingObj.fluidRange[1] !== "number"
-      ) {
-        throw new Error("spacing.fluidRange must be an array of two numbers [min, max]");
-      }
-      result.spacing.fluidRange = spacingObj.fluidRange as [number, number];
-    }
-  }
-
-  // Validate simple boolean toggles
-  for (const key of ["gradients", "noise", "utilities"] as const) {
-    if (obj[key] !== undefined) {
-      if (typeof obj[key] !== "boolean") {
-        throw new Error(`${key} must be a boolean`);
-      }
-      result[key] = obj[key] as boolean;
-    }
+    const preset = validateString(obj.preset, "preset");
+    if (preset !== undefined) result.preset = preset;
   }
 
   // Validate mode
@@ -329,263 +347,116 @@ export function validateConfig(config: unknown): DeepPartial<AutoThemeConfig> {
     result.mode = obj.mode as AutoThemeConfig["mode"];
   }
 
-  // Validate semantics (nested object)
-  if (obj.semantics !== undefined) {
-    if (
-      typeof obj.semantics !== "object" ||
-      obj.semantics === null ||
-      Array.isArray(obj.semantics)
-    ) {
-      throw new Error("semantics must be an object");
-    }
-    const semObj = obj.semantics as Record<string, unknown>;
-    result.semantics = {};
+  // Validate features with boolean | Config pattern
+  const featureValidators: Record<
+    string,
+    (obj: Record<string, unknown>) => Record<string, unknown>
+  > = {
+    palette: validatePaletteObject,
+    semantics: validateSemanticsObject,
+    typography: (o) => validateScaleObject(o, "typography"),
+    spacing: (o) => validateScaleObject(o, "spacing"),
+    shadows: (o) => validateScaleObject(o, "shadows"),
+    radius: (o) => validateScaleObject(o, "radius"),
+  };
 
-    if (semObj.enabled !== undefined) {
-      if (typeof semObj.enabled !== "boolean") {
-        throw new Error("semantics.enabled must be a boolean");
-      }
-      result.semantics.enabled = semObj.enabled;
-    }
-
-    if (semObj.surfaceDepth !== undefined) {
-      if (typeof semObj.surfaceDepth !== "number" || semObj.surfaceDepth < 1) {
-        throw new Error("semantics.surfaceDepth must be a positive number");
-      }
-      result.semantics.surfaceDepth = semObj.surfaceDepth;
-    }
-
-    if (semObj.textLevels !== undefined) {
-      if (typeof semObj.textLevels !== "number" || semObj.textLevels < 1) {
-        throw new Error("semantics.textLevels must be a positive number");
-      }
-      result.semantics.textLevels = semObj.textLevels;
-    }
-
-    if (semObj.states !== undefined) {
-      if (
-        typeof semObj.states !== "object" ||
-        semObj.states === null ||
-        Array.isArray(semObj.states)
-      ) {
-        throw new Error("semantics.states must be an object");
-      }
-      const statesObj = semObj.states as Record<string, unknown>;
-      result.semantics.states = {} as Record<string, unknown>;
-      if (statesObj.enabled !== undefined) {
-        if (typeof statesObj.enabled !== "boolean") {
-          throw new Error("semantics.states.enabled must be a boolean");
-        }
-        (result.semantics.states as Record<string, unknown>).enabled = statesObj.enabled;
-      }
-      for (const key of [
-        "hoverShift",
-        "activeShift",
-        "focusRingAlpha",
-        "disabledAlpha",
-        "disabledDesat",
-      ] as const) {
-        if (statesObj[key] !== undefined) {
-          if (typeof statesObj[key] !== "number") {
-            throw new Error(`semantics.states.${key} must be a number`);
-          }
-          (result.semantics.states as Record<string, unknown>)[key] = statesObj[key] as number;
-        }
-      }
-    }
-
-    if (semObj.accessibility !== undefined) {
-      if (
-        typeof semObj.accessibility !== "object" ||
-        semObj.accessibility === null ||
-        Array.isArray(semObj.accessibility)
-      ) {
-        throw new Error("semantics.accessibility must be an object");
-      }
-      const a11yObj = semObj.accessibility as Record<string, unknown>;
-      result.semantics.accessibility = {} as Record<string, unknown>;
-      for (const key of ["contrastAdaptive", "reducedTransparency", "forcedColors"] as const) {
-        if (a11yObj[key] !== undefined) {
-          if (typeof a11yObj[key] !== "boolean") {
-            throw new Error(`semantics.accessibility.${key} must be a boolean`);
-          }
-          (result.semantics.accessibility as Record<string, unknown>)[key] = a11yObj[
-            key
-          ] as boolean;
-        }
-      }
-      if (a11yObj.contrastAlgorithm !== undefined) {
-        if (
-          typeof a11yObj.contrastAlgorithm !== "string" ||
-          !["wcag2", "apca"].includes(a11yObj.contrastAlgorithm)
-        ) {
-          throw new Error('semantics.accessibility.contrastAlgorithm must be "wcag2" or "apca"');
-        }
-        (result.semantics.accessibility as Record<string, unknown>).contrastAlgorithm =
-          a11yObj.contrastAlgorithm;
-      }
-    }
-
-    if (semObj.temperature !== undefined) {
-      if (
-        typeof semObj.temperature !== "number" ||
-        semObj.temperature < -1 ||
-        semObj.temperature > 1
-      ) {
-        throw new Error("semantics.temperature must be a number between -1 and 1");
-      }
-      result.semantics.temperature = semObj.temperature;
-    }
-
-    if (semObj.elevation !== undefined) {
-      if (
-        typeof semObj.elevation !== "object" ||
-        semObj.elevation === null ||
-        Array.isArray(semObj.elevation)
-      ) {
-        throw new Error("semantics.elevation must be an object");
-      }
-      const elevObj = semObj.elevation as Record<string, unknown>;
-      result.semantics.elevation = {} as Record<string, unknown>;
-      if (elevObj.enabled !== undefined) {
-        if (typeof elevObj.enabled !== "boolean") {
-          throw new Error("semantics.elevation.enabled must be a boolean");
-        }
-        (result.semantics.elevation as Record<string, unknown>).enabled = elevObj.enabled;
-      }
-      if (elevObj.levels !== undefined) {
-        if (typeof elevObj.levels !== "number" || elevObj.levels < 1) {
-          throw new Error("semantics.elevation.levels must be a positive number");
-        }
-        (result.semantics.elevation as Record<string, unknown>).levels = elevObj.levels;
+  for (const [key, validator] of Object.entries(featureValidators)) {
+    if (obj[key] !== undefined) {
+      const validated = validateBooleanOrObject(obj[key], key, validator);
+      if (validated !== undefined) {
+        (result as Record<string, unknown>)[key] = validated;
       }
     }
   }
 
-  // Validate motion (nested object)
+  // States
+  if (obj.states !== undefined) {
+    const v = validateBooleanOrObject(obj.states, "states", (o) => {
+      const r: Record<string, unknown> = {};
+      if (o.hover !== undefined) {
+        if (typeof o.hover !== "number") throw new Error("states.hover must be a number");
+        r.hover = o.hover;
+      }
+      if (o.active !== undefined) {
+        if (typeof o.active !== "number") throw new Error("states.active must be a number");
+        r.active = o.active;
+      }
+      if (o.focus !== undefined) r.focus = o.focus;
+      if (o.disabled !== undefined) r.disabled = o.disabled;
+      return r;
+    });
+    if (v !== undefined) result.states = v as AutoThemeConfig["states"];
+  }
+
+  // Elevation
+  if (obj.elevation !== undefined) {
+    const v = validateBooleanOrObject(obj.elevation, "elevation", (o) => {
+      const r: Record<string, unknown> = {};
+      if (o.levels !== undefined) r.levels = validatePositiveInt(o.levels, "elevation.levels");
+      if (o.delta !== undefined) r.delta = validatePositiveNumber(o.delta, "elevation.delta");
+      if (o.tintShadows !== undefined)
+        r.tintShadows = validateBoolean(o.tintShadows, "elevation.tintShadows");
+      return r;
+    });
+    if (v !== undefined) result.elevation = v as AutoThemeConfig["elevation"];
+  }
+
+  // Motion
   if (obj.motion !== undefined) {
-    if (typeof obj.motion !== "object" || obj.motion === null || Array.isArray(obj.motion)) {
-      throw new Error("motion must be an object");
-    }
-    const motionObj = obj.motion as Record<string, unknown>;
-    result.motion = {};
-
-    if (motionObj.enabled !== undefined) {
-      if (typeof motionObj.enabled !== "boolean") {
-        throw new Error("motion.enabled must be a boolean");
-      }
-      result.motion.enabled = motionObj.enabled;
-    }
-
-    if (motionObj.reducedMotion !== undefined) {
-      if (typeof motionObj.reducedMotion !== "boolean") {
-        throw new Error("motion.reducedMotion must be a boolean");
-      }
-      result.motion.reducedMotion = motionObj.reducedMotion;
-    }
-
-    if (motionObj.spring !== undefined) {
-      if (
-        typeof motionObj.spring !== "object" ||
-        motionObj.spring === null ||
-        Array.isArray(motionObj.spring)
-      ) {
-        throw new Error("motion.spring must be an object");
-      }
-      const springObj = motionObj.spring as Record<string, unknown>;
-      result.motion.spring = {} as Record<string, number>;
-      for (const key of ["stiffness", "damping", "mass"] as const) {
-        if (springObj[key] !== undefined) {
-          if (typeof springObj[key] !== "number" || (springObj[key] as number) <= 0) {
-            throw new Error(`motion.spring.${key} must be a positive number`);
-          }
-          (result.motion.spring as Record<string, number>)[key] = springObj[key] as number;
-        }
-      }
-    }
-
-    if (motionObj.durations !== undefined) {
-      if (
-        typeof motionObj.durations !== "object" ||
-        motionObj.durations === null ||
-        Array.isArray(motionObj.durations)
-      ) {
-        throw new Error("motion.durations must be an object");
-      }
-      const durObj = motionObj.durations as Record<string, unknown>;
-      result.motion.durations = {} as Record<string, number>;
-      for (const key of ["base", "ratio"] as const) {
-        if (durObj[key] !== undefined) {
-          if (typeof durObj[key] !== "number" || (durObj[key] as number) <= 0) {
-            throw new Error(`motion.durations.${key} must be a positive number`);
-          }
-          (result.motion.durations as Record<string, number>)[key] = durObj[key] as number;
-        }
-      }
-      if (durObj.steps !== undefined) {
-        if (typeof durObj.steps !== "number" || durObj.steps < 1) {
-          throw new Error("motion.durations.steps must be at least 1");
-        }
-        (result.motion.durations as Record<string, number>).steps = durObj.steps;
-      }
-    }
+    const v = validateBooleanOrObject(obj.motion, "motion");
+    if (v !== undefined) result.motion = v as AutoThemeConfig["motion"];
   }
 
-  // Validate shadcn (nested object)
+  // Shadcn
   if (obj.shadcn !== undefined) {
-    if (typeof obj.shadcn !== "object" || obj.shadcn === null || Array.isArray(obj.shadcn)) {
-      throw new Error("shadcn must be an object");
-    }
-    const shadcnObj = obj.shadcn as Record<string, unknown>;
-    result.shadcn = {};
+    const v = validateBooleanOrObject(obj.shadcn, "shadcn", (o) => {
+      const r: Record<string, unknown> = {};
+      if (o.radius !== undefined) r.radius = validateString(o.radius, "shadcn.radius");
+      return r;
+    });
+    if (v !== undefined) result.shadcn = v as AutoThemeConfig["shadcn"];
+  }
 
-    if (shadcnObj.enabled !== undefined) {
-      if (typeof shadcnObj.enabled !== "boolean") {
-        throw new Error("shadcn.enabled must be a boolean");
-      }
-      result.shadcn.enabled = shadcnObj.enabled;
-    }
-
-    if (shadcnObj.radius !== undefined) {
-      if (typeof shadcnObj.radius !== "string") {
-        throw new Error("shadcn.radius must be a string");
-      }
-      result.shadcn.radius = shadcnObj.radius;
+  // Simple boolean toggles
+  for (const key of ["gradients", "noise", "utilities"] as const) {
+    if (obj[key] !== undefined) {
+      result[key] = validateBoolean(obj[key], key) as boolean;
     }
   }
 
-  // Validate output (nested object)
+  // Output
   if (obj.output !== undefined) {
     if (typeof obj.output !== "object" || obj.output === null || Array.isArray(obj.output)) {
       throw new Error("output must be an object");
     }
     const outputObj = obj.output as Record<string, unknown>;
-    result.output = {};
-
-    if (outputObj.path !== undefined) {
-      if (typeof outputObj.path !== "string") {
-        throw new Error("output.path must be a string");
+    const outputResult: Record<string, unknown> = {};
+    if (outputObj.path !== undefined)
+      outputResult.path = validateString(outputObj.path, "output.path");
+    if (outputObj.format !== undefined) {
+      if (
+        typeof outputObj.format !== "string" ||
+        !["oklch", "hsl", "rgb", "hex"].includes(outputObj.format)
+      ) {
+        throw new Error('output.format must be one of: "oklch", "hsl", "rgb", "hex"');
       }
-      result.output.path = outputObj.path;
+      outputResult.format = outputObj.format;
     }
-
     for (const key of [
       "tailwind",
       "preview",
-      "darkModeScript",
+      "comments",
       "layers",
-      "reactive",
       "lightDark",
-      "registered",
-      "p3",
+      "contrastMedia",
+      "reducedTransparency",
+      "forcedColors",
     ] as const) {
       if (outputObj[key] !== undefined) {
-        if (typeof outputObj[key] !== "boolean") {
-          throw new Error(`output.${key} must be a boolean`);
-        }
-        result.output[key] = outputObj[key] as boolean;
+        outputResult[key] = validateBoolean(outputObj[key], `output.${key}`);
       }
     }
+    result.output = outputResult as DeepPartial<AutoThemeConfig["output"]>;
   }
 
   return result;

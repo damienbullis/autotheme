@@ -1,18 +1,17 @@
 import { writeFile, mkdir } from "fs/promises";
 import { dirname } from "path";
 import type { GeneratedTheme, GeneratorOutput } from "./types";
-import type { AutoThemeConfig } from "../config/types";
+import type { ResolvedConfig } from "../config/types";
 import { generateCSS } from "./css";
 import { generateTailwindCSS } from "./tailwind";
 import { generatePreview } from "./preview";
-import { generateDarkModeScript } from "./script";
 
 /**
  * Write all generated outputs to files
  */
 export async function writeOutputs(
   theme: GeneratedTheme,
-  config: AutoThemeConfig,
+  config: ResolvedConfig,
 ): Promise<GeneratorOutput[]> {
   const outputs: GeneratorOutput[] = [];
 
@@ -26,10 +25,6 @@ export async function writeOutputs(
 
   if (config.output.preview) {
     outputs.push(generatePreview(theme));
-  }
-
-  if (config.output.darkModeScript) {
-    outputs.push(generateDarkModeScript(config.output.lightDark && config.mode === "both"));
   }
 
   // Write all files

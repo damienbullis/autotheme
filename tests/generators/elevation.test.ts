@@ -1,8 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generateElevationTokens } from "../../src/generators/elevation";
-import { generateSemanticCSS } from "../../src/generators/semantic";
 import { Color } from "../../src/core/color";
-import { createTestTheme } from "../helpers/test-theme";
 
 describe("generateElevationTokens", () => {
   const baseSurface = new Color({ h: 250, s: 5, l: 96, a: 1 });
@@ -87,27 +85,15 @@ describe("generateElevationTokens", () => {
   });
 });
 
-describe("elevation in semantic CSS output", () => {
-  it("elevation.enabled: false produces no elevation tokens", () => {
-    const theme = createTestTheme({
-      semantics: { enabled: true, elevation: { enabled: false } },
-    });
-    const result = generateSemanticCSS(theme);
+describe("elevation tokens standalone", () => {
+  it("elevation tokens can be generated and have proper structure", () => {
+    const baseSurface = new Color({ h: 250, s: 5, l: 96, a: 1 });
+    const tokens = generateElevationTokens(baseSurface, 255, 4, false);
 
-    expect(result).not.toContain("elevation-");
-    expect(result).not.toContain("/* Elevation */");
-  });
-
-  it("elevation.enabled: true produces elevation tokens in output", () => {
-    const theme = createTestTheme({
-      semantics: { enabled: true, elevation: { enabled: true, levels: 4 } },
-    });
-    const result = generateSemanticCSS(theme);
-
-    expect(result).toContain("/* Elevation */");
-    expect(result).toContain("--elevation-1-surface:");
-    expect(result).toContain("--elevation-1-shadow:");
-    expect(result).toContain("--elevation-1-border:");
-    expect(result).toContain("--elevation-4-surface:");
+    expect(tokens).toHaveLength(12);
+    expect(tokens.find((t) => t.name === "elevation-1-surface")).toBeDefined();
+    expect(tokens.find((t) => t.name === "elevation-1-shadow")).toBeDefined();
+    expect(tokens.find((t) => t.name === "elevation-1-border")).toBeDefined();
+    expect(tokens.find((t) => t.name === "elevation-4-surface")).toBeDefined();
   });
 });

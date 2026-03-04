@@ -2,8 +2,17 @@ import { Color, generateFullPalette, HARMONY_META } from "../core";
 import type { HarmonyType, FullPalette } from "../core";
 import { generateCSS, getHarmonyName } from "../generators/css";
 import { generateSemanticTokens } from "../generators/semantic";
-import { DEFAULT_CONFIG } from "../config/types";
-import type { AutoThemeConfig } from "../config/types";
+import {
+  DEFAULT_PALETTE,
+  DEFAULT_TYPOGRAPHY,
+  DEFAULT_SPACING,
+  DEFAULT_SHADOWS,
+  DEFAULT_RADIUS,
+  DEFAULT_SEMANTICS,
+  DEFAULT_SHADCN,
+  DEFAULT_OUTPUT,
+} from "../config/types";
+import type { ResolvedConfig } from "../config/types";
 import { ColorPicker } from "./components/color-picker";
 import { HarmonySelector } from "./components/harmony-selector";
 import { PaletteDisplay } from "./components/palette-display";
@@ -139,55 +148,38 @@ class AutoThemeApp {
     this.updateURL();
   }
 
-  private buildConfig(): AutoThemeConfig {
+  private buildConfig(): ResolvedConfig {
     return {
-      ...DEFAULT_CONFIG,
       color: this.state.color,
       harmony: this.state.harmony,
-      colorFormat: "oklch",
       mode: "both",
       palette: {
-        ...DEFAULT_CONFIG.palette,
+        ...DEFAULT_PALETTE,
         contrastTarget: this.state.contrastTarget,
       },
-      typography: {
-        ...DEFAULT_CONFIG.typography,
-        ratio: this.state.scalar,
-      },
-      spacing: {
-        ...DEFAULT_CONFIG.spacing,
-        enabled: this.state.spacingEnabled,
-        ratio: this.state.scalar,
-      },
-      shadows: {
-        ...DEFAULT_CONFIG.shadows,
-        enabled: this.state.shadowsEnabled,
-      },
-      radius: {
-        ...DEFAULT_CONFIG.radius,
-        enabled: this.state.radiusEnabled,
-      },
+      typography: { ...DEFAULT_TYPOGRAPHY, ratio: this.state.scalar },
+      spacing: this.state.spacingEnabled ? { ...DEFAULT_SPACING, ratio: this.state.scalar } : false,
+      shadows: this.state.shadowsEnabled ? { ...DEFAULT_SHADOWS } : false,
+      radius: this.state.radiusEnabled ? { ...DEFAULT_RADIUS } : false,
       gradients: true,
       noise: true,
       utilities: true,
-      semantics: {
-        ...DEFAULT_CONFIG.semantics,
-        enabled: this.state.semanticsEnabled,
-        states: {
-          ...DEFAULT_CONFIG.semantics.states,
-          enabled: this.state.statesEnabled,
-        },
-        elevation: {
-          ...DEFAULT_CONFIG.semantics.elevation,
-          enabled: this.state.elevationEnabled,
-        },
-      },
-      shadcn: {
-        ...DEFAULT_CONFIG.shadcn,
-        enabled: this.state.shadcnEnabled,
-      },
+      semantics: this.state.semanticsEnabled ? { ...DEFAULT_SEMANTICS } : false,
+      states: this.state.statesEnabled
+        ? {
+            hover: 0.04,
+            active: -0.02,
+            focus: { width: "2px", offset: "2px" },
+            disabled: { opacity: 0.4 },
+          }
+        : false,
+      elevation: this.state.elevationEnabled
+        ? { levels: 4, delta: 0.03, tintShadows: true }
+        : false,
+      motion: false,
+      shadcn: this.state.shadcnEnabled ? { ...DEFAULT_SHADCN } : false,
       output: {
-        ...DEFAULT_CONFIG.output,
+        ...DEFAULT_OUTPUT,
         comments: true,
       },
     };
@@ -205,7 +197,8 @@ class AutoThemeApp {
     this.paletteDisplay.update(palette);
 
     // Generate CSS code for preview
-    const theme = { palette, config };
+    const harmony = palette.harmony;
+    const theme = { palette, harmony, config };
     const cssOutput = generateCSS(theme);
     this.codePreview.update(cssOutput.content);
 

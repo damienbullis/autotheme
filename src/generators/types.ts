@@ -1,9 +1,10 @@
-import type { FullPalette } from "../core/types";
-import type { AutoThemeConfig } from "../config/types";
+import type { FullPalette, HarmonyResult } from "../core/types";
+import type { ResolvedConfig } from "../config/types";
 
 export interface GeneratedTheme {
   palette: FullPalette;
-  config: AutoThemeConfig;
+  harmony: HarmonyResult;
+  config: ResolvedConfig;
 }
 
 export interface GeneratorOutput {

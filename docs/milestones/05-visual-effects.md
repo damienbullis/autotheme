@@ -38,11 +38,13 @@ SVG filters are embedded as data URLs in CSS, consistent with the existing noise
 **Filters to ship (phased):**
 
 Phase 1 (highest value):
+
 - **Grain** — `feTurbulence` + `feColorMatrix`. Nearly identical to existing noise.
 - **Glow** — `feGaussianBlur` + `feComposite` + color from palette.
 - **Duotone** — `feColorMatrix` mapping to two palette colors. Very useful for photography.
 
 Phase 2 (niche):
+
 - **Halftone** — `feTurbulence` + `feComponentTransfer` + `feComposite` chain.
 - **Displacement** — `feTurbulence` + `feDisplacementMap`.
 
@@ -59,7 +61,7 @@ Generate N control points on a circle, offset randomly, connect with cubic bezie
 Each `.stack-*` class sets a `--stack-layer-N` variable. A base `.stack` class combines them into `background-image`:
 
 ```css
-background-image: var(--stack-layer-3, ) var(--stack-layer-2, ) var(--stack-layer-1, );
+background-image: var(--stack-layer-3,) var(--stack-layer-2,) var(--stack-layer-1,);
 ```
 
 Each class "turns on" its layer by setting its variable. Most CSS-native approach.

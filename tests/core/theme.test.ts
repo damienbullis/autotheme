@@ -1,84 +1,88 @@
 import { describe, it, expect } from "vitest";
 import { generateTheme } from "../../src/core/theme";
-import type { AutoThemeConfig } from "../../src/config/types";
-import { DEFAULT_CONFIG } from "../../src/config/types";
+import type { ResolvedConfig } from "../../src/config/types";
+import { resolveToConfig } from "../../src/config/merge";
 
-function makeConfig(overrides: Partial<AutoThemeConfig> = {}): AutoThemeConfig {
-  return { ...DEFAULT_CONFIG, color: "#6439FF", ...overrides };
+function makeConfig(overrides: Record<string, unknown> = {}): ResolvedConfig {
+  return resolveToConfig({ color: "#6439FF", ...overrides });
 }
 
 describe("generateTheme", () => {
   it("returns a valid GeneratedTheme with palette and config", () => {
-    const config = makeConfig();
+    const config = makeConfig({ palette: true });
     const theme = generateTheme(config);
 
     expect(theme.palette).toBeDefined();
-    expect(theme.palette.harmony).toBeDefined();
+    expect(theme.harmony).toBeDefined();
     expect(theme.palette.palettes.length).toBeGreaterThan(0);
     expect(theme.palette.textColors.size).toBeGreaterThan(0);
     expect(theme.config).toBe(config);
   });
 
   it("generates correct number of harmony colors for triadic", () => {
-    const theme = generateTheme(makeConfig({ harmony: "triadic" }));
-    expect(theme.palette.harmony.type).toBe("triadic");
-    expect(theme.palette.harmony.colors).toHaveLength(3);
+    const theme = generateTheme(makeConfig({ harmony: "triadic", palette: true }));
+    expect(theme.harmony.type).toBe("triadic");
+    expect(theme.harmony.colors).toHaveLength(3);
     expect(theme.palette.palettes).toHaveLength(3);
   });
 
   it("generates correct number of harmony colors for complementary", () => {
-    const theme = generateTheme(makeConfig({ harmony: "complementary" }));
-    expect(theme.palette.harmony.type).toBe("complementary");
-    expect(theme.palette.harmony.colors).toHaveLength(2);
+    const theme = generateTheme(makeConfig({ harmony: "complementary", palette: true }));
+    expect(theme.harmony.type).toBe("complementary");
+    expect(theme.harmony.colors).toHaveLength(2);
     expect(theme.palette.palettes).toHaveLength(2);
   });
 
   it("generates correct number of harmony colors for drift", () => {
-    const theme = generateTheme(makeConfig({ harmony: "drift" }));
-    expect(theme.palette.harmony.type).toBe("drift");
-    expect(theme.palette.harmony.colors).toHaveLength(4);
+    const theme = generateTheme(makeConfig({ harmony: "drift", palette: true }));
+    expect(theme.harmony.type).toBe("drift");
+    expect(theme.harmony.colors).toHaveLength(4);
     expect(theme.palette.palettes).toHaveLength(4);
   });
 
   it("generates correct number of harmony colors for analogous", () => {
-    const theme = generateTheme(makeConfig({ harmony: "analogous" }));
-    expect(theme.palette.harmony.type).toBe("analogous");
-    expect(theme.palette.harmony.colors).toHaveLength(3);
+    const theme = generateTheme(makeConfig({ harmony: "analogous", palette: true }));
+    expect(theme.harmony.type).toBe("analogous");
+    expect(theme.harmony.colors).toHaveLength(3);
   });
 
   it("passes swing options through to palette generation", () => {
-    const theme = generateTheme(makeConfig({ swing: 1.5, swingStrategy: "exponential" }));
+    const theme = generateTheme(
+      makeConfig({ palette: { swing: 1.5, swingStrategy: "exponential" } }),
+    );
     expect(theme.palette).toBeDefined();
-    expect(theme.palette.harmony).toBeDefined();
-    expect(theme.config.swing).toBe(1.5);
-    expect(theme.config.swingStrategy).toBe("exponential");
+    expect(theme.harmony).toBeDefined();
+    const pal = theme.config.palette;
+    expect(pal !== false && pal.swing).toBe(1.5);
+    expect(pal !== false && pal.swingStrategy).toBe("exponential");
   });
 
   it("swing affects harmony color hues", () => {
-    const normal = generateTheme(makeConfig({ harmony: "triadic" }));
-    const swung = generateTheme(makeConfig({ harmony: "triadic", swing: 0.5 }));
+    const normal = generateTheme(makeConfig({ harmony: "triadic", palette: true }));
+    const swung = generateTheme(makeConfig({ harmony: "triadic", palette: { swing: 0.5 } }));
 
     // With swing 0.5, offsets are halved, so hues should differ
-    const normalHue1 = normal.palette.harmony.colors[1]!.hsl.h;
-    const swungHue1 = swung.palette.harmony.colors[1]!.hsl.h;
+    const normalHue1 = normal.harmony.colors[1]!.hsl.h;
+    const swungHue1 = swung.harmony.colors[1]!.hsl.h;
     expect(swungHue1).not.toBeCloseTo(normalHue1, 0);
   });
 
   it("generates theme with custom harmony", () => {
     const config = makeConfig({
       harmony: "warm-quad",
+      palette: true,
       harmonies: {
         "warm-quad": { offsets: [0, 30, 60, 180] },
       },
     });
     const theme = generateTheme(config);
-    expect(theme.palette.harmony.type).toBe("warm-quad");
-    expect(theme.palette.harmony.colors).toHaveLength(4);
+    expect(theme.harmony.type).toBe("warm-quad");
+    expect(theme.harmony.colors).toHaveLength(4);
     expect(theme.palette.palettes).toHaveLength(4);
   });
 
   it("throws for unknown custom harmony", () => {
-    const config = makeConfig({ harmony: "nonexistent" as any });
+    const config = makeConfig({ harmony: "nonexistent" });
     expect(() => generateTheme(config)).toThrow('Unknown harmony type: "nonexistent"');
   });
 
@@ -97,12 +101,24 @@ describe("generateTheme", () => {
   });
 
   it("each palette has tints, shades, and tones", () => {
-    const theme = generateTheme(makeConfig());
+    const theme = generateTheme(makeConfig({ palette: true }));
     for (const p of theme.palette.palettes) {
       expect(p.base).toBeDefined();
       expect(p.tints.length).toBeGreaterThan(0);
       expect(p.shades.length).toBeGreaterThan(0);
       expect(p.tones.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("palette off produces minimal palette with no variations", () => {
+    const theme = generateTheme(makeConfig());
+    // palette defaults to false
+    expect(theme.config.palette).toBe(false);
+    for (const p of theme.palette.palettes) {
+      expect(p.base).toBeDefined();
+      expect(p.tints).toHaveLength(0);
+      expect(p.shades).toHaveLength(0);
+      expect(p.tones).toHaveLength(0);
     }
   });
 });

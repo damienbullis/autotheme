@@ -67,15 +67,15 @@ Config:
 Surface lightness does the heavy lifting — shadows are less visible against dark backgrounds. Each level adds an L delta from depth:
 
 ```css
---surface:            oklch(0.13 0.01 250);
---surface-sunken:     oklch(0.11 0.01 250);
+--surface: oklch(0.13 0.01 250);
+--surface-sunken: oklch(0.11 0.01 250);
 
---elevation-1:        oklch(0.16 0.01 250);
+--elevation-1: oklch(0.16 0.01 250);
 --elevation-1-shadow: 0 1px 3px oklch(0.13 0.005 250 / 0.12), ...;
---elevation-2:        oklch(0.19 0.01 250);
+--elevation-2: oklch(0.19 0.01 250);
 --elevation-2-shadow: 0 3px 6px oklch(0.13 0.005 250 / 0.16), ...;
---elevation-3:        oklch(0.22 0.01 250);
---elevation-3-shadow: 0 10px 20px oklch(0.13 0.005 250 / 0.20), ...;
+--elevation-3: oklch(0.22 0.01 250);
+--elevation-3-shadow: 0 10px 20px oklch(0.13 0.005 250 / 0.2), ...;
 ```
 
 ### Light mode elevation — background-vs-card model (decided)
@@ -83,11 +83,11 @@ Surface lightness does the heavy lifting — shadows are less visible against da
 The page/card distinction is universally understood. This is how Shadcn works: `--background` is off-white, `--card` is white.
 
 ```css
---surface:            oklch(0.96 0.01 250);    /* page — slightly tinted */
---elevation-1:        oklch(0.99 0.005 250);   /* card — near white */
---elevation-1-shadow: 0 1px 3px oklch(0.50 0.005 250 / 0.08), ...;
---elevation-2:        oklch(0.99 0.005 250);   /* same surface as elevation-1 */
---elevation-2-shadow: 0 3px 6px oklch(0.50 0.005 250 / 0.12), ...;
+--surface: oklch(0.96 0.01 250); /* page — slightly tinted */
+--elevation-1: oklch(0.99 0.005 250); /* card — near white */
+--elevation-1-shadow: 0 1px 3px oklch(0.5 0.005 250 / 0.08), ...;
+--elevation-2: oklch(0.99 0.005 250); /* same surface as elevation-1 */
+--elevation-2-shadow: 0 3px 6px oklch(0.5 0.005 250 / 0.12), ...;
 ```
 
 The jump from page to card IS the visual cue. Shadows add progressive depth on top.
@@ -98,10 +98,16 @@ No interaction between tinted surfaces and elevation. They're independent buildi
 
 ```css
 /* Regular elevated card */
-.card { background: var(--elevation-1); box-shadow: var(--elevation-1-shadow); }
+.card {
+  background: var(--elevation-1);
+  box-shadow: var(--elevation-1-shadow);
+}
 
 /* Tinted card with elevation shadow */
-.feature { background: var(--surface-primary); box-shadow: var(--elevation-2-shadow); }
+.feature {
+  background: var(--surface-primary);
+  box-shadow: var(--elevation-2-shadow);
+}
 ```
 
 The shadow from elevation works with any background. No `--surface-primary-elevated` tokens. No token explosion.
@@ -135,23 +141,23 @@ When `states: true` (~6 tokens):
 When `elevation: true` (2 tokens per level, default 4 levels = 8 tokens):
 
 ```css
---elevation-1:        oklch(...);
+--elevation-1: oklch(...);
 --elevation-1-shadow: 0 1px 3px oklch(...), ...;
---elevation-2:        oklch(...);
+--elevation-2: oklch(...);
 --elevation-2-shadow: 0 3px 6px oklch(...), ...;
---elevation-3:        oklch(...);
+--elevation-3: oklch(...);
 --elevation-3-shadow: 0 10px 20px oklch(...), ...;
---elevation-4:        oklch(...);
+--elevation-4: oklch(...);
 --elevation-4-shadow: 0 14px 28px oklch(...), ...;
 ```
 
 ## Files That Change
 
-| File | Change |
-|---|---|
-| `src/generators/semantic.ts` | State + elevation generators rewritten for OKLCH, depth-based |
-| `src/generators/css.ts` | Emit state/elevation tokens when enabled |
-| Tests | New tests for state modifiers, elevation scale, shadow generation |
+| File                         | Change                                                            |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `src/generators/semantic.ts` | State + elevation generators rewritten for OKLCH, depth-based     |
+| `src/generators/css.ts`      | Emit state/elevation tokens when enabled                          |
+| Tests                        | New tests for state modifiers, elevation scale, shadow generation |
 
 ## Open Questions
 

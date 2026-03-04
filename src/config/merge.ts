@@ -1,5 +1,32 @@
-import type { AutoThemeConfig } from "./types";
-import { DEFAULT_CONFIG } from "./types";
+import type {
+  AutoThemeConfig,
+  ResolvedConfig,
+  PaletteConfig,
+  SemanticsConfig,
+  StatesConfig,
+  ElevationConfig,
+  TypographyConfig,
+  SpacingConfig,
+  ShadowConfig,
+  RadiusConfig,
+  MotionConfig,
+  ShadcnConfig,
+  OutputConfig,
+  DeepPartial,
+} from "./types";
+import {
+  DEFAULT_PALETTE,
+  DEFAULT_SEMANTICS,
+  DEFAULT_STATES,
+  DEFAULT_ELEVATION,
+  DEFAULT_TYPOGRAPHY,
+  DEFAULT_SPACING,
+  DEFAULT_SHADOWS,
+  DEFAULT_RADIUS,
+  DEFAULT_MOTION,
+  DEFAULT_SHADCN,
+  DEFAULT_OUTPUT,
+} from "./types";
 import type { CLIArgs } from "../cli/parser";
 import { loadConfig } from "./loader";
 import { getPreset } from "./presets";
@@ -16,30 +43,19 @@ export function generateRandomColor(): Color {
   return new Color({ h, s, l, a: 1 });
 }
 
-type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
-
 /**
- * Deep merge two objects recursively.
- * When both sides have a nested object (non-array), recurse. Arrays are replaced, not merged.
+ * Deep merge two plain objects recursively.
+ * Arrays are replaced, not merged.
  */
-function deepMerge(target: AutoThemeConfig, source: DeepPartial<AutoThemeConfig>): AutoThemeConfig {
-  return deepMergeObjects(
-    target as unknown as Record<string, unknown>,
-    source as unknown as Record<string, unknown>,
-  ) as unknown as AutoThemeConfig;
-}
-
-function deepMergeObjects(
-  target: Record<string, unknown>,
+function deepMergeObjects<T extends Record<string, unknown>>(
+  target: T,
   source: Record<string, unknown>,
-): Record<string, unknown> {
+): T {
   const result = { ...target };
   for (const key of Object.keys(source)) {
     const val = source[key];
     if (val === undefined) continue;
-    const current = result[key];
+    const current = (result as Record<string, unknown>)[key];
     if (
       typeof val === "object" &&
       val !== null &&
@@ -48,92 +64,86 @@ function deepMergeObjects(
       current !== null &&
       !Array.isArray(current)
     ) {
-      result[key] = deepMergeObjects(
+      (result as Record<string, unknown>)[key] = deepMergeObjects(
         current as Record<string, unknown>,
         val as Record<string, unknown>,
       );
     } else {
-      result[key] = val;
+      (result as Record<string, unknown>)[key] = val;
     }
   }
   return result;
 }
 
 /**
- * Map flat CLI args to nested config structure
+ * Resolve a `boolean | DeepPartial<T>` feature config to `false | T`.
+ * - `undefined` → enabledByDefault ? defaults : false
+ * - `true` → defaults
+ * - `false` → false
+ * - `object` → deepMerge(defaults, object)
+ */
+export function resolveFeature<T extends object>(
+  input: boolean | DeepPartial<T> | undefined,
+  defaults: T,
+  enabledByDefault: boolean,
+): false | T {
+  if (input === undefined) {
+    return enabledByDefault ? { ...defaults } : false;
+  }
+  if (input === false) {
+    return false;
+  }
+  if (input === true) {
+    return { ...defaults };
+  }
+  return deepMergeObjects(
+    { ...defaults } as Record<string, unknown>,
+    input as Record<string, unknown>,
+  ) as T;
+}
+
+/**
+ * Map flat CLI args to user-facing AutoThemeConfig partial
  */
 function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
   const config: DeepPartial<AutoThemeConfig> = {};
 
   if (args.color) config.color = args.color;
   if (args.harmony) config.harmony = args.harmony as AutoThemeConfig["harmony"];
-  if (args.colorFormat) config.colorFormat = args.colorFormat as AutoThemeConfig["colorFormat"];
   if (args.mode) config.mode = args.mode as AutoThemeConfig["mode"];
-  if (args.swing !== undefined) config.swing = args.swing;
-  if (args.swingStrategy)
-    config.swingStrategy = args.swingStrategy as AutoThemeConfig["swingStrategy"];
 
-  // Palette
-  if (args.prefix) {
-    config.palette = { ...config.palette, prefix: args.prefix };
+  // --format replaces --color-format
+  if (args.format) {
+    config.output = { ...config.output, format: args.format as OutputConfig["format"] };
+  }
+  // Backwards compat: also check --color-format
+  if (args.colorFormat) {
+    config.output = { ...config.output, format: args.colorFormat as OutputConfig["format"] };
   }
 
-  // Typography
-  if (args.fontSize !== undefined) {
-    config.typography = { ...config.typography, base: args.fontSize };
-  }
+  // --palette enables full scale
+  if (args.palette !== undefined) config.palette = args.palette;
 
-  // Spacing
-  if (args.spacing !== undefined) {
-    config.spacing = { ...config.spacing, enabled: args.spacing };
-  }
+  // --no-semantics disables (on by default)
+  if (args.semantics !== undefined) config.semantics = args.semantics;
 
   // Feature toggles
   if (args.gradients !== undefined) config.gradients = args.gradients;
   if (args.noise !== undefined) config.noise = args.noise;
   if (args.utilities !== undefined) config.utilities = args.utilities;
-
-  // Alpha variants
-  if (args.alphaVariants !== undefined) {
-    config.palette = { ...config.palette, alphaVariants: args.alphaVariants };
-  }
-
-  // Semantics
-  if (args.semantics !== undefined) {
-    config.semantics = { ...config.semantics, enabled: args.semantics };
-  }
-
-  // States
-  if (args.states !== undefined) {
-    config.semantics = { ...config.semantics, states: { enabled: args.states } };
-  }
-
-  // Elevation
-  if (args.elevation !== undefined) {
-    config.semantics = { ...config.semantics, elevation: { enabled: args.elevation } };
-  }
-
-  // Shadows
-  if (args.shadows !== undefined) {
-    config.shadows = { ...config.shadows, enabled: args.shadows };
-  }
-
-  // Radius
-  if (args.radius !== undefined) {
-    config.radius = { ...config.radius, enabled: args.radius };
-  }
-
-  // Shadcn
-  if (args.shadcn !== undefined) {
-    config.shadcn = { ...config.shadcn, enabled: args.shadcn };
-  }
+  if (args.states !== undefined) config.states = args.states;
+  if (args.elevation !== undefined) config.elevation = args.elevation;
+  if (args.shadows !== undefined) config.shadows = args.shadows;
+  if (args.radius !== undefined) config.radius = args.radius;
+  if (args.shadcn !== undefined) config.shadcn = args.shadcn;
+  if (args.spacing !== undefined) config.spacing = args.spacing;
+  if (args.typography !== undefined) config.typography = args.typography;
 
   // Output
   if (
     args.output ||
     args.tailwind !== undefined ||
     args.preview !== undefined ||
-    args.darkModeScript !== undefined ||
     args.comments !== undefined ||
     args.layers !== undefined
   ) {
@@ -141,9 +151,17 @@ function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
     if (args.output) config.output.path = args.output;
     if (args.tailwind !== undefined) config.output.tailwind = args.tailwind;
     if (args.preview !== undefined) config.output.preview = args.preview;
-    if (args.darkModeScript !== undefined) config.output.darkModeScript = args.darkModeScript;
     if (args.comments !== undefined) config.output.comments = args.comments;
     if (args.layers !== undefined) config.output.layers = args.layers;
+  }
+
+  // Prefix maps into palette config
+  if (args.prefix) {
+    if (typeof config.palette === "object" && config.palette !== null) {
+      (config.palette as DeepPartial<PaletteConfig>).prefix = args.prefix;
+    } else if (config.palette !== false) {
+      config.palette = { prefix: args.prefix };
+    }
   }
 
   // CLI-only
@@ -154,7 +172,209 @@ function cliArgsToConfig(args: CLIArgs): DeepPartial<AutoThemeConfig> {
   return config;
 }
 
-export async function resolveConfig(cliArgs: CLIArgs): Promise<AutoThemeConfig> {
+/**
+ * Merge user-facing configs: later layers take priority.
+ * For boolean | Config fields, a boolean replaces entirely.
+ */
+function mergeUserConfigs(...layers: DeepPartial<AutoThemeConfig>[]): DeepPartial<AutoThemeConfig> {
+  const result: Record<string, unknown> = {};
+  for (const layer of layers) {
+    const layerObj = layer as Record<string, unknown>;
+    for (const key of Object.keys(layerObj)) {
+      const val = layerObj[key];
+      if (val === undefined) continue;
+      const current = result[key];
+
+      if (typeof val === "boolean" || typeof current === "boolean") {
+        result[key] = val;
+      } else if (
+        typeof val === "object" &&
+        val !== null &&
+        !Array.isArray(val) &&
+        typeof current === "object" &&
+        current !== null &&
+        !Array.isArray(current)
+      ) {
+        result[key] = deepMergeObjects(
+          current as Record<string, unknown>,
+          val as Record<string, unknown>,
+        );
+      } else {
+        result[key] = val;
+      }
+    }
+  }
+  return result as DeepPartial<AutoThemeConfig>;
+}
+
+/**
+ * Apply mode-dependent defaults to a resolved semantics config
+ */
+function applyModeDefaults(
+  semantics: ResolvedConfig["semantics"],
+  mode: ResolvedConfig["mode"],
+  userSemantics: boolean | DeepPartial<SemanticsConfig> | undefined,
+): void {
+  if (semantics === false) return;
+
+  const userObj = typeof userSemantics === "object" && userSemantics !== null ? userSemantics : {};
+
+  // depth: derive from mode if not explicitly set
+  if (userObj.depth === undefined) {
+    semantics.depth = mode === "light" ? 0.97 : 0.13;
+  }
+
+  // text.anchor/floor: derive from mode if not set
+  const userText = userObj.text ?? {};
+  if (userText.anchor === undefined) {
+    semantics.text.anchor = mode === "dark" ? 0.95 : 0.15;
+  }
+  if (userText.floor === undefined) {
+    semantics.text.floor = mode === "dark" ? 0.55 : 0.55;
+  }
+}
+
+/**
+ * Resolve user-facing AutoThemeConfig into fully-resolved ResolvedConfig.
+ */
+export function resolveToConfig(merged: DeepPartial<AutoThemeConfig>): ResolvedConfig {
+  const mode = (merged.mode ?? "both") as ResolvedConfig["mode"];
+
+  // Resolve output first (needed for tailwind auto-activation)
+  const outputInput = (merged.output ?? {}) as Record<string, unknown>;
+  const resolvedOutput = deepMergeObjects({ ...DEFAULT_OUTPUT }, outputInput);
+
+  // lightDark defaults to true when mode="both"
+  if ((outputInput as DeepPartial<OutputConfig>).lightDark === undefined && mode === "both") {
+    resolvedOutput.lightDark = true;
+  }
+
+  // Resolve features
+  const semantics = resolveFeature<SemanticsConfig>(
+    merged.semantics as boolean | DeepPartial<SemanticsConfig> | undefined,
+    {
+      ...DEFAULT_SEMANTICS,
+      text: { ...DEFAULT_SEMANTICS.text },
+      surfaces: { ...DEFAULT_SEMANTICS.surfaces },
+      borders: { ...DEFAULT_SEMANTICS.borders },
+      mapping: { ...DEFAULT_SEMANTICS.mapping },
+    },
+    true,
+  );
+
+  // palette: OFF by default, auto-enabled by tailwind
+  let paletteInput = merged.palette as boolean | DeepPartial<PaletteConfig> | undefined;
+  if (paletteInput === undefined && resolvedOutput.tailwind) {
+    paletteInput = true;
+  }
+  const palette = resolveFeature<PaletteConfig>(
+    paletteInput,
+    { ...DEFAULT_PALETTE, alphaSteps: { ...DEFAULT_PALETTE.alphaSteps } },
+    false,
+  );
+
+  const states = resolveFeature<StatesConfig>(
+    merged.states as boolean | DeepPartial<StatesConfig> | undefined,
+    {
+      ...DEFAULT_STATES,
+      focus: { ...DEFAULT_STATES.focus },
+      disabled: { ...DEFAULT_STATES.disabled },
+    },
+    false,
+  );
+  const elevation = resolveFeature<ElevationConfig>(
+    merged.elevation as boolean | DeepPartial<ElevationConfig> | undefined,
+    { ...DEFAULT_ELEVATION },
+    false,
+  );
+  const typography = resolveFeature<TypographyConfig>(
+    merged.typography as boolean | DeepPartial<TypographyConfig> | undefined,
+    { ...DEFAULT_TYPOGRAPHY, fluidRange: [...DEFAULT_TYPOGRAPHY.fluidRange] },
+    false,
+  );
+  const spacing = resolveFeature<SpacingConfig>(
+    merged.spacing as boolean | DeepPartial<SpacingConfig> | undefined,
+    { ...DEFAULT_SPACING, fluidRange: [...DEFAULT_SPACING.fluidRange] },
+    false,
+  );
+  const shadows = resolveFeature<ShadowConfig>(
+    merged.shadows as boolean | DeepPartial<ShadowConfig> | undefined,
+    { ...DEFAULT_SHADOWS },
+    false,
+  );
+  const radius = resolveFeature<RadiusConfig>(
+    merged.radius as boolean | DeepPartial<RadiusConfig> | undefined,
+    { ...DEFAULT_RADIUS },
+    false,
+  );
+  const motion = resolveFeature<MotionConfig>(
+    merged.motion as boolean | DeepPartial<MotionConfig> | undefined,
+    {
+      ...DEFAULT_MOTION,
+      spring: { ...DEFAULT_MOTION.spring },
+      durations: { ...DEFAULT_MOTION.durations },
+    },
+    false,
+  );
+  const shadcn = resolveFeature<ShadcnConfig>(
+    merged.shadcn as boolean | DeepPartial<ShadcnConfig> | undefined,
+    { ...DEFAULT_SHADCN },
+    false,
+  );
+
+  // Auto-enable semantics when shadcn is enabled
+  let resolvedSemantics = semantics;
+  if (shadcn !== false && resolvedSemantics === false) {
+    resolvedSemantics = {
+      ...DEFAULT_SEMANTICS,
+      text: { ...DEFAULT_SEMANTICS.text },
+      surfaces: { ...DEFAULT_SEMANTICS.surfaces },
+      borders: { ...DEFAULT_SEMANTICS.borders },
+      mapping: { ...DEFAULT_SEMANTICS.mapping },
+    };
+  }
+
+  // Apply mode-dependent defaults to semantics
+  applyModeDefaults(
+    resolvedSemantics,
+    mode,
+    merged.semantics as boolean | DeepPartial<SemanticsConfig> | undefined,
+  );
+
+  const resolved: ResolvedConfig = {
+    color: merged.color ?? "",
+    harmony: (merged.harmony ?? "analogous") as ResolvedConfig["harmony"],
+    mode,
+    palette,
+    semantics: resolvedSemantics,
+    states,
+    elevation,
+    typography,
+    spacing,
+    shadows,
+    radius,
+    motion,
+    gradients: merged.gradients ?? false,
+    noise: merged.noise ?? false,
+    utilities: merged.utilities ?? false,
+    shadcn,
+    output: resolvedOutput,
+    ...(merged.harmonies !== undefined ? { harmonies: merged.harmonies } : {}),
+    ...(merged.silent !== undefined ? { silent: merged.silent } : {}),
+  };
+
+  // Generate random color if not provided
+  if (!resolved.color) {
+    resolved.color = generateRandomColor().toHex();
+  }
+
+  return resolved;
+}
+
+/**
+ * Full resolution pipeline: CLI args + file config + preset → ResolvedConfig
+ */
+export async function resolveConfig(cliArgs: CLIArgs): Promise<ResolvedConfig> {
   // Load config file
   const fileConfig = await loadConfig(cliArgs.config);
 
@@ -170,23 +390,15 @@ export async function resolveConfig(cliArgs: CLIArgs): Promise<AutoThemeConfig> 
   // Map CLI args to nested config
   const cliConfig = cliArgsToConfig(cliArgs);
 
-  // Merge: defaults < preset < file config < CLI args
-  let merged = deepMerge(DEFAULT_CONFIG, presetConfig);
-  merged = deepMerge(merged, fileConfig as DeepPartial<AutoThemeConfig>);
-  merged = deepMerge(merged, cliConfig);
+  // Merge: preset < file config < CLI args
+  const merged = mergeUserConfigs(
+    presetConfig,
+    fileConfig as DeepPartial<AutoThemeConfig>,
+    cliConfig,
+  );
 
   // Strip preset from final config (it's been resolved)
   delete merged.preset;
 
-  // Auto-enable semantics when shadcn is enabled (shadcn maps from semantic tokens)
-  if (merged.shadcn.enabled && !merged.semantics.enabled) {
-    merged.semantics.enabled = true;
-  }
-
-  // Generate random color if not provided
-  if (!merged.color) {
-    merged.color = generateRandomColor().toHex();
-  }
-
-  return merged;
+  return resolveToConfig(merged);
 }

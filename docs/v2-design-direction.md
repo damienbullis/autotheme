@@ -59,6 +59,7 @@ Drop the HSL contrast-mode pipeline entirely. The perceptual OKLCH pipeline is t
 `depth` is the OKLCH lightness value for the base surface. Everything else (surfaces, borders, text, tinted surfaces, elevation) derives from it.
 
 **Depth is optional.** When omitted, derived from mode:
+
 - `mode: "dark"` → depth ≈ 0.13
 - `mode: "light"` → depth ≈ 0.97
 - `mode: "both"` → both values derived
@@ -90,26 +91,27 @@ mode ───────────────┘              --surface-sun
 **Accent system (expanded):** Every harmony color gets a token pair (base + foreground). The number of pairs scales with the harmony — analogous (3) gets 3 pairs, square (4) gets 4. Values are direct OKLCH (not var references — the 50-950 scale doesn't exist by default).
 
 ```css
---accent:                       oklch(0.65 0.15 250);
---accent-foreground:            oklch(0.98 0.01 250);
---accent-secondary:             oklch(0.65 0.12 220);
---accent-secondary-foreground:  oklch(0.98 0.01 220);
---accent-tertiary:              oklch(0.65 0.10 280);
---accent-tertiary-foreground:   oklch(0.98 0.01 280);
+--accent: oklch(0.65 0.15 250);
+--accent-foreground: oklch(0.98 0.01 250);
+--accent-secondary: oklch(0.65 0.12 220);
+--accent-secondary-foreground: oklch(0.98 0.01 220);
+--accent-tertiary: oklch(0.65 0.1 280);
+--accent-tertiary-foreground: oklch(0.98 0.01 280);
 ```
 
 **Tinted surfaces (new concept):** Each harmony color produces a low-chroma surface variant — a tinted background for cards, sections, callouts. This bridges palette → semantics in a meaningful way.
 
 ```css
---surface-primary:              oklch(0.16 0.025 250);
---surface-primary-foreground:   oklch(0.85 0.040 250);
---surface-secondary:            oklch(0.16 0.025 130);
---surface-secondary-foreground: oklch(0.85 0.040 130);
---surface-tertiary:             oklch(0.16 0.025 10);
---surface-tertiary-foreground:  oklch(0.85 0.040 10);
+--surface-primary: oklch(0.16 0.025 250);
+--surface-primary-foreground: oklch(0.85 0.04 250);
+--surface-secondary: oklch(0.16 0.025 130);
+--surface-secondary-foreground: oklch(0.85 0.04 130);
+--surface-tertiary: oklch(0.16 0.025 10);
+--surface-tertiary-foreground: oklch(0.85 0.04 10);
 ```
 
 These use:
+
 - **L:** depth + elevatedDelta (same lightness as a raised surface)
 - **C:** tint chroma — derived from primary chroma scaled down (~15% of full), or configurable
 - **H:** each harmony color's actual hue
@@ -123,8 +125,8 @@ This is Material Design 3's "container" concept without the jargon. Lets you mak
 States are relative modifications, not new colors. They produce universal deltas that apply to any color token.
 
 ```css
---state-hover: 0.04;            /* L delta */
---state-active: -0.02;          /* L delta */
+--state-hover: 0.04; /* L delta */
+--state-active: -0.02; /* L delta */
 --state-disabled-opacity: 0.4;
 --focus-ring-color: var(--accent);
 --focus-ring-width: 2px;
@@ -144,6 +146,7 @@ Applied via relative color syntax at consumption time:
 **Hover delta sign flips automatically** between light/dark mode — lighten on hover in dark mode, darken in light mode.
 
 Config:
+
 ```jsonc
 { "states": true }
 // or
@@ -162,16 +165,16 @@ Surface lightness does the heavy lifting (shadows are less visible against dark 
 
 ```css
 /* Base (from depth) */
---surface:        oklch(0.13 0.01 250);
+--surface: oklch(0.13 0.01 250);
 --surface-sunken: oklch(0.11 0.01 250);
 
 /* Elevation scale (raised direction) */
---elevation-1:        oklch(0.16 0.01 250);
+--elevation-1: oklch(0.16 0.01 250);
 --elevation-1-shadow: 0 1px 3px oklch(0.13 0.005 250 / 0.12), ...;
---elevation-2:        oklch(0.19 0.01 250);
+--elevation-2: oklch(0.19 0.01 250);
 --elevation-2-shadow: 0 3px 6px oklch(0.13 0.005 250 / 0.16), ...;
---elevation-3:        oklch(0.22 0.01 250);
---elevation-3-shadow: 0 10px 20px oklch(0.13 0.005 250 / 0.20), ...;
+--elevation-3: oklch(0.22 0.01 250);
+--elevation-3-shadow: 0 10px 20px oklch(0.13 0.005 250 / 0.2), ...;
 ```
 
 **Light mode elevation (explore — pick one):**
@@ -181,28 +184,28 @@ In light mode, surfaces are already bright. Elevation needs a different strategy
 **Option A: Shadow-only.** All elevation surfaces stay the same color (near-white). Only shadows differentiate levels. This is how most minimal light designs work — cards are all white, shadows show depth.
 
 ```css
---elevation-1:        var(--surface);           /* same surface color */
---elevation-1-shadow: 0 1px 3px oklch(0.50 0.005 250 / 0.08), ...;
---elevation-2:        var(--surface);
---elevation-2-shadow: 0 3px 6px oklch(0.50 0.005 250 / 0.12), ...;
+--elevation-1: var(--surface); /* same surface color */
+--elevation-1-shadow: 0 1px 3px oklch(0.5 0.005 250 / 0.08), ...;
+--elevation-2: var(--surface);
+--elevation-2-shadow: 0 3px 6px oklch(0.5 0.005 250 / 0.12), ...;
 ```
 
 **Option B: Background vs. card model.** elevation-0 = the page (slightly off-white, tinted). elevation-1+ = pure/near-white. The jump from page to card IS the visual cue. Shadows add progressive depth on top. This is how Shadcn works: `--background` is off-white, `--card` is white.
 
 ```css
---surface:            oklch(0.96 0.01 250);    /* page — slightly tinted */
---elevation-1:        oklch(0.99 0.005 250);   /* card — near white */
---elevation-1-shadow: 0 1px 3px oklch(0.50 0.005 250 / 0.08), ...;
---elevation-2:        oklch(0.99 0.005 250);   /* same as 1 */
---elevation-2-shadow: 0 3px 6px oklch(0.50 0.005 250 / 0.12), ...;
+--surface: oklch(0.96 0.01 250); /* page — slightly tinted */
+--elevation-1: oklch(0.99 0.005 250); /* card — near white */
+--elevation-1-shadow: 0 1px 3px oklch(0.5 0.005 250 / 0.08), ...;
+--elevation-2: oklch(0.99 0.005 250); /* same as 1 */
+--elevation-2-shadow: 0 3px 6px oklch(0.5 0.005 250 / 0.12), ...;
 ```
 
 **Option C: Subtle temperature shift.** Higher elevation surfaces shift very slightly warmer or cooler — not just lighter. A floating panel has a barely perceptible different temperature than the page. Apple does this with their floating panels.
 
 ```css
---elevation-1:        oklch(0.99 0.005 250);   /* neutral */
---elevation-2:        oklch(0.99 0.006 245);   /* slightly warmer */
---elevation-3:        oklch(0.99 0.007 240);   /* warmer still */
+--elevation-1: oklch(0.99 0.005 250); /* neutral */
+--elevation-2: oklch(0.99 0.006 245); /* slightly warmer */
+--elevation-3: oklch(0.99 0.007 240); /* warmer still */
 ```
 
 **Leaning:** Option B is the most practical and matches real-world patterns. The page/card distinction is universally understood. Options A and C could be offered as configuration variants.
@@ -215,10 +218,16 @@ Question: does `--surface-primary` get elevation variants?
 
 ```css
 /* Regular elevated card */
-.card { background: var(--elevation-1); box-shadow: var(--elevation-1-shadow); }
+.card {
+  background: var(--elevation-1);
+  box-shadow: var(--elevation-1-shadow);
+}
 
 /* Tinted card (with elevation shadow) */
-.feature { background: var(--surface-primary); box-shadow: var(--elevation-2-shadow); }
+.feature {
+  background: var(--surface-primary);
+  box-shadow: var(--elevation-2-shadow);
+}
 ```
 
 The shadow from elevation works with any background. Composable without extra tokens.
@@ -238,10 +247,12 @@ Requires relative color syntax browser support.
 **Leaning:** Option A. Elevation provides shadow + neutral surface. Tinted surfaces provide hue. Picking one for background and composing with elevation shadows manually is clean and avoids token explosion. This is the "you get building blocks, compose them" philosophy.
 
 **Shared elevation details:**
+
 - **Shadows are hue-tinted** — shadow color picks up primary hue at very low chroma (the polish detail that separates generated from hand-crafted)
 - **Paired tokens:** `--elevation-N` (surface color) + `--elevation-N-shadow` (box-shadow value)
 
 Config:
+
 ```jsonc
 { "elevation": true }
 // or
@@ -263,7 +274,7 @@ If the semantic layer gives you surfaces, borders, text, accents, and tinted sur
 ```css
 --color-primary: oklch(0.65 0.15 250);
 --color-secondary: oklch(0.65 0.12 220);
---color-tertiary: oklch(0.65 0.10 280);
+--color-tertiary: oklch(0.65 0.1 280);
 ```
 
 No scale numbers. No tints/shades/tones/alpha variants. Just the atoms — the actual colors the harmony produced. ~3-4 tokens depending on harmony type. These exist so consumers can reference the raw harmony colors for decorative use, custom gradients, brand elements — things that don't fit a semantic role.
@@ -278,7 +289,7 @@ Generated when `palette: true` (explicit) or `output.tailwind: true` (Tailwind n
 --color-primary-50: oklch(...);
 --color-primary-100: oklch(...);
 /* ... */
---color-primary-500: oklch(...);    /* same value as --color-primary */
+--color-primary-500: oklch(...); /* same value as --color-primary */
 /* ... */
 --color-primary-950: oklch(...);
 --color-primary-foreground: oklch(...);
@@ -290,12 +301,14 @@ Generated when `palette: true` (explicit) or `output.tailwind: true` (Tailwind n
 When the full scale is active, accent tokens MAY become var references (`var(--color-primary-500)`) for Tailwind integration, or remain direct values. Implementation detail — either works.
 
 **What `palette: true` controls:**
+
 - 50-950 scale per harmony color
 - Foreground + contrast per color
 - Tones (desaturated variants)
 - Alpha variants (if alphaVariants is also set)
 
 **What `palette: false` / omitted gives you:**
+
 - `--color-{name}` per harmony (just the base)
 - Everything else comes from the semantic system
 
@@ -306,6 +319,7 @@ This keeps the zero-config output to ~25-30 tokens instead of 80+.
 Accessibility is not a generation mode — it's a post-generation concern.
 
 **CLI:**
+
 ```bash
 autotheme "#7aa2f7" --check-contrast       # report issues
 autotheme "#7aa2f7" --fix-contrast aa       # adjust tokens to meet AA
@@ -313,10 +327,11 @@ autotheme "#7aa2f7" --fix-contrast aaa      # adjust tokens to meet AAA
 ```
 
 **JS API:**
+
 ```ts
-const theme = createTheme("#7aa2f7")
-const issues = checkContrast(theme, "aa")   // report
-const fixed = fixContrast(theme, "aaa")     // clone with adjusted tokens
+const theme = createTheme("#7aa2f7");
+const issues = checkContrast(theme, "aa"); // report
+const fixed = fixContrast(theme, "aaa"); // clone with adjusted tokens
 ```
 
 `fixContrast` walks the text hierarchy and nudges L values minimally to meet the target. Preserves perceptual intent as much as possible.
@@ -328,8 +343,8 @@ const fixed = fixContrast(theme, "aaa")     // clone with adjusted tokens
   "output": {
     "contrastMedia": true,
     "reducedTransparency": true,
-    "forcedColors": true
-  }
+    "forcedColors": true,
+  },
 }
 ```
 
@@ -355,6 +370,7 @@ The old spec gave surfaces, borders, and text each their own `hueSource` paramet
 ### 13. Text curve as exponent
 
 `curve` is a number (exponent), not a string or bezier:
+
 - `curve: 1` = linear (default)
 - `curve: 0.5` = ease-out (levels cluster near bright end)
 - `curve: 2` = ease-in (levels cluster near dim end)
@@ -376,94 +392,102 @@ The resolved TypeScript interface (internal, after merging defaults):
 ```typescript
 interface AutoThemeConfig {
   // ── Required ──
-  color: string
+  color: string;
 
   // ── Core options (all have sensible defaults) ──
-  harmony?: HarmonyType | string       // "analogous"
-  mode?: "light" | "dark" | "both"     // "both"
+  harmony?: HarmonyType | string; // "analogous"
+  mode?: "light" | "dark" | "both"; // "both"
 
   // ── Palette scale (OFF by default — just base colors) ──
   // When false/omitted: emits --color-{name} per harmony (base only)
   // When true: emits full 50-950 scale + foreground + contrast + tones
   // Also activated by output.tailwind: true
-  palette?: boolean | {
-    prefix?: string                     // "color"
-    tints?: number                      // 5
-    shades?: number                     // 5
-    tones?: number                      // 4
-    alphaVariants?: boolean | AlphaSteps
-    swing?: number                      // 1
-    swingStrategy?: SwingStrategy       // "linear"
-    chromaBalance?: boolean             // true
-  }
+  palette?:
+    | boolean
+    | {
+        prefix?: string; // "color"
+        tints?: number; // 5
+        shades?: number; // 5
+        tones?: number; // 4
+        alphaVariants?: boolean | AlphaSteps;
+        swing?: number; // 1
+        swingStrategy?: SwingStrategy; // "linear"
+        chromaBalance?: boolean; // true
+      };
 
   // ── Semantic tokens (ON by default — the core value) ──
-  semantics?: boolean | {
-    depth?: number                      // derived from mode
-    text?: {
-      levels?: number                   // 3
-      anchor?: number                   // derived from mode
-      floor?: number                    // derived from mode
-      curve?: number                    // 1 (exponent)
-      chroma?: [number, number]         // [anchor, floor] e.g. [0.025, 0.010]
-    }
-    surfaces?: {
-      chroma?: number                   // 0.010
-      sunkenDelta?: number              // -0.02
-    }
-    borders?: {
-      offsets?: [number, number, number] // [0.08, 0.15, 0.25]
-      chroma?: number                    // 0.012
-    }
-    mapping?: {
-      accent?: string                   // "primary"
-      secondary?: string                // "secondary"
-      tertiary?: string                 // "tertiary"
-    }
-  }
+  semantics?:
+    | boolean
+    | {
+        depth?: number; // derived from mode
+        text?: {
+          levels?: number; // 3
+          anchor?: number; // derived from mode
+          floor?: number; // derived from mode
+          curve?: number; // 1 (exponent)
+          chroma?: [number, number]; // [anchor, floor] e.g. [0.025, 0.010]
+        };
+        surfaces?: {
+          chroma?: number; // 0.010
+          sunkenDelta?: number; // -0.02
+        };
+        borders?: {
+          offsets?: [number, number, number]; // [0.08, 0.15, 0.25]
+          chroma?: number; // 0.012
+        };
+        mapping?: {
+          accent?: string; // "primary"
+          secondary?: string; // "secondary"
+          tertiary?: string; // "tertiary"
+        };
+      };
 
   // ── Feature toggles (all OFF by default) ──
-  states?: boolean | {
-    hover?: number                      // 0.04
-    active?: number                     // -0.02
-    focus?: { color?: string; width?: string; offset?: string }
-    disabled?: { opacity?: number }
-  }
+  states?:
+    | boolean
+    | {
+        hover?: number; // 0.04
+        active?: number; // -0.02
+        focus?: { color?: string; width?: string; offset?: string };
+        disabled?: { opacity?: number };
+      };
 
-  elevation?: boolean | {
-    levels?: number                     // 4
-    delta?: number                      // 0.03
-    tintShadows?: boolean               // true
-  }
+  elevation?:
+    | boolean
+    | {
+        levels?: number; // 4
+        delta?: number; // 0.03
+        tintShadows?: boolean; // true
+      };
 
-  typography?: boolean | TypographyConfig
-  spacing?: boolean | SpacingConfig
-  shadows?: boolean | ShadowConfig
-  radius?: boolean | RadiusConfig
-  motion?: boolean | MotionConfig
+  typography?: boolean | TypographyConfig;
+  spacing?: boolean | SpacingConfig;
+  shadows?: boolean | ShadowConfig;
+  radius?: boolean | RadiusConfig;
+  motion?: boolean | MotionConfig;
 
-  gradients?: boolean
-  noise?: boolean
+  gradients?: boolean;
+  noise?: boolean;
 
   // ── Framework bindings ──
-  shadcn?: boolean | { radius?: string }
+  shadcn?: boolean | { radius?: string };
 
   // ── Output control ──
   output?: {
-    path?: string                       // "./autotheme.css"
-    format?: "oklch" | "hsl" | "rgb" | "hex"  // "oklch"
-    tailwind?: boolean                  // also activates full palette scale
-    preview?: boolean
-    comments?: boolean                  // true
-    layers?: boolean                    // true
-    lightDark?: boolean                 // true when mode="both"
-    contrastMedia?: boolean
-    reducedTransparency?: boolean
-    forcedColors?: boolean
-  }
+    path?: string; // "./autotheme.css"
+    format?: "oklch" | "hsl" | "rgb" | "hex"; // "oklch"
+    tailwind?: boolean; // also activates full palette scale
+    preview?: boolean;
+    comments?: boolean; // true
+    layers?: boolean; // true
+    lightDark?: boolean; // true when mode="both"
+    contrastMedia?: boolean;
+    reducedTransparency?: boolean;
+    forcedColors?: boolean;
+  };
 
   // ── Custom harmonies ──
-  harmonies?: Record<string, { offsets: number[] }>
+  harmonies?: Record<string, { offsets: number[] }>;
 }
 ```
 
@@ -509,6 +533,7 @@ FULL PALETTE SCALE (~50+ tokens for analogous)
 ## What This Supersedes
 
 This design direction replaces:
+
 - **Milestone 05** (perceptual semantics) — the dual-mode approach is replaced by perceptual-only
 - **The current `SemanticsConfig`** — `surfaceDepth`, `textLevels`, `temperature`, HSL contrast pipeline all go away
 - **The `enabled` pattern** — replaced by `boolean | Config` everywhere

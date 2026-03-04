@@ -7,7 +7,7 @@ import { getHarmonyName } from "./css";
  */
 export function generatePropertyDeclarations(theme: GeneratedTheme): string {
   const { palette, config } = theme;
-  const prefix = config.palette.prefix;
+  const prefix = config.palette !== false ? config.palette.prefix : "color";
   const comments = config.output.comments;
   const lines: string[] = [];
 
@@ -28,7 +28,7 @@ export function generatePropertyDeclarations(theme: GeneratedTheme): string {
   });
 
   // Register semantic properties if enabled
-  if (config.semantics.enabled) {
+  if (config.semantics !== false) {
     const semanticProps = [
       "surface",
       "surface-elevated",

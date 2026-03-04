@@ -13,7 +13,29 @@ export type {
   SwingStrategy,
   HarmonyOptions,
 } from "./core/types";
-export type { CustomHarmonyDefinition } from "./config/types";
+export type {
+  CustomHarmonyDefinition,
+  AutoThemeConfig,
+  ResolvedConfig,
+  PaletteConfig,
+  SemanticsConfig,
+  TextConfig,
+  SurfacesConfig,
+  BordersConfig,
+  SemanticMapping,
+  StatesConfig,
+  ElevationConfig,
+  ShadowConfig,
+  RadiusConfig,
+  TypographyConfig,
+  SpacingConfig,
+  MotionConfig,
+  ShadcnConfig,
+  OutputConfig,
+  ColorFormat,
+  ThemeMode,
+  DeepPartial,
+} from "./config/types";
 export type { Preset } from "./config/presets";
 export type { WCAGLevel, WCAGResult } from "./core/contrast";
 export type { HarmonyMeta } from "./core/harmony-meta";

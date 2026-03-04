@@ -1,4 +1,5 @@
 import { Color } from "../core/color";
+import type { ResolvedConfig } from "../config/types";
 import type { GeneratedTheme, GeneratorOutput } from "./types";
 import { generateNoiseSVG } from "./noise";
 import { generateDarkModeCSS } from "./dark-mode";
@@ -7,8 +8,6 @@ import { generateShadcnCSS } from "./shadcn";
 import { generateSemanticCSS, generateLightDarkSemanticCSS } from "./semantic";
 import { generateAlphaVariants } from "./alpha";
 import { generateShadowScale } from "./shadow";
-import { generateReactiveCSS } from "./reactive";
-import { generatePropertyDeclarations } from "./property";
 import { generateMotionCSS } from "./motion";
 import { fluidValue } from "./fluid";
 import { maxChromaAtHueAndLightness } from "../core/gamut";
@@ -33,26 +32,20 @@ const DEFAULT_SHADE_SCALE_POINTS = [600, 700, 800, 900, 950];
 
 /**
  * Build a mapping from 1-based variation index to scale number.
- * When count matches the predefined length, uses exact mapping.
- * When count differs, evenly distributes across the predefined range.
- * Index is 1-based from lightest/darkest end (tints reversed, shades forward).
  */
 export function buildScaleMapping(count: number, scalePoints: number[]): Record<number, number> {
   const mapping: Record<number, number> = {};
   if (count === 0) return mapping;
   if (count === 1) {
-    // Single variation gets the middle scale point
     mapping[1] = scalePoints[Math.floor(scalePoints.length / 2)]!;
     return mapping;
   }
   if (count === scalePoints.length) {
-    // Exact match: direct mapping
     for (let i = 0; i < count; i++) {
       mapping[i + 1] = scalePoints[i]!;
     }
     return mapping;
   }
-  // Distribute evenly across the range
   const min = scalePoints[0]!;
   const max = scalePoints[scalePoints.length - 1]!;
   for (let i = 0; i < count; i++) {
@@ -62,17 +55,21 @@ export function buildScaleMapping(count: number, scalePoints: number[]): Record<
   return mapping;
 }
 
+/** Get prefix from palette config, defaulting to "color" */
+function getPrefix(config: ResolvedConfig): string {
+  return config.palette !== false ? config.palette.prefix : "color";
+}
+
 /**
  * Generate the main CSS output with all variables
- * Uses OKLCH color format and Tailwind v4 namespaces
  */
 export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   const { palette, config } = theme;
-  const prefix = config.palette.prefix;
+  const prefix = getPrefix(config);
   const comments = config.output.comments;
   const lines: string[] = [];
 
-  const colorFormat = config.colorFormat;
+  const colorFormat = config.output.format;
   const formatLabel = colorFormat.toUpperCase();
   const layers = config.output.layers;
 
@@ -94,17 +91,11 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     lines.push("");
   }
 
-  // @property declarations (before :root)
-  if (config.output.registered) {
-    lines.push(generatePropertyDeclarations(theme));
-    lines.push("");
-  }
-
-  // AutoTheme extended variables with Tailwind namespaces
+  // AutoTheme Color Section
   if (comments) {
     lines.push("/* ========================================");
     lines.push("   AutoTheme Color Scales (Tailwind v4 compatible)");
-    lines.push(`   Uses ${formatLabel} color format and 50-950 scale`);
+    lines.push(`   Uses ${formatLabel} color format`);
     lines.push("   ======================================== */");
   }
   lines.push("");
@@ -116,29 +107,13 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     lines.push("    color-scheme: light dark;");
   }
 
-  if (config.output.reactive) {
-    // Reactive mode: use relative color syntax for runtime-derivable palettes
-    lines.push(generateReactiveCSS(theme));
-
-    // Still emit foreground/contrast colors statically (they need contrast calculation)
-    palette.palettes.forEach((p, i) => {
-      const name = getHarmonyName(i);
-      const textColor = palette.textColors.get(`c${i}-base`);
-      if (textColor) {
-        lines.push(`    --${prefix}-${name}-foreground: ${textColor.formatAs(colorFormat)};`);
-      }
-      const contrastColor = findContrastColor(p.base);
-      lines.push(`    --${prefix}-${name}-contrast: ${contrastColor.formatAs(colorFormat)};`);
-    });
-  } else {
-    // Static mode: emit literal color values
-    // Build dynamic scale mappings
+  if (config.palette !== false) {
+    // Full palette scale: 50-950 per harmony color
     const tintCount = palette.palettes[0]?.tints.length ?? 5;
     const shadeCount = palette.palettes[0]?.shades.length ?? 5;
     const tintScaleMap = buildScaleMapping(tintCount, DEFAULT_TINT_SCALE_POINTS);
     const shadeScaleMap = buildScaleMapping(shadeCount, DEFAULT_SHADE_SCALE_POINTS);
 
-    // Palette colors with Tailwind naming
     palette.palettes.forEach((p, i) => {
       const name = getHarmonyName(i);
       lines.push("");
@@ -146,7 +121,10 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
         lines.push(`    /* ${name.charAt(0).toUpperCase() + name.slice(1)} Color Scale */`);
       }
 
-      // Tints (lighter): reversed so lightest (highest index) gets smallest scale number
+      // Also emit the base-only variable
+      lines.push(`    --${prefix}-${name}: ${p.base.formatAs(colorFormat)};`);
+
+      // Tints (lighter)
       for (let j = p.tints.length; j >= 1; j--) {
         const tint = p.tints[j - 1];
         if (tint) {
@@ -167,7 +145,7 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
         }
       }
 
-      // Foreground (accessible text color)
+      // Foreground
       const textColor = palette.textColors.get(`c${i}-base`);
       if (textColor) {
         lines.push(`    --${prefix}-${name}-foreground: ${textColor.formatAs(colorFormat)};`);
@@ -177,19 +155,27 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
       const contrastColor = findContrastColor(p.base);
       lines.push(`    --${prefix}-${name}-contrast: ${contrastColor.formatAs(colorFormat)};`);
 
-      // Tones (desaturated): tone-1 through tone-4
+      // Tones
       p.tones.forEach((tone, j) => {
         lines.push(`    --${prefix}-${name}-tone-${j + 1}: ${tone.formatAs(colorFormat)};`);
       });
 
-      // Alpha variants (transparent overlays)
-      if (config.palette.alphaVariants) {
-        const av = generateAlphaVariants(p.base, config.palette.alphaSteps);
+      // Alpha variants
+      const pal = config.palette;
+      if (pal !== false && pal.alphaVariants) {
+        const av = generateAlphaVariants(p.base, pal.alphaSteps);
         lines.push(`    --${prefix}-${name}-bg: ${av.bg.formatAs(colorFormat)};`);
         lines.push(`    --${prefix}-${name}-border: ${av.border.formatAs(colorFormat)};`);
         lines.push(`    --${prefix}-${name}-glow: ${av.glow.formatAs(colorFormat)};`);
         lines.push(`    --${prefix}-${name}-hover: ${av.hover.formatAs(colorFormat)};`);
       }
+    });
+  } else {
+    // Base harmony colors only (no scale)
+    palette.palettes.forEach((p, i) => {
+      const name = getHarmonyName(i);
+      if (i === 0) lines.push("");
+      lines.push(`    --${prefix}-${name}: ${p.base.formatAs(colorFormat)};`);
     });
   }
 
@@ -208,22 +194,28 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     palette.palettes.forEach((_, i) => {
       if (i === 0) return;
       const targetName = getHarmonyName(i);
+      const primaryRef =
+        config.palette !== false ? `var(--${prefix}-primary-500)` : `var(--${prefix}-primary)`;
+      const targetRef =
+        config.palette !== false
+          ? `var(--${prefix}-${targetName}-500)`
+          : `var(--${prefix}-${targetName})`;
       lines.push(`    --gradient-linear-${targetName}: linear-gradient(`);
       lines.push("        var(--gradient-direction),");
-      lines.push(`        var(--${prefix}-primary-500),`);
-      lines.push(`        var(--${prefix}-${targetName}-500)`);
+      lines.push(`        ${primaryRef},`);
+      lines.push(`        ${targetRef}`);
       lines.push("    );");
     });
 
-    // Rainbow gradient — approximate spectral colors
+    // Rainbow gradient
     const rainbowColors = [
-      new Color("#ff3b30"), // red
-      new Color("#ff9500"), // orange
-      new Color("#ffcc00"), // yellow
-      new Color("#34c759"), // green
-      new Color("#007aff"), // blue
-      new Color("#5856d6"), // indigo
-      new Color("#af52de"), // violet
+      new Color("#ff3b30"),
+      new Color("#ff9500"),
+      new Color("#ffcc00"),
+      new Color("#34c759"),
+      new Color("#007aff"),
+      new Color("#5856d6"),
+      new Color("#af52de"),
     ];
     lines.push("    --gradient-linear-rainbow: linear-gradient(");
     lines.push("        var(--gradient-direction),");
@@ -237,8 +229,8 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   lines.push("}");
   if (layers) lines.push("}"); // close @layer autotheme.palette
 
-  // Motion tokens (own section, not inside scales)
-  if (config.motion?.enabled) {
+  // Motion tokens
+  if (config.motion !== false) {
     lines.push("");
     if (layers) lines.push("@layer autotheme.scales {");
     lines.push(generateMotionCSS(config));
@@ -247,29 +239,26 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
 
   // Scales (typography, spacing, shadows, radius)
   const hasScales =
-    config.typography.enabled ||
-    config.spacing.enabled ||
-    config.shadows.enabled ||
-    config.radius.enabled;
+    config.typography !== false ||
+    config.spacing !== false ||
+    config.shadows !== false ||
+    config.radius !== false;
   if (hasScales) {
     lines.push("");
     if (layers) lines.push("@layer autotheme.scales {");
     lines.push(":root {");
 
-    // Typography scale (Tailwind namespace)
-    if (config.typography.enabled) {
+    // Typography scale
+    if (config.typography !== false) {
       if (comments) lines.push("    /* Typography Scale */");
-      const typoValues = config.typography.values
-        ? config.typography.values
-        : generateCenteredScale(
-            config.typography.base,
-            config.typography.ratio,
-            config.typography.steps,
-          );
-      const typoNames = config.typography.names ?? generateTypographyNames(typoValues.length);
-      const typoFluid = config.typography.fluid ?? false;
-      const [typoVpMin, typoVpMax] = config.typography.fluidRange ?? [320, 1280];
-      typoValues.forEach((size, i) => {
+      const typo = config.typography;
+      const typoValues = typo.values
+        ? typo.values
+        : generateCenteredScale(typo.base, typo.ratio, typo.steps);
+      const typoNames = typo.names ?? generateTypographyNames(typoValues.length);
+      const typoFluid = typo.fluid;
+      const [typoVpMin, typoVpMax] = typo.fluidRange;
+      typoValues.forEach((size: number, i: number) => {
         const name = typoNames[i] ?? `size-${i + 1}`;
         if (typoFluid) {
           const min = size * 0.75;
@@ -280,16 +269,15 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
       });
     }
 
-    // Spacing scale (Tailwind namespace)
-    if (config.spacing.enabled) {
+    // Spacing scale
+    if (config.spacing !== false) {
       lines.push("");
       if (comments) lines.push("    /* Spacing Scale */");
-      const spacings = config.spacing.values
-        ? config.spacing.values
-        : generateScaledValues(config.spacing.base, config.spacing.ratio, config.spacing.steps);
-      const spacingFluid = config.spacing.fluid ?? false;
-      const [spVpMin, spVpMax] = config.spacing.fluidRange ?? [320, 1280];
-      spacings.forEach((space, i) => {
+      const sp = config.spacing;
+      const spacings = sp.values ? sp.values : generateScaledValues(sp.base, sp.ratio, sp.steps);
+      const spacingFluid = sp.fluid;
+      const [spVpMin, spVpMax] = sp.fluidRange;
+      spacings.forEach((space: number, i: number) => {
         if (spacingFluid) {
           const min = space * 0.75;
           lines.push(`    --spacing-${i + 1}: ${fluidValue(min, space, spVpMin, spVpMax)};`);
@@ -300,22 +288,23 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     }
 
     // Shadow scale
-    if (config.shadows.enabled) {
+    if (config.shadows !== false) {
+      const shadowConf = config.shadows;
       const primaryHue = palette.palettes[0]!.base.hsl.h;
       lines.push("");
       if (comments) lines.push("    /* Shadow Scale */");
-      if (config.shadows.values) {
-        config.shadows.values.forEach((val, i) => {
+      if (shadowConf.values) {
+        shadowConf.values.forEach((val: string, i: number) => {
           lines.push(`    --shadow-${i + 1}: ${val};`);
         });
       } else {
         const isDark = config.mode === "dark";
         const shadows = generateShadowScale(
-          config.shadows.steps,
-          config.shadows.base,
-          config.shadows.ratio,
+          shadowConf.steps,
+          shadowConf.base,
+          shadowConf.ratio,
           primaryHue,
-          config.shadows.colorTint,
+          shadowConf.colorTint,
           isDark,
           colorFormat,
         );
@@ -326,13 +315,14 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     }
 
     // Border radius scale
-    if (config.radius.enabled) {
+    if (config.radius !== false) {
+      const radiusConf = config.radius;
       lines.push("");
       if (comments) lines.push("    /* Border Radius Scale */");
-      const radii = config.radius.values
-        ? config.radius.values
-        : generateScaledValues(config.radius.base, config.radius.ratio, config.radius.steps);
-      radii.forEach((r, i) => {
+      const radii = radiusConf.values
+        ? radiusConf.values
+        : generateScaledValues(radiusConf.base, radiusConf.ratio, radiusConf.steps);
+      radii.forEach((r: number, i: number) => {
         lines.push(`    --radius-${i + 1}: ${r.toFixed(3)}rem;`);
       });
     }
@@ -342,7 +332,7 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
   }
 
   // Semantic tokens
-  if (config.semantics.enabled) {
+  if (config.semantics !== false) {
     lines.push("");
     if (comments) {
       lines.push("/* ========================================");
@@ -359,8 +349,8 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     if (layers) lines.push("}");
   }
 
-  // Shadcn UI variables (after semantics, since shadcn references semantic tokens)
-  if (config.shadcn.enabled) {
+  // Shadcn UI variables
+  if (config.shadcn !== false) {
     lines.push("");
     if (comments) {
       lines.push("/* ========================================");
@@ -373,8 +363,9 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     if (layers) lines.push("}");
   }
 
-  // Dark mode (skip when lightDark is enabled — dark values are inlined via light-dark())
+  // Dark mode palette overrides (skip when lightDark handles semantics)
   if (
+    config.palette !== false &&
     (config.mode === "both" || config.mode === "dark") &&
     !(config.output.lightDark && config.mode === "both")
   ) {
@@ -384,30 +375,33 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
     if (layers) lines.push("}");
   }
 
-  // P3 wide-gamut colors
-  if (config.output.p3) {
-    lines.push("");
-    if (comments) {
-      lines.push("/* Wide-Gamut Display P3 Colors */");
-    }
-    lines.push("@supports (color: color(display-p3 1 0 0)) {");
-    if (layers) lines.push("@layer autotheme.palette {");
-    lines.push("  :root {");
-    palette.palettes.forEach((p, i) => {
-      const name = getHarmonyName(i);
-      // Re-emit base with unclamped (higher) chroma for P3
-      const baseOklch = p.base.oklch;
-      const maxSrgbC = maxChromaAtHueAndLightness(baseOklch.h, baseOklch.l);
-      // Only emit P3 override if original chroma exceeds sRGB gamut
-      if (baseOklch.c > maxSrgbC + 0.005) {
-        lines.push(
-          `    --${prefix}-${name}-500: oklch(${baseOklch.l.toFixed(4)} ${baseOklch.c.toFixed(4)} ${baseOklch.h.toFixed(2)});`,
-        );
-      }
+  // P3 wide-gamut colors (only when palette is active)
+  if (config.palette !== false) {
+    const hasP3 = palette.palettes.some((p) => {
+      const o = p.base.oklch;
+      const maxC = maxChromaAtHueAndLightness(o.h, o.l);
+      return o.c > maxC + 0.005;
     });
-    lines.push("  }");
-    if (layers) lines.push("}");
-    lines.push("}");
+    if (hasP3) {
+      lines.push("");
+      if (comments) lines.push("/* Wide-Gamut Display P3 Colors */");
+      lines.push("@supports (color: color(display-p3 1 0 0)) {");
+      if (layers) lines.push("@layer autotheme.palette {");
+      lines.push("  :root {");
+      palette.palettes.forEach((p, i) => {
+        const name = getHarmonyName(i);
+        const baseOklch = p.base.oklch;
+        const maxSrgbC = maxChromaAtHueAndLightness(baseOklch.h, baseOklch.l);
+        if (baseOklch.c > maxSrgbC + 0.005) {
+          lines.push(
+            `    --${prefix}-${name}-500: oklch(${baseOklch.l.toFixed(4)} ${baseOklch.c.toFixed(4)} ${baseOklch.h.toFixed(2)});`,
+          );
+        }
+      });
+      lines.push("  }");
+      if (layers) lines.push("}");
+      lines.push("}");
+    }
   }
 
   // Utility classes
@@ -426,22 +420,16 @@ export function generateCSS(theme: GeneratedTheme): GeneratorOutput {
 
 /**
  * Generate a centered scale around a base value.
- * Produces steps below and above the base using the ratio.
  */
 export function generateCenteredScale(base: number, ratio: number, steps: number): number[] {
   const stepsBelow = Math.floor(steps / 2);
   const stepsAbove = steps - 1 - stepsBelow;
   const values: number[] = [];
 
-  // Steps below base (smallest first)
   for (let i = stepsBelow; i >= 1; i--) {
     values.push(base / Math.pow(ratio, i));
   }
-
-  // Base
   values.push(base);
-
-  // Steps above base
   for (let i = 1; i <= stepsAbove; i++) {
     values.push(base * Math.pow(ratio, i));
   }
@@ -451,7 +439,6 @@ export function generateCenteredScale(base: number, ratio: number, steps: number
 
 /**
  * Generate default typography names based on step count.
- * Centered around "base", with smaller sizes below and larger above.
  */
 export function generateTypographyNames(count: number): string[] {
   const below = Math.floor(count / 2);
@@ -461,14 +448,11 @@ export function generateTypographyNames(count: number): string[] {
   const smallNames = ["4xs", "3xs", "2xs", "xs", "sm"];
   const largeNames = ["md", "lg", "xl", "2xl", "3xl", "4xl"];
 
-  // Pick from the end of smallNames
   for (let i = 0; i < below; i++) {
     const idx = smallNames.length - below + i;
     names.push(smallNames[idx] ?? `size-${i + 1}`);
   }
-
   names.push("base");
-
   for (let i = 0; i < above; i++) {
     names.push(largeNames[i] ?? `size-${below + 2 + i}`);
   }

@@ -1,7 +1,7 @@
 import prompts from "prompts";
 import { writeFile } from "fs/promises";
 import { HARMONY_META } from "../core/harmony-meta";
-import { DEFAULT_CONFIG } from "../config/types";
+import { DEFAULT_OUTPUT, DEFAULT_PALETTE, DEFAULT_TYPOGRAPHY } from "../config/types";
 import { log } from "./logger";
 
 export async function runInit(skipPrompts: boolean = false): Promise<void> {
@@ -33,19 +33,19 @@ export async function runInit(skipPrompts: boolean = false): Promise<void> {
       type: "text",
       name: "outputPath",
       message: "Output path:",
-      initial: DEFAULT_CONFIG.output.path,
+      initial: DEFAULT_OUTPUT.path,
     },
     {
       type: "text",
       name: "prefix",
       message: "CSS variable prefix:",
-      initial: DEFAULT_CONFIG.palette.prefix,
+      initial: DEFAULT_PALETTE.prefix,
     },
     {
       type: "number",
       name: "fontSize",
       message: "Base font size (rem):",
-      initial: DEFAULT_CONFIG.typography.base,
+      initial: DEFAULT_TYPOGRAPHY.base,
       float: true,
       min: 0.1,
     },
@@ -97,10 +97,10 @@ async function writeConfig(config: Record<string, unknown>): Promise<void> {
 
 async function writeDefaultConfig(): Promise<void> {
   await writeConfig({
-    color: DEFAULT_CONFIG.color || "#6439FF",
-    harmony: DEFAULT_CONFIG.harmony,
+    color: "#6439FF",
+    harmony: "analogous",
     output: {
-      path: DEFAULT_CONFIG.output.path,
+      path: DEFAULT_OUTPUT.path,
     },
   });
 }

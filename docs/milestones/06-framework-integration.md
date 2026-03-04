@@ -9,6 +9,7 @@ Step-by-step documentation for integrating AutoTheme v2 into popular frontend fr
 ## What's Included
 
 Guides for:
+
 - **Next.js** — `app/globals.css` import, `next-themes` dark mode, Shadcn integration
 - **Vue / Nuxt** — Scoped vs global theming, `@nuxtjs/color-mode` module
 - **Svelte / SvelteKit** — `app.css` import, media query dark mode
@@ -16,6 +17,7 @@ Guides for:
 - **Vanilla / CDN** — Direct `<link>` import, dark mode script
 
 Plus:
+
 - **CLI `init` command** — Detect framework, scaffold config
 
 ## Current State

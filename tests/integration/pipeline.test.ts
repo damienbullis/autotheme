@@ -3,8 +3,7 @@ import { generateTheme } from "../../src/core/theme";
 import { generateCSS } from "../../src/generators/css";
 import { generateTailwindCSS } from "../../src/generators/tailwind";
 import { generateShadcnCSS } from "../../src/generators/shadcn";
-import { resolveConfig } from "../../src/config/merge";
-import { DEFAULT_CONFIG } from "../../src/config/types";
+import { resolveConfig, resolveToConfig } from "../../src/config/merge";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
 
 /** Parse all OKLCH values from a CSS string */
@@ -30,12 +29,12 @@ function isValidOKLCH(value: string): boolean {
 }
 
 describe("full pipeline: config → theme → CSS", () => {
-  it("generates correct CSS for a known color with triadic harmony", () => {
-    const config = {
-      ...DEFAULT_CONFIG,
+  it("generates correct CSS for a known color with triadic harmony (palette on)", () => {
+    const config = resolveToConfig({
       color: "#FF0000",
-      harmony: "triadic" as const,
-    };
+      harmony: "triadic",
+      palette: true,
+    });
     const theme = generateTheme(config);
     const result = generateCSS(theme);
 
@@ -66,7 +65,7 @@ describe("full pipeline: config → theme → CSS", () => {
     expect(vars.has("--color-quaternary-500")).toBe(false);
   });
 
-  it("generates correct count of color sets per harmony type", () => {
+  it("generates correct count of color sets per harmony type (palette on)", () => {
     const harmonyCounts: Record<string, number> = {
       complementary: 2,
       analogous: 3,
@@ -77,7 +76,7 @@ describe("full pipeline: config → theme → CSS", () => {
     };
 
     for (const [harmony, expectedCount] of Object.entries(harmonyCounts)) {
-      const config = { ...DEFAULT_CONFIG, color: "#3366CC", harmony };
+      const config = resolveToConfig({ color: "#3366CC", harmony, palette: true });
       const theme = generateTheme(config);
       const result = generateCSS(theme);
       const vars = extractCSSVars(result.content);
@@ -96,13 +95,12 @@ describe("full pipeline: config → theme → CSS", () => {
   });
 
   it("all OKLCH values in output are syntactically valid", () => {
-    const config = {
-      ...DEFAULT_CONFIG,
+    const config = resolveToConfig({
       color: "#6439FF",
-      shadcn: { enabled: true, radius: "0.625rem" },
+      shadcn: true,
       gradients: true,
       noise: true,
-    };
+    });
     const theme = generateTheme(config);
     const result = generateCSS(theme);
 
@@ -114,35 +112,38 @@ describe("full pipeline: config → theme → CSS", () => {
     }
   });
 
-  it("minimal config produces only palette + typography + dark mode", () => {
-    const config = { ...DEFAULT_CONFIG, color: "#00CC88" };
+  it("minimal config produces base colors + semantics (no full palette scale)", () => {
+    const config = resolveToConfig({ color: "#00CC88" });
     const theme = generateTheme(config);
     const result = generateCSS(theme);
 
-    // Present: palette, typography, dark mode
+    // Present: base color (no -500 suffix), :root block
     expect(result.content).toContain(":root {");
-    expect(result.content).toContain("--color-primary-500:");
-    expect(result.content).toContain("--text-base:");
-    expect(result.content).toContain(".dark {");
+    expect(result.content).toContain("--color-primary:");
 
-    // Absent: all optional features
-    expect(result.content).not.toContain("Shadcn");
-    expect(result.content).not.toContain("Spacing Scale");
+    // palette is OFF by default: no full scale
+    expect(result.content).not.toContain("--color-primary-500:");
+
+    // semantics is ON by default
+    expect(result.content).toContain("--surface:");
+    expect(result.content).toContain("--text-1:");
+
+    // Absent: optional features not enabled
     expect(result.content).not.toContain("Background Images");
     expect(result.content).not.toContain("Gradient");
     expect(result.content).not.toContain("Utility Classes");
   });
 
   it("all features on produces complete output", () => {
-    const config = {
-      ...DEFAULT_CONFIG,
+    const config = resolveToConfig({
       color: "#FF6600",
-      shadcn: { enabled: true, radius: "1rem" },
-      spacing: { enabled: true, base: 0.155, ratio: 1.618, steps: 10 },
+      palette: true,
+      shadcn: true,
+      spacing: true,
       gradients: true,
       noise: true,
       utilities: true,
-    };
+    });
     const theme = generateTheme(config);
     const result = generateCSS(theme);
 
@@ -154,11 +155,10 @@ describe("full pipeline: config → theme → CSS", () => {
   });
 
   it("typography scale follows centered growth around base", () => {
-    const config = {
-      ...DEFAULT_CONFIG,
+    const config = resolveToConfig({
       color: "#000000",
-      typography: { enabled: true, base: 1, ratio: 2, steps: 5 },
-    };
+      typography: { base: 1, ratio: 2, steps: 5 },
+    });
     const theme = generateTheme(config);
     const result = generateCSS(theme);
     const vars = extractCSSVars(result.content);
@@ -194,7 +194,7 @@ describe("config → theme pipeline", () => {
     const theme = generateTheme(config);
     const result = generateCSS(theme);
 
-    // Prefix from config file applied
+    // Prefix from config file applied; palette enabled by config object
     expect(result.content).toContain("--at-primary-500:");
     expect(result.content).not.toContain("--color-primary-500:");
 
@@ -230,11 +230,10 @@ describe("config → theme pipeline", () => {
 
 describe("Tailwind integration output", () => {
   it("@theme block references correct CSS variables via @import", () => {
-    const config = {
-      ...DEFAULT_CONFIG,
+    const config = resolveToConfig({
       color: "#3366CC",
-      palette: { ...DEFAULT_CONFIG.palette, prefix: "at" },
-    };
+      palette: { prefix: "at" },
+    });
     const theme = generateTheme(config);
     const result = generateTailwindCSS(theme);
 
@@ -250,11 +249,11 @@ describe("Tailwind integration output", () => {
 
 describe("Shadcn CSS output", () => {
   it("maps shadcn variables to semantic tokens with var() references", () => {
-    const config = { ...DEFAULT_CONFIG, color: "#6439FF" };
+    const config = resolveToConfig({ color: "#6439FF", shadcn: true });
     const theme = generateTheme(config);
     const css = generateShadcnCSS(theme);
 
-    // Both blocks present
+    // Both blocks present (mode defaults to "both")
     expect(css).toContain(":root {");
     expect(css).toContain(".dark {");
 

@@ -13,7 +13,7 @@ const SHADE_SCALES = [600, 700, 800, 900, 950] as const;
  */
 export function generatePreview(theme: GeneratedTheme): GeneratorOutput {
   const { palette, config } = theme;
-  const prefix = config.palette.prefix;
+  const prefix = config.palette !== false ? config.palette.prefix : "color";
 
   const colorSwatches = palette.palettes
     .map((_, i) => {

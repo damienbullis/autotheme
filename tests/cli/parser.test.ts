@@ -16,17 +16,14 @@ describe("parseArgs", () => {
       "./custom.json",
       "--prefix",
       "at",
-      "--font-size",
-      "0.875",
-      "--swing",
-      "1.5",
-      "--swing-strategy",
-      "exponential",
+      "--format",
+      "hsl",
+      "--palette",
       "--preview",
       "--tailwind",
-      "--dark-mode-script",
       "--gradients",
       "--spacing",
+      "--typography",
       "--noise",
       "--shadcn",
       "--utilities",
@@ -41,18 +38,15 @@ describe("parseArgs", () => {
     expect(args.preset).toBe("ocean");
     expect(args.config).toBe("./custom.json");
     expect(args.prefix).toBe("at");
-
-    // Number options
-    expect(args.fontSize).toBe(0.875);
-    expect(args.swing).toBe(1.5);
-    expect(args.swingStrategy).toBe("exponential");
+    expect(args.format).toBe("hsl");
 
     // Boolean flags
+    expect(args.palette).toBe(true);
     expect(args.preview).toBe(true);
     expect(args.tailwind).toBe(true);
-    expect(args.darkModeScript).toBe(true);
     expect(args.gradients).toBe(true);
     expect(args.spacing).toBe(true);
+    expect(args.typography).toBe(true);
     expect(args.noise).toBe(true);
     expect(args.shadcn).toBe(true);
     expect(args.utilities).toBe(true);
@@ -67,6 +61,7 @@ describe("parseArgs", () => {
       "--no-noise",
       "--no-shadcn",
       "--no-utilities",
+      "--no-semantics",
     ]);
 
     expect(args.gradients).toBe(false);
@@ -74,6 +69,7 @@ describe("parseArgs", () => {
     expect(args.noise).toBe(false);
     expect(args.shadcn).toBe(false);
     expect(args.utilities).toBe(false);
+    expect(args.semantics).toBe(false);
   });
 
   it("unprovided options are undefined", () => {
@@ -85,7 +81,7 @@ describe("parseArgs", () => {
     expect(args.preview).toBeUndefined();
     expect(args.tailwind).toBeUndefined();
     expect(args.gradients).toBeUndefined();
-    expect(args.swing).toBeUndefined();
-    expect(args.fontSize).toBeUndefined();
+    expect(args.format).toBeUndefined();
+    expect(args.palette).toBeUndefined();
   });
 });

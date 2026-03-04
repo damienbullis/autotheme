@@ -6,7 +6,7 @@ describe("CLI integration", () => {
     vi.restoreAllMocks();
   });
 
-  it("--stdout outputs CSS containing :root and --color-primary-500", async () => {
+  it("--stdout outputs CSS containing :root and --color-primary", async () => {
     let output = "";
     vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
       output += chunk;
@@ -16,7 +16,7 @@ describe("CLI integration", () => {
     await run(["--color", "#6439FF", "--stdout"]);
 
     expect(output).toContain(":root");
-    expect(output).toContain("--color-primary-500");
+    expect(output).toContain("--color-primary:");
   });
 
   it("--stdout outputs CSS with different harmony types", async () => {
@@ -28,9 +28,9 @@ describe("CLI integration", () => {
 
     await run(["--color", "#FF0000", "--harmony", "triadic", "--stdout"]);
 
-    expect(output).toContain("--color-primary-500");
-    expect(output).toContain("--color-secondary-500");
-    expect(output).toContain("--color-tertiary-500");
+    expect(output).toContain("--color-primary:");
+    expect(output).toContain("--color-secondary:");
+    expect(output).toContain("--color-tertiary:");
   });
 
   it("schema subcommand outputs valid JSON", async () => {
@@ -61,6 +61,6 @@ describe("CLI integration", () => {
     await run(["--stdout"]);
 
     expect(output).toContain(":root");
-    expect(output).toContain("--color-primary-500");
+    expect(output).toContain("--color-primary:");
   });
 });

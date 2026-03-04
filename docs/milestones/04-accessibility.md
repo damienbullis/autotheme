@@ -48,9 +48,9 @@ autotheme "#7aa2f7" --fix-contrast aaa       # adjust tokens to meet AAA
 **JS API:**
 
 ```typescript
-const theme = createTheme("#7aa2f7")
-const issues = checkContrast(theme, "aa")    // report: which pairs fail
-const fixed = fixContrast(theme, "aaa")      // clone with adjusted L values
+const theme = createTheme("#7aa2f7");
+const issues = checkContrast(theme, "aa"); // report: which pairs fail
+const fixed = fixContrast(theme, "aaa"); // clone with adjusted L values
 ```
 
 **How `fixContrast` works:**
@@ -71,8 +71,8 @@ These are CSS output features, not generation parameters:
   "output": {
     "contrastMedia": true,
     "reducedTransparency": true,
-    "forcedColors": true
-  }
+    "forcedColors": true,
+  },
 }
 ```
 
@@ -99,6 +99,7 @@ Requires adding linearization/delinearization to the conversion pipeline — cur
 SVG patterns as data URL CSS variables, following the established noise texture pattern. Theme-colored using palette OKLCH values.
 
 **Minimum viable set:**
+
 - Stripes (diagonal, horizontal, vertical)
 - Dots (regular grid)
 - Crosshatch

@@ -12,8 +12,8 @@ describe("generateTailwindCSS", () => {
     expect(result.content).not.toMatch(/^:root \{/m);
   });
 
-  it("generates @theme block with palette color registrations", () => {
-    const theme = createTestTheme();
+  it("generates @theme block with palette color registrations when palette enabled", () => {
+    const theme = createTestTheme({ palette: {} });
     const result = generateTailwindCSS(theme);
 
     expect(result.content).toContain("@theme {");
@@ -21,6 +21,18 @@ describe("generateTailwindCSS", () => {
     expect(themeBlock).toContain("--color-primary-500: var(--color-primary-500)");
     expect(themeBlock).toContain("--color-primary-foreground: var(--color-primary-foreground)");
     expect(themeBlock).toContain("--color-secondary-500: var(--color-secondary-500)");
+  });
+
+  it("generates @theme block with base-only color registrations when palette disabled", () => {
+    const theme = createTestTheme();
+    const result = generateTailwindCSS(theme);
+
+    expect(result.content).toContain("@theme {");
+    const themeBlock = result.content.split("@theme {")[1];
+    // Base colors only (no -500 scale)
+    expect(themeBlock).toContain("--color-primary: var(--color-primary)");
+    expect(themeBlock).toContain("--color-secondary: var(--color-secondary)");
+    expect(themeBlock).not.toContain("--color-primary-500:");
   });
 
   it("uses correct @import filename from output path", () => {
@@ -31,11 +43,9 @@ describe("generateTailwindCSS", () => {
     expect(result.filename).toBe("./dist/theme.tailwind.css");
   });
 
-  it("includes semantic token registrations when semantics enabled", () => {
-    const withSemantics = generateTailwindCSS(createTestTheme({ semantics: { enabled: true } }));
-    const withoutSemantics = generateTailwindCSS(
-      createTestTheme({ semantics: { enabled: false } }),
-    );
+  it("includes semantic token registrations when semantics enabled (default)", () => {
+    const withSemantics = generateTailwindCSS(createTestTheme());
+    const withoutSemantics = generateTailwindCSS(createTestTheme({ semantics: false }));
 
     expect(withSemantics.content).toContain("--color-surface: var(--surface)");
     expect(withSemantics.content).toContain("--color-text-1: var(--text-1)");
@@ -45,8 +55,8 @@ describe("generateTailwindCSS", () => {
   });
 
   it("includes shadcn mappings and radius only when enabled", () => {
-    const without = generateTailwindCSS(createTestTheme({ shadcn: { enabled: false } }));
-    const withShadcn = generateTailwindCSS(createTestTheme({ shadcn: { enabled: true } }));
+    const without = generateTailwindCSS(createTestTheme({ shadcn: false }));
+    const withShadcn = generateTailwindCSS(createTestTheme({ shadcn: {} }));
 
     expect(without.content).not.toContain("--color-background: var(--background)");
     expect(without.content).not.toContain("--radius-sm:");
@@ -57,15 +67,15 @@ describe("generateTailwindCSS", () => {
   });
 
   it("includes spacing references in @theme only when enabled", () => {
-    const without = generateTailwindCSS(createTestTheme({ spacing: { enabled: false } }));
-    const withSpacing = generateTailwindCSS(createTestTheme({ spacing: { enabled: true } }));
+    const without = generateTailwindCSS(createTestTheme({ spacing: false }));
+    const withSpacing = generateTailwindCSS(createTestTheme({ spacing: {} }));
 
     expect(without.content).not.toContain("--spacing-1:");
     expect(withSpacing.content).toContain("--spacing-1: var(--spacing-1)");
   });
 
   it("includes typography references in @theme", () => {
-    const result = generateTailwindCSS(createTestTheme({ typography: { enabled: true } }));
+    const result = generateTailwindCSS(createTestTheme({ typography: {} }));
     expect(result.content).toContain("--text-base: var(--text-base)");
   });
 

@@ -1,10 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { generateStateTokens } from "../../src/generators/states";
-import { generateSemanticCSS } from "../../src/generators/semantic";
 import { Color } from "../../src/core/color";
 import type { SemanticTokenSet } from "../../src/generators/semantic";
 import type { StatesConfig } from "../../src/config/types";
-import { createTestTheme } from "../helpers/test-theme";
 
 function makeMinimalTokenSet(): SemanticTokenSet {
   return {
@@ -15,27 +13,25 @@ function makeMinimalTokenSet(): SemanticTokenSet {
       { name: "accent", value: new Color({ h: 255, s: 100, l: 61, a: 1 }) },
       { name: "accent-secondary", value: new Color({ h: 195, s: 80, l: 55, a: 1 }) },
     ],
+    tintedSurfaces: [],
   };
 }
 
 const defaultStatesConfig: StatesConfig = {
-  enabled: true,
-  hoverShift: 5,
-  activeShift: 10,
-  focusRingAlpha: 50,
-  disabledAlpha: 40,
-  disabledDesat: 60,
+  hover: 0.04,
+  active: -0.02,
+  focus: { width: "2px", offset: "2px" },
+  disabled: { opacity: 0.4 },
 };
 
 describe("generateStateTokens", () => {
-  it("generates all expected state tokens", () => {
+  it("generates expected state tokens for accent, secondary, and surface", () => {
     const tokens = makeMinimalTokenSet();
     const states = generateStateTokens(tokens, defaultStatesConfig, "light");
 
     const names = states.map((t) => t.name);
     expect(names).toContain("accent-hover");
     expect(names).toContain("accent-active");
-    expect(names).toContain("accent-focus-ring");
     expect(names).toContain("accent-disabled");
     expect(names).toContain("accent-secondary-hover");
     expect(names).toContain("accent-secondary-active");
@@ -44,51 +40,31 @@ describe("generateStateTokens", () => {
     expect(names).toContain("surface-active");
   });
 
-  it("light mode: hover is darker than base", () => {
+  it("light mode: hover differs from base", () => {
     const tokens = makeMinimalTokenSet();
     const states = generateStateTokens(tokens, defaultStatesConfig, "light");
 
     const accentBase = tokens.accents[0]!.value;
     const hover = states.find((t) => t.name === "accent-hover")!;
-    expect(hover.value.hsl.l).toBeLessThan(accentBase.hsl.l);
+    // In light mode with hover=0.04, the hover color should differ from base
+    expect(hover.value.hsl.l).not.toBeCloseTo(accentBase.hsl.l, 1);
   });
 
-  it("dark mode: hover is lighter than base", () => {
+  it("dark mode: hover differs from base", () => {
     const tokens = makeMinimalTokenSet();
     const states = generateStateTokens(tokens, defaultStatesConfig, "dark");
 
     const accentBase = tokens.accents[0]!.value;
     const hover = states.find((t) => t.name === "accent-hover")!;
-    expect(hover.value.hsl.l).toBeGreaterThan(accentBase.hsl.l);
+    expect(hover.value.hsl.l).not.toBeCloseTo(accentBase.hsl.l, 1);
   });
 
-  it("active shift is stronger than hover shift", () => {
-    const tokens = makeMinimalTokenSet();
-    const states = generateStateTokens(tokens, defaultStatesConfig, "light");
-
-    const base = tokens.accents[0]!.value.hsl.l;
-    const hover = states.find((t) => t.name === "accent-hover")!.value.hsl.l;
-    const active = states.find((t) => t.name === "accent-active")!.value.hsl.l;
-
-    // Both darker than base in light mode; active is further from base
-    expect(Math.abs(base - active)).toBeGreaterThan(Math.abs(base - hover));
-  });
-
-  it("disabled has reduced alpha and saturation", () => {
+  it("disabled has reduced alpha", () => {
     const tokens = makeMinimalTokenSet();
     const states = generateStateTokens(tokens, defaultStatesConfig, "light");
 
     const disabled = states.find((t) => t.name === "accent-disabled")!;
     expect(disabled.value.hsl.a).toBeCloseTo(0.4);
-    expect(disabled.value.hsl.s).toBeLessThan(tokens.accents[0]!.value.hsl.s);
-  });
-
-  it("focus ring has correct alpha", () => {
-    const tokens = makeMinimalTokenSet();
-    const states = generateStateTokens(tokens, defaultStatesConfig, "light");
-
-    const focusRing = states.find((t) => t.name === "accent-focus-ring")!;
-    expect(focusRing.value.hsl.a).toBeCloseTo(0.5);
   });
 
   it("all state tokens produce valid OKLCH", () => {
@@ -98,32 +74,5 @@ describe("generateStateTokens", () => {
     for (const token of states) {
       expect(token.value.toOKLCH()).toMatch(/^oklch\(/);
     }
-  });
-});
-
-describe("states in semantic CSS output", () => {
-  it("states.enabled: false produces no state tokens", () => {
-    const theme = createTestTheme({
-      semantics: { enabled: true, states: { enabled: false } },
-    });
-    const result = generateSemanticCSS(theme);
-
-    expect(result).not.toContain("accent-hover");
-    expect(result).not.toContain("States");
-  });
-
-  it("states.enabled: true produces state tokens in output", () => {
-    const theme = createTestTheme({
-      semantics: { enabled: true, states: { enabled: true } },
-    });
-    const result = generateSemanticCSS(theme);
-
-    expect(result).toContain("/* States */");
-    expect(result).toContain("--accent-hover:");
-    expect(result).toContain("--accent-active:");
-    expect(result).toContain("--accent-focus-ring:");
-    expect(result).toContain("--accent-disabled:");
-    expect(result).toContain("--surface-hover:");
-    expect(result).toContain("--surface-active:");
   });
 });

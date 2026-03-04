@@ -37,6 +37,7 @@ When `palette: true`, the 50-950 scale provides the lightness range that makes m
 **Remaining question:** Should monochromatic emit secondary/tertiary tokens at all?
 
 **Options:**
+
 1. **No secondary/tertiary** — Only `--color-primary`. Semantic accents (`--accent-secondary`, etc.) map to the same color at different lightness/chroma offsets. Clean but reduces the accent system's value.
 2. **Saturation variants** — Primary is full chroma, secondary is reduced chroma, tertiary is near-neutral. Each is a distinct `--color-{name}` token. Gives tinted surfaces meaningful differentiation.
 3. **Lightness variants** — Primary is the input color, secondary and tertiary are shifted lighter/darker. Gives accent pairs visual distinction.
@@ -46,6 +47,7 @@ When `palette: true`, the 50-950 scale provides the lightness range that makes m
 ### Custom Angles: CLI ergonomics
 
 **Options:**
+
 1. **`--angles "0,45,210"`** — Simple, matches the roadmap. Harmony auto-named "custom".
 2. **`--harmony custom --angles "0,45,210"`** — More explicit. `--angles` only valid when `--harmony custom`.
 3. **`--offsets "45,210"`** — Implicit 0 base. Fewer numbers.
@@ -57,6 +59,7 @@ When `palette: true`, the 50-950 scale provides the lightness range that makes m
 Current naming: primary → secondary → tertiary → quaternary. A 5th needs a name.
 
 **Options:**
+
 1. **`quinary`** — Latin convention. Obscure but consistent.
 2. **Numbered fallback** — `harmony-5`. Less elegant but unambiguous.
 
