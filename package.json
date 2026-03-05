@@ -28,7 +28,15 @@
     "autotheme": "./dist/cli/main.js"
   },
   "files": [
-    "dist",
+    "dist/index.js",
+    "dist/index.d.ts",
+    "dist/cli/main.js",
+    "dist/core/**/*.d.ts",
+    "dist/config/**/*.d.ts",
+    "dist/generators/**/*.d.ts",
+    "dist/core/**/*.d.ts.map",
+    "dist/config/**/*.d.ts.map",
+    "dist/generators/**/*.d.ts.map",
     "schema.json"
   ],
   "type": "module",
@@ -44,10 +52,11 @@
   "scripts": {
     "dev": "bun run --watch src/cli/main.ts",
     "dev:web": "bun run src/web/server.ts",
-    "build": "bun run build:lib && bun run build:cli && bun run build:schema",
-    "build:lib": "bun build ./src/index.ts --outdir ./dist --target node",
-    "build:cli": "bun build ./src/cli/main.ts --outdir ./dist/cli --target node",
-    "build:binary": "bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-darwin-arm64 --target=bun-darwin-arm64 && bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-darwin-x64 --target=bun-darwin-x64 && bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-linux-x64 --target=bun-linux-x64 && bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-linux-arm64 --target=bun-linux-arm64",
+    "build": "bun run build:lib && bun run build:cli && bun run build:types && bun run build:schema",
+    "build:lib": "bun build ./src/index.ts --outdir ./dist --target node --minify",
+    "build:cli": "bun build ./src/cli/main.ts --outdir ./dist/cli --target node --minify",
+    "build:types": "bunx tsc --emitDeclarationOnly --outDir dist",
+    "build:binary": "bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-darwin-arm64 --target=bun-darwin-arm64 && bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-darwin-x64 --target=bun-darwin-x64 && bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-linux-x64 --target=bun-linux-x64 && bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-linux-arm64 --target=bun-linux-arm64 && bun build --compile --minify ./src/cli/main.ts --outfile bin/autotheme-windows-x64.exe --target=bun-windows-x64",
     "build:schema": "bun run scripts/generate-schema.ts",
     "build:web": "bun build ./src/web/main.ts --outdir ./dist/web --minify",
     "test": "vitest",

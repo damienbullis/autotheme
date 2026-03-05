@@ -6,6 +6,7 @@ import { generateCSS, writeOutputs } from "../generators";
 import { PRESETS } from "../config/presets";
 import { runInit } from "./init";
 import type { FrameworkType } from "./init";
+import { runCompletions } from "./completions";
 import { log } from "./logger";
 
 export async function run(args: string[]): Promise<void> {
@@ -15,6 +16,12 @@ export async function run(args: string[]): Promise<void> {
     const frameworkIdx = args.indexOf("--framework");
     const framework = frameworkIdx !== -1 ? (args[frameworkIdx + 1] as FrameworkType) : undefined;
     await runInit({ skipPrompts, ...(framework ? { framework } : {}) });
+    return;
+  }
+
+  // Handle completions command
+  if (args[0] === "completions") {
+    runCompletions(args.slice(1));
     return;
   }
 
