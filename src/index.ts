@@ -85,6 +85,8 @@ export * from "./generators/blendmodes";
 export * from "./generators/glass";
 export * from "./generators/blobs";
 export * from "./generators/stack";
+export * from "./generators/alpha";
+export * from "./generators/semantic";
 
 // Config exports
 export * from "./config/schema";
